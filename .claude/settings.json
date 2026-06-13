@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\Administrator\\\\hotel-deals\\\\app\" -Recurse -Depth 2 | Select-Object FullName, PSIsContainer | Where-Object {$_.FullName -notmatch 'node_modules'})"
+    ]
+  }
+}

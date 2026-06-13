@@ -1,0 +1,835 @@
+﻿import { getDealStatus, getUrgencyConfig } from '@/lib/dealsEngine';
+import type { DealStatus, UrgencyConfig } from '@/lib/dealsEngine';
+import type { RoomCategory } from '@/lib/roomImages';
+
+export type { RoomCategory };
+
+export interface RoomType {
+  id: string;
+  name: string;
+  room_type: RoomCategory;
+  image_url?: string;
+  bedType: string;
+  sizeM2: number;
+  maxGuests: number;
+  /** Original rack rate — shown as strikethrough price */
+  basePrice: number;
+  /** Discounted selling price — the active payable price */
+  pricePerNight: number;
+  features: string[];
+  quantity: number;
+}
+
+export interface GalleryImage {
+  gradient: string;
+  label: string;
+}
+
+export interface HotelDetail {
+  id: number;
+  name: string;
+  location: string;
+  address: string;
+  category: string;
+  stars: number;
+  rating: number;
+  reviewCount: number;
+  tonightOnly: boolean;
+  roomsLeft: number;
+  countdownHours: number;
+  countdownMinutes: number;
+  dealBadge: string;
+  dealStatus: DealStatus;
+  urgency: UrgencyConfig;
+  description: string;
+  gallery: GalleryImage[];
+  amenities: { emoji: string; label: string }[];
+  rooms: RoomType[];
+  policies: { checkIn: string; checkOut: string };
+}
+
+type BaseRoomInput = Omit<RoomType, 'pricePerNight'> & { pricePerNight?: number };
+
+type BaseHotelDetail = Omit<
+  HotelDetail,
+  'tonightOnly' | 'dealBadge' | 'dealStatus' | 'urgency' | 'rooms'
+> & { rooms: BaseRoomInput[] };
+
+function buildHotelDetail(base: BaseHotelDetail): HotelDetail {
+  const timeLeft = base.countdownHours + base.countdownMinutes / 60;
+  const status = getDealStatus(timeLeft);
+  const urgency = getUrgencyConfig(timeLeft);
+  return {
+    ...base,
+    tonightOnly: status === 'HIGH_DEMAND' || status === 'CRITICAL',
+    dealBadge: urgency.dealBadge,
+    dealStatus: status,
+    urgency,
+    rooms: base.rooms.map(room => ({
+      ...room,
+      pricePerNight: room.pricePerNight ?? Math.round(room.basePrice * 0.7),
+    })),
+  };
+}
+
+export const MOCK_HOTEL_DETAILS: Record<number, HotelDetail> = {
+  1: buildHotelDetail({
+    id: 1,
+    name: "Atlantis Tower Suites",
+    location: "Palm Jumeirah, Dubai",
+    address: "The Palm Jumeirah, Crescent Road, Dubai, UAE",
+    category: "Ultra Luxury",
+    stars: 5,
+    rating: 4.9,
+    reviewCount: 3421,
+    roomsLeft: 2,
+    countdownHours: 1,
+    countdownMinutes: 55,
+    description:
+      "Rising above the iconic Palm Jumeirah, Atlantis Tower Suites offers an unparalleled luxury experience with panoramic views of the Arabian Gulf. Each suite is a masterpiece of contemporary design featuring private balconies, marble bathrooms, and dedicated butler service. Our 1.5 km private beach and signature infinity pool — appearing to merge with the sea — have made this property one of Dubai's most celebrated addresses.",
+    gallery: [
+      { gradient: "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)", label: "Tower & Exterior" },
+      { gradient: "linear-gradient(135deg, #006994 0%, #00b4d8 60%, #90e0ef 100%)", label: "Infinity Pool" },
+      { gradient: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)", label: "Ocean Suite" },
+      { gradient: "linear-gradient(135deg, #4a0e8f 0%, #7b2d8b 60%, #c879d4 100%)", label: "Spa & Wellness" },
+      { gradient: "linear-gradient(135deg, #b8860b 0%, #d4a017 60%, #ffd700 100%)", label: "Fine Dining" },
+    ],
+    amenities: [
+      { emoji: "🏊", label: "Infinity Pool" },
+      { emoji: "🏖️", label: "Private Beach" },
+      { emoji: "🍽️", label: "Fine Dining" },
+      { emoji: "💆", label: "Luxury Spa" },
+      { emoji: "🏋️", label: "Fitness Center" },
+      { emoji: "🛜", label: "Free WiFi" },
+      { emoji: "🚗", label: "Valet Parking" },
+      { emoji: "🍳", label: "Room Service 24/7" },
+      { emoji: "🏃", label: "24h Concierge" },
+      { emoji: "🛁", label: "Jacuzzi" },
+      { emoji: "🍸", label: "Sky Bar & Lounge" },
+      { emoji: "🌿", label: "Beach Club" },
+    ],
+    rooms: [
+      {
+        id: "deluxe-ocean",
+        name: "Deluxe Ocean Room",
+        room_type: "deluxe",
+        bedType: "1 King Bed",
+        sizeM2: 42,
+        maxGuests: 2,
+        basePrice: 500,
+        features: ["Ocean View", "Private Balcony", "Mini Bar", "Rain Shower", "Pillow Menu"],
+        quantity: 4,
+      },
+      {
+        id: "premier-suite",
+        name: "Premier Ocean Suite",
+        room_type: "suite",
+        bedType: "1 King Bed",
+        sizeM2: 75,
+        maxGuests: 3,
+        basePrice: 800,
+        features: ["Separate Living Room", "Panoramic Views", "Butler Service", "Jacuzzi", "Balcony"],
+        quantity: 2,
+      },
+      {
+        id: "royal-penthouse",
+        name: "Royal Penthouse",
+        room_type: "suite",
+        bedType: "1 King + 1 Queen",
+        sizeM2: 150,
+        maxGuests: 4,
+        basePrice: 1250,
+        features: ["Private Plunge Pool", "Wrap-Around Terrace", "Private Chef", "VIP Beach Access", "Helicopter Pad View"],
+        quantity: 1,
+      },
+    ],
+    policies: {
+      checkIn: "3:00 PM",
+      checkOut: "12:00 PM",
+    },
+  }),
+
+  2: buildHotelDetail({
+    id: 2,
+    name: "Skyline Resort & Spa",
+    location: "Downtown Dubai",
+    address: "Mohammed Bin Rashid Blvd, Downtown Dubai, UAE",
+    category: "Urban Luxury",
+    stars: 5,
+    rating: 4.7,
+    reviewCount: 1876,
+    roomsLeft: 1,
+    countdownHours: 2,
+    countdownMinutes: 47,
+    description:
+      "Perched in the heart of Downtown Dubai, Skyline Resort & Spa commands breathtaking views of the Burj Khalifa and the city's glittering skyline. The rooftop pool at 38 floors offers an immersive cityscape experience unlike any other. Sophisticated interiors blend urban energy with understated elegance, making this the preferred choice for discerning business and leisure travellers.",
+    gallery: [
+      { gradient: "linear-gradient(135deg, #373b44 0%, #4286f4 100%)", label: "Hotel Exterior" },
+      { gradient: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)", label: "Rooftop Pool" },
+      { gradient: "linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%)", label: "Skyline Suite" },
+      { gradient: "linear-gradient(135deg, #134e5e 0%, #71b280 100%)", label: "Fitness & Spa" },
+      { gradient: "linear-gradient(135deg, #355c7d 0%, #6c5b7b 100%)", label: "Rooftop Bar" },
+    ],
+    amenities: [
+      { emoji: "🏊", label: "Rooftop Pool" },
+      { emoji: "🌆", label: "Burj Khalifa Views" },
+      { emoji: "🏋️", label: "Fitness Center" },
+      { emoji: "🍳", label: "Complimentary Breakfast" },
+      { emoji: "🛜", label: "Free WiFi" },
+      { emoji: "🍸", label: "Rooftop Bar" },
+      { emoji: "💆", label: "Spa" },
+      { emoji: "🏃", label: "24h Reception" },
+      { emoji: "🍽️", label: "Sky Restaurant" },
+      { emoji: "🏢", label: "Business Center" },
+      { emoji: "🅿️", label: "Valet Parking" },
+      { emoji: "🧖", label: "Beauty Salon" },
+    ],
+    rooms: [
+      {
+        id: "city-view-room",
+        name: "City View Room",
+        room_type: "standard",
+        bedType: "1 Queen Bed",
+        sizeM2: 35,
+        maxGuests: 2,
+        basePrice: 300,
+        features: ["City View", "Work Desk", "Nespresso Machine", "Rain Shower", "Smart TV"],
+        quantity: 6,
+      },
+      {
+        id: "skyline-suite",
+        name: "Skyline Suite",
+        room_type: "suite",
+        bedType: "1 King Bed",
+        sizeM2: 60,
+        maxGuests: 3,
+        basePrice: 480,
+        features: ["Living Area", "Rooftop Pool Access", "Panoramic City View", "Mini Kitchen", "Bathtub & Shower"],
+        quantity: 2,
+      },
+      {
+        id: "sky-executive-suite",
+        name: "Sky Executive Suite",
+        room_type: "suite",
+        bedType: "1 King Bed",
+        sizeM2: 95,
+        maxGuests: 4,
+        basePrice: 750,
+        features: ["270° Panoramic Views", "Private Terrace", "VIP Lounge Access", "Butler Service", "Dining Room"],
+        quantity: 1,
+      },
+    ],
+    policies: {
+      checkIn: "2:00 PM",
+      checkOut: "11:00 AM",
+    },
+  }),
+
+  3: buildHotelDetail({
+    id: 3,
+    name: "The Grand Palace Hotel",
+    location: "DIFC, Dubai",
+    address: "Gate District, DIFC, Dubai, UAE",
+    category: "Business Luxury",
+    stars: 5,
+    rating: 4.8,
+    reviewCount: 2089,
+    roomsLeft: 3,
+    countdownHours: 4,
+    countdownMinutes: 23,
+    description:
+      "In Dubai's prestigious financial district, The Grand Palace Hotel commands unrivalled authority as the address of choice for global executives and luxury leisure travellers. Neoclassical interiors fused with Arabic artistry create an atmosphere of timeless grandeur. The hotel's award-winning restaurant, The Pavilion, serves cuisine from 14 world regions under one magnificent crystal dome.",
+    gallery: [
+      { gradient: "linear-gradient(135deg, #1a3a4a 0%, #2d6986 100%)", label: "Grand Lobby" },
+      { gradient: "linear-gradient(135deg, #005c97 0%, #363795 100%)", label: "Pool Terrace" },
+      { gradient: "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)", label: "Presidential Suite" },
+      { gradient: "linear-gradient(135deg, #141e30 0%, #243b55 100%)", label: "Business Center" },
+      { gradient: "linear-gradient(135deg, #8b6914 0%, #c9a227 100%)", label: "The Pavilion Restaurant" },
+    ],
+    amenities: [
+      { emoji: "🏊", label: "Temperature-Controlled Pool" },
+      { emoji: "🍽️", label: "Award-Winning Restaurant" },
+      { emoji: "🏢", label: "Business Center" },
+      { emoji: "💆", label: "Spa & Wellness" },
+      { emoji: "🏋️", label: "24h Fitness Center" },
+      { emoji: "🛜", label: "Free WiFi" },
+      { emoji: "🚗", label: "Valet Parking" },
+      { emoji: "🍳", label: "Breakfast Included" },
+      { emoji: "🏃", label: "24h Concierge" },
+      { emoji: "🎭", label: "Event Ballrooms" },
+      { emoji: "🍸", label: "Whiskey & Cigar Lounge" },
+      { emoji: "🌿", label: "Landscaped Gardens" },
+    ],
+    rooms: [
+      {
+        id: "superior-room",
+        name: "Superior Room",
+        room_type: "standard",
+        bedType: "1 King Bed",
+        sizeM2: 38,
+        maxGuests: 2,
+        basePrice: 380,
+        features: ["City View", "Work Desk", "Marble Bathroom", "Tea/Coffee Station", "Smart TV"],
+        quantity: 5,
+      },
+      {
+        id: "grand-suite",
+        name: "Grand Palace Suite",
+        room_type: "suite",
+        bedType: "1 King Bed",
+        sizeM2: 72,
+        maxGuests: 3,
+        basePrice: 610,
+        features: ["Separate Lounge", "Pool View", "Butler Service", "Dining Area", "Dual Marble Bathrooms"],
+        quantity: 2,
+      },
+      {
+        id: "presidential-suite",
+        name: "Presidential Suite",
+        room_type: "suite",
+        bedType: "1 King + Living Room",
+        sizeM2: 135,
+        maxGuests: 4,
+        basePrice: 960,
+        features: ["Private Dining Room", "Grand Piano", "VIP Entrance", "City Panorama", "Personal Butler"],
+        quantity: 1,
+      },
+    ],
+    policies: {
+      checkIn: "3:00 PM",
+      checkOut: "12:00 PM",
+    },
+  }),
+
+  4: buildHotelDetail({
+    id: 4,
+    name: "Desert Oasis Retreat",
+    location: "Al Barsha, Dubai",
+    address: "Al Barsha South, Dubai, UAE",
+    category: "Desert Resort",
+    stars: 5,
+    rating: 4.5,
+    reviewCount: 876,
+    roomsLeft: 4,
+    countdownHours: 6,
+    countdownMinutes: 12,
+    description:
+      "An authentic Arabian escape where golden sand dunes meet modern luxury. Desert Oasis Retreat offers immersive cultural experiences — from sunrise camel treks to private falconry shows — all steps from your private pool villa. As dusk paints the desert sky in crimson and gold, our outdoor fire pits and traditional majlis create evenings of unforgettable magic.",
+    gallery: [
+      { gradient: "linear-gradient(135deg, #c79832 0%, #f7971e 60%, #ffd200 100%)", label: "Desert Oasis View" },
+      { gradient: "linear-gradient(135deg, #134e5e 0%, #71b280 100%)", label: "Garden Pool" },
+      { gradient: "linear-gradient(135deg, #92400e 0%, #d97706 100%)", label: "Desert Villa" },
+      { gradient: "linear-gradient(135deg, #7c2d12 0%, #c05621 100%)", label: "Spa Pavilion" },
+      { gradient: "linear-gradient(135deg, #b91c1c 0%, #f59e0b 60%, #fde68a 100%)", label: "Sunset Terrace" },
+    ],
+    amenities: [
+      { emoji: "🏊", label: "Oasis Pool" },
+      { emoji: "🐪", label: "Camel Trekking" },
+      { emoji: "💆", label: "Desert Spa" },
+      { emoji: "🍽️", label: "Arabic Cuisine" },
+      { emoji: "🛜", label: "Free WiFi" },
+      { emoji: "🦅", label: "Falconry Experience" },
+      { emoji: "🌄", label: "Sunrise Desert Tours" },
+      { emoji: "🍳", label: "Complimentary Breakfast" },
+      { emoji: "🔥", label: "Evening Fire Pits" },
+      { emoji: "🎭", label: "Cultural Performances" },
+      { emoji: "🍸", label: "Dune Bar" },
+      { emoji: "🌿", label: "Meditation Garden" },
+    ],
+    rooms: [
+      {
+        id: "desert-room",
+        name: "Desert View Room",
+        room_type: "standard",
+        bedType: "1 King Bed",
+        sizeM2: 40,
+        maxGuests: 2,
+        basePrice: 260,
+        features: ["Desert View", "Private Terrace", "Mini Bar", "Arabian Decor", "Outdoor Shower"],
+        quantity: 6,
+      },
+      {
+        id: "oasis-suite",
+        name: "Oasis Suite",
+        room_type: "suite",
+        bedType: "1 King Bed",
+        sizeM2: 68,
+        maxGuests: 3,
+        basePrice: 420,
+        features: ["Private Plunge Pool", "Majlis Lounge", "Butler Service", "Dune Views", "Outdoor Bathtub"],
+        quantity: 3,
+      },
+      {
+        id: "royal-desert-villa",
+        name: "Royal Desert Villa",
+        room_type: "suite",
+        bedType: "2 King Beds",
+        sizeM2: 120,
+        maxGuests: 4,
+        basePrice: 650,
+        features: ["Private Pool", "Personal Chef", "360° Desert Views", "Bonfire Setup", "Quad Bike Experience"],
+        quantity: 1,
+      },
+    ],
+    policies: {
+      checkIn: "4:00 PM",
+      checkOut: "11:00 AM",
+    },
+  }),
+
+  5: buildHotelDetail({
+    id: 5,
+    name: "Burj Al Suites",
+    location: "Business Bay, Dubai",
+    address: "Al Asayel St, Business Bay, Dubai, UAE",
+    category: "Ultra Luxury",
+    stars: 5,
+    rating: 4.9,
+    reviewCount: 3102,
+    roomsLeft: 2,
+    countdownHours: 5,
+    countdownMinutes: 38,
+    description:
+      "Soaring above the Business Bay canal, Burj Al Suites represents the pinnacle of Dubai's contemporary luxury scene. All-suite accommodation ensures generous living spaces for every guest, while floor-to-ceiling windows frame cinematic views of the canal and city skyline. The rooftop infinity pool, suspended 60 floors above ground, offers a gravity-defying perspective over one of the world's most dynamic cities.",
+    gallery: [
+      { gradient: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)", label: "Burj Al Suites Tower" },
+      { gradient: "linear-gradient(135deg, #006994 0%, #00b4d8 100%)", label: "Rooftop Infinity Pool" },
+      { gradient: "linear-gradient(135deg, #0f0c29 0%, #302b63 100%)", label: "Canal View Suite" },
+      { gradient: "linear-gradient(135deg, #2d0036 0%, #4a1550 100%)", label: "Luxury Spa" },
+      { gradient: "linear-gradient(135deg, #7d5a00 0%, #d4a017 100%)", label: "Signature Restaurant" },
+    ],
+    amenities: [
+      { emoji: "🏊", label: "Rooftop Infinity Pool" },
+      { emoji: "🌊", label: "Canal Views" },
+      { emoji: "💆", label: "Signature Spa" },
+      { emoji: "🏋️", label: "Fitness Center" },
+      { emoji: "🍽️", label: "Signature Restaurant" },
+      { emoji: "🛜", label: "Free WiFi" },
+      { emoji: "🚗", label: "Valet Parking" },
+      { emoji: "🍳", label: "Room Service 24/7" },
+      { emoji: "🏃", label: "24h Butler Service" },
+      { emoji: "🏖️", label: "Private Beach Club" },
+      { emoji: "🍸", label: "Pool Bar" },
+      { emoji: "🛁", label: "Infinity Bathtub" },
+    ],
+    rooms: [
+      {
+        id: "canal-suite",
+        name: "Canal View Suite",
+        room_type: "deluxe",
+        bedType: "1 King Bed",
+        sizeM2: 55,
+        maxGuests: 2,
+        basePrice: 450,
+        features: ["Canal View", "Living Area", "Infinity Bathtub", "Espresso Bar", "Balcony"],
+        quantity: 4,
+      },
+      {
+        id: "sky-suite",
+        name: "Sky Panorama Suite",
+        room_type: "suite",
+        bedType: "1 King Bed",
+        sizeM2: 85,
+        maxGuests: 3,
+        basePrice: 720,
+        features: ["360° Skyline Views", "Private Plunge Pool", "Butler Service", "Dining Area", "Smart Home System"],
+        quantity: 2,
+      },
+      {
+        id: "burj-penthouse",
+        name: "Burj Penthouse",
+        room_type: "suite",
+        bedType: "2 King Beds",
+        sizeM2: 200,
+        maxGuests: 4,
+        basePrice: 1130,
+        features: ["Entire Top Floor", "Private Pool & Terrace", "Personal Chef", "Cinema Room", "Helipad Access"],
+        quantity: 1,
+      },
+    ],
+    policies: {
+      checkIn: "3:00 PM",
+      checkOut: "12:00 PM",
+    },
+  }),
+
+  6: buildHotelDetail({
+    id: 6,
+    name: "Ocean View Stay",
+    location: "JBR Beach, Dubai",
+    address: "Jumeirah Beach Residence, The Walk, Dubai, UAE",
+    category: "Beachfront",
+    stars: 4,
+    rating: 4.6,
+    reviewCount: 1203,
+    roomsLeft: 5,
+    countdownHours: 8,
+    countdownMinutes: 55,
+    description:
+      "Waking up to the sound of waves at Ocean View Stay is a daily luxury. Positioned directly on Jumeirah Beach Residence's golden stretch, our property offers effortless access to the beach, The Walk's vibrant promenade, and Dubai Marina. Bright, airy rooms with warm-toned décor and sea-view terraces make this the ultimate coastal retreat in Dubai.",
+    gallery: [
+      { gradient: "linear-gradient(135deg, #134e5e 0%, #71b280 100%)", label: "Beachfront Property" },
+      { gradient: "linear-gradient(135deg, #006994 0%, #48cae4 100%)", label: "Private Beach" },
+      { gradient: "linear-gradient(135deg, #1d3557 0%, #457b9d 100%)", label: "Ocean Suite" },
+      { gradient: "linear-gradient(135deg, #2d6a4f 0%, #74c69d 100%)", label: "Pool & Gardens" },
+      { gradient: "linear-gradient(135deg, #f4a261 0%, #e76f51 100%)", label: "Sunset Terrace" },
+    ],
+    amenities: [
+      { emoji: "🏖️", label: "Private Beach" },
+      { emoji: "🏊", label: "Outdoor Pool" },
+      { emoji: "🍽️", label: "Beachfront Restaurant" },
+      { emoji: "🏄", label: "Water Sports" },
+      { emoji: "🛜", label: "Free WiFi" },
+      { emoji: "🍳", label: "Complimentary Breakfast" },
+      { emoji: "🍸", label: "Beach Bar" },
+      { emoji: "🏃", label: "24h Reception" },
+      { emoji: "💆", label: "Poolside Spa" },
+      { emoji: "🧖", label: "Beach Service" },
+      { emoji: "🅿️", label: "Free Parking" },
+      { emoji: "🌊", label: "Sea View Rooms" },
+    ],
+    rooms: [
+      {
+        id: "garden-view-room",
+        name: "Garden View Room",
+        room_type: "standard",
+        bedType: "1 Queen Bed",
+        sizeM2: 30,
+        maxGuests: 2,
+        basePrice: 180,
+        features: ["Garden View", "Balcony", "Mini Fridge", "Shower", "Beach Access"],
+        quantity: 5,
+      },
+      {
+        id: "ocean-room",
+        name: "Ocean View Room",
+        room_type: "deluxe",
+        bedType: "1 King Bed",
+        sizeM2: 45,
+        maxGuests: 2,
+        basePrice: 290,
+        features: ["Direct Sea View", "Sea-Facing Balcony", "Bathtub & Shower", "Minibar", "Smart TV"],
+        quantity: 3,
+      },
+      {
+        id: "beachfront-suite",
+        name: "Beachfront Suite",
+        room_type: "suite",
+        bedType: "1 King Bed",
+        sizeM2: 72,
+        maxGuests: 4,
+        basePrice: 450,
+        features: ["Private Beach Access", "Wrap-Around Terrace", "Living Room", "Outdoor Shower", "Butler Service"],
+        quantity: 2,
+      },
+    ],
+    policies: {
+      checkIn: "3:00 PM",
+      checkOut: "11:00 AM",
+    },
+  }),
+
+  7: buildHotelDetail({
+    id: 7,
+    name: "Royal Palm Hotel",
+    location: "Dubai Marina",
+    address: "Marina Walk, Dubai Marina, UAE",
+    category: "Luxury Waterfront",
+    stars: 5,
+    rating: 4.8,
+    reviewCount: 2341,
+    roomsLeft: 3,
+    countdownHours: 11,
+    countdownMinutes: 20,
+    description:
+      "Nestled along the sparkling Dubai Marina waterfront, Royal Palm Hotel combines sophisticated design with an unbeatable location. The hotel's marina-side pool terrace and rooftop lounge offer mesmerising views of superyachts and the city's iconic twin towers. Steps from world-class dining and retail at Marina Walk, this is the quintessential Dubai Marina experience.",
+    gallery: [
+      { gradient: "linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)", label: "Marina Waterfront" },
+      { gradient: "linear-gradient(135deg, #005c97 0%, #363795 100%)", label: "Marina View Pool" },
+      { gradient: "linear-gradient(135deg, #141e30 0%, #243b55 100%)", label: "Palm Suite" },
+      { gradient: "linear-gradient(135deg, #373b44 0%, #4286f4 100%)", label: "Fitness Center" },
+      { gradient: "linear-gradient(135deg, #8b6914 0%, #c9a227 100%)", label: "Royal Restaurant" },
+    ],
+    amenities: [
+      { emoji: "🏊", label: "Marina View Pool" },
+      { emoji: "⛵", label: "Marina Access" },
+      { emoji: "🏋️", label: "Fitness Center" },
+      { emoji: "🍳", label: "Complimentary Breakfast" },
+      { emoji: "🛜", label: "Free WiFi" },
+      { emoji: "🍽️", label: "Waterfront Restaurant" },
+      { emoji: "🍸", label: "Rooftop Lounge" },
+      { emoji: "🏃", label: "24h Concierge" },
+      { emoji: "💆", label: "Wellness Center" },
+      { emoji: "🅿️", label: "Valet Parking" },
+      { emoji: "🌊", label: "Marina Promenade" },
+      { emoji: "🚗", label: "Yacht Charter Desk" },
+    ],
+    rooms: [
+      {
+        id: "marina-room",
+        name: "Marina View Room",
+        room_type: "standard",
+        bedType: "1 King Bed",
+        sizeM2: 38,
+        maxGuests: 2,
+        basePrice: 220,
+        features: ["Marina Views", "Balcony", "Mini Bar", "Work Desk", "Rainfall Shower"],
+        quantity: 5,
+      },
+      {
+        id: "palm-suite",
+        name: "Royal Palm Suite",
+        room_type: "suite",
+        bedType: "1 King Bed",
+        sizeM2: 62,
+        maxGuests: 3,
+        basePrice: 350,
+        features: ["Panoramic Marina View", "Living Room", "Butler Service", "Jacuzzi", "Dining Area"],
+        quantity: 2,
+      },
+      {
+        id: "royal-penthouse-7",
+        name: "Royal Penthouse",
+        room_type: "suite",
+        bedType: "2 King Beds",
+        sizeM2: 110,
+        maxGuests: 4,
+        basePrice: 550,
+        features: ["360° Marina & City Views", "Private Terrace", "Plunge Pool", "Private Chef", "VIP Lounge Access"],
+        quantity: 1,
+      },
+    ],
+    policies: {
+      checkIn: "3:00 PM",
+      checkOut: "12:00 PM",
+    },
+  }),
+
+  8: buildHotelDetail({
+    id: 8,
+    name: "Marina Bay Suites",
+    location: "Dubai Marina",
+    address: "Al Marsa St, Dubai Marina, UAE",
+    category: "Marina View",
+    stars: 4,
+    rating: 4.4,
+    reviewCount: 987,
+    roomsLeft: 7,
+    countdownHours: 14,
+    countdownMinutes: 5,
+    description:
+      "Marina Bay Suites delivers excellent value in one of Dubai's most sought-after neighbourhoods. Modern, well-appointed rooms with marina vistas serve as the perfect base for exploring the city. The hotel's rooftop pool and on-site restaurant strike the ideal balance between comfort and convenience, ideal for both weekend getaways and extended stays.",
+    gallery: [
+      { gradient: "linear-gradient(135deg, #2980b9 0%, #2c3e50 100%)", label: "Bay Suites Building" },
+      { gradient: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)", label: "Rooftop Pool" },
+      { gradient: "linear-gradient(135deg, #3a7bd5 0%, #3a6073 100%)", label: "Marina Suite" },
+      { gradient: "linear-gradient(135deg, #134e5e 0%, #71b280 100%)", label: "Restaurant & Terrace" },
+      { gradient: "linear-gradient(135deg, #16222a 0%, #3a6073 100%)", label: "Marina Night View" },
+    ],
+    amenities: [
+      { emoji: "🏊", label: "Rooftop Pool" },
+      { emoji: "🌊", label: "Marina Views" },
+      { emoji: "🍽️", label: "On-Site Restaurant" },
+      { emoji: "🏋️", label: "Fitness Center" },
+      { emoji: "🛜", label: "Free WiFi" },
+      { emoji: "🍸", label: "Lobby Bar" },
+      { emoji: "🍳", label: "Breakfast Available" },
+      { emoji: "🏃", label: "24h Reception" },
+      { emoji: "🅿️", label: "Free Parking" },
+      { emoji: "🚌", label: "Marina Shuttle" },
+      { emoji: "💼", label: "Business Facilities" },
+      { emoji: "🌿", label: "Garden Terrace" },
+    ],
+    rooms: [
+      {
+        id: "standard-bay",
+        name: "Standard Bay Room",
+        room_type: "standard",
+        bedType: "1 Queen Bed",
+        sizeM2: 28,
+        maxGuests: 2,
+        basePrice: 150,
+        features: ["City View", "Work Desk", "Mini Fridge", "Smart TV", "Free Parking"],
+        quantity: 6,
+      },
+      {
+        id: "marina-view-suite",
+        name: "Marina View Suite",
+        room_type: "deluxe",
+        bedType: "1 King Bed",
+        sizeM2: 50,
+        maxGuests: 3,
+        basePrice: 240,
+        features: ["Marina Panorama", "Balcony", "Living Area", "Bathtub", "Pool Access Priority"],
+        quantity: 3,
+      },
+      {
+        id: "premium-marina-suite",
+        name: "Premium Marina Suite",
+        room_type: "suite",
+        bedType: "1 King Bed",
+        sizeM2: 78,
+        maxGuests: 4,
+        basePrice: 375,
+        features: ["Full Marina View", "Dining Area", "Walk-In Wardrobe", "Luxury Bathroom", "Concierge Service"],
+        quantity: 2,
+      },
+    ],
+    policies: {
+      checkIn: "2:00 PM",
+      checkOut: "11:00 AM",
+    },
+  }),
+
+  9: buildHotelDetail({
+    id: 9,
+    name: "Heritage House Hotel",
+    location: "Deira, Dubai",
+    address: "Al Fahidi Historical Neighbourhood, Deira, Dubai, UAE",
+    category: "Boutique",
+    stars: 3,
+    rating: 4.2,
+    reviewCount: 654,
+    roomsLeft: 9,
+    countdownHours: 18,
+    countdownMinutes: 30,
+    description:
+      "Discover authentic Dubai at Heritage House Hotel, a lovingly restored wind-tower mansion in the historic Al Fahidi quarter. Original coral-and-gypsum walls, traditional majlis seating, and courtyard fountains transport guests to another era — while modern comforts ensure a thoroughly enjoyable stay. Steps from Dubai Museum, the Gold Souk, and the Abra water taxis, this boutique gem is perfect for culturally curious travellers.",
+    gallery: [
+      { gradient: "linear-gradient(135deg, #614385 0%, #516395 100%)", label: "Heritage Façade" },
+      { gradient: "linear-gradient(135deg, #4a1942 0%, #7b2d8b 100%)", label: "Courtyard Garden" },
+      { gradient: "linear-gradient(135deg, #2d3561 0%, #c05ab2 100%)", label: "Heritage Room" },
+      { gradient: "linear-gradient(135deg, #8b6914 0%, #c9a227 100%)", label: "Moroccan Restaurant" },
+      { gradient: "linear-gradient(135deg, #3d1766 0%, #6a4c93 100%)", label: "Rooftop Terrace" },
+    ],
+    amenities: [
+      { emoji: "🌿", label: "Courtyard Garden" },
+      { emoji: "🍽️", label: "Moroccan Restaurant" },
+      { emoji: "🛜", label: "Free WiFi" },
+      { emoji: "🏛️", label: "Museum Proximity" },
+      { emoji: "🏃", label: "24h Reception" },
+      { emoji: "🎭", label: "Cultural Tours" },
+      { emoji: "🎨", label: "Art Gallery" },
+      { emoji: "📚", label: "Library & Reading Room" },
+      { emoji: "🚤", label: "Abra Taxi Access" },
+      { emoji: "🏢", label: "Business Facilities" },
+      { emoji: "🍳", label: "Traditional Breakfast" },
+      { emoji: "🌙", label: "Rooftop Terrace" },
+    ],
+    rooms: [
+      {
+        id: "classic-room",
+        name: "Classic Heritage Room",
+        room_type: "standard",
+        bedType: "1 Double Bed",
+        sizeM2: 22,
+        maxGuests: 2,
+        basePrice: 120,
+        features: ["Courtyard View", "Traditional Décor", "Air Conditioning", "WiFi", "Morning Tea Service"],
+        quantity: 6,
+      },
+      {
+        id: "heritage-suite",
+        name: "Heritage Suite",
+        room_type: "deluxe",
+        bedType: "1 King Bed",
+        sizeM2: 40,
+        maxGuests: 2,
+        basePrice: 190,
+        features: ["Majlis Seating Area", "Wind Tower View", "Antique Furnishings", "Rainfall Shower", "Mini Bar"],
+        quantity: 3,
+      },
+      {
+        id: "wind-tower-deluxe",
+        name: "Wind Tower Deluxe Suite",
+        room_type: "suite",
+        bedType: "1 King Bed",
+        sizeM2: 58,
+        maxGuests: 3,
+        basePrice: 300,
+        features: ["Private Rooftop Access", "Panoramic Old Dubai Views", "Living Room", "Clawfoot Bathtub", "Butler Breakfast"],
+        quantity: 1,
+      },
+    ],
+    policies: {
+      checkIn: "2:00 PM",
+      checkOut: "11:00 AM",
+    },
+  }),
+
+  10: buildHotelDetail({
+    id: 10,
+    name: "Palm Garden Resort",
+    location: "Jumeirah, Dubai",
+    address: "Jumeirah Beach Road, Jumeirah, Dubai, UAE",
+    category: "Garden Resort",
+    stars: 4,
+    rating: 4.5,
+    reviewCount: 1456,
+    roomsLeft: 6,
+    countdownHours: 10,
+    countdownMinutes: 42,
+    description:
+      "A lush tropical sanctuary in the heart of Jumeirah, Palm Garden Resort's three acres of manicured gardens, cascading water features, and fragrant jasmine pathways create a tranquil haven from the city's energy. Thoughtfully designed rooms open directly onto garden terraces, while the resort's organic spa uses locally sourced botanicals for deeply restorative treatments. Steps from the beach and Jumeirah's finest boutiques.",
+    gallery: [
+      { gradient: "linear-gradient(135deg, #1d6348 0%, #57b87a 100%)", label: "Resort Gardens" },
+      { gradient: "linear-gradient(135deg, #2d6a4f 0%, #74c69d 100%)", label: "Garden Pool" },
+      { gradient: "linear-gradient(135deg, #134e5e 0%, #71b280 100%)", label: "Palm Suite" },
+      { gradient: "linear-gradient(135deg, #1a3a2a 0%, #2d6748 100%)", label: "Yoga Pavilion" },
+      { gradient: "linear-gradient(135deg, #4a0e8f 0%, #7b2d8b 100%)", label: "Botanic Spa" },
+    ],
+    amenities: [
+      { emoji: "🌿", label: "3-Acre Gardens" },
+      { emoji: "🏊", label: "Garden Pool" },
+      { emoji: "💆", label: "Botanic Spa" },
+      { emoji: "🍳", label: "Complimentary Breakfast" },
+      { emoji: "🛜", label: "Free WiFi" },
+      { emoji: "🧘", label: "Daily Yoga Classes" },
+      { emoji: "🍽️", label: "Garden Restaurant" },
+      { emoji: "🍸", label: "Pool Bar" },
+      { emoji: "🏃", label: "Nature Walking Trails" },
+      { emoji: "🌸", label: "Flower Garden Tours" },
+      { emoji: "🅿️", label: "Free Parking" },
+      { emoji: "🏖️", label: "Beach Shuttle" },
+    ],
+    rooms: [
+      {
+        id: "garden-standard",
+        name: "Garden View Room",
+        room_type: "standard",
+        bedType: "1 Queen Bed",
+        sizeM2: 35,
+        maxGuests: 2,
+        basePrice: 200,
+        features: ["Garden Terrace", "Pool Access", "Organic Toiletries", "Mini Bar", "Botanical Decor"],
+        quantity: 5,
+      },
+      {
+        id: "palm-suite-10",
+        name: "Palm Garden Suite",
+        room_type: "suite",
+        bedType: "1 King Bed",
+        sizeM2: 58,
+        maxGuests: 3,
+        basePrice: 320,
+        features: ["Private Garden", "Outdoor Bathtub", "Spa Credits Included", "Seating Pavilion", "Butler Breakfast"],
+        quantity: 2,
+      },
+      {
+        id: "garden-villa",
+        name: "Garden Villa",
+        room_type: "suite",
+        bedType: "2 King Beds",
+        sizeM2: 95,
+        maxGuests: 4,
+        basePrice: 500,
+        features: ["Private Garden & Pool", "Outdoor Living Room", "Full Kitchen", "Daily Spa Treatment", "Yoga Mat & Props"],
+        quantity: 1,
+      },
+    ],
+    policies: {
+      checkIn: "3:00 PM",
+      checkOut: "11:00 AM",
+    },
+  }),
+};

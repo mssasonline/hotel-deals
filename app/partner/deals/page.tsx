@@ -1,0 +1,677 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import {
+  getMyDeals,
+  getMyRooms,
+  createDeal,
+  updateDealStatus,
+  deleteDeal,
+  exportDealsCSV,
+  importDealsCSV,
+  updateRoomQuantity,
+  type PartnerDeal,
+  type DealRoom,
+  type DealStatus,
+  type CreateDealData,
+} from './actions';
+import AEDAmount from '@/app/partner/components/AEDAmount';
+import StatusBadge from '@/app/admin/components/StatusBadge';
+
+const STATUS_FILTERS: Array<{ label: string; value: DealStatus | 'all' }> = [
+  { label: 'All',    value: 'all'    },
+  { label: 'Active', value: 'active' },
+  { label: 'Paused', value: 'paused' },
+  { label: 'Ended',  value: 'ended'  },
+];
+
+type Action = 'activate' | 'pause' | 'end';
+const ACTION_STATUS: Record<Action, DealStatus> = {
+  activate: 'active',
+  pause:    'paused',
+  end:      'ended',
+};
+
+function calcDiscount(base: number, deal: number): number {
+  if (!base || base <= 0) return 0;
+  return Math.max(0, Math.round((1 - deal / base) * 100));
+}
+
+// ── Availability Badge ────────────────────────────────────────────────────────
+
+function AvailabilityBadge({
+  available,
+  total,
+  onClick,
+}: {
+  available: number;
+  total: number;
+  onClick?: () => void;
+}) {
+  const pct = total > 0 ? available / total : 0;
+  const color =
+    pct > 0.5 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    : pct > 0   ? 'bg-amber-50 text-amber-700 border-amber-200'
+    :             'bg-red-50 text-red-600 border-red-200';
+
+  return (
+    <button
+      onClick={onClick}
+      title="Click to edit room inventory"
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-xs font-semibold transition-colors hover:brightness-95 ${color}`}
+    >
+      <span>{available}</span>
+      <span className="opacity-50">/</span>
+      <span>{total}</span>
+      <svg className="w-3 h-3 ml-0.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+      </svg>
+    </button>
+  );
+}
+
+// ── Edit Inventory Modal ───────────────────────────────────────────────────────
+
+interface EditInventoryModalProps {
+  room: DealRoom;
+  onClose: () => void;
+  onSaved: (roomId: number, newTotal: number, newAvailable: number) => void;
+}
+
+function EditInventoryModal({ room, onClose, onSaved }: EditInventoryModalProps) {
+  const [total, setTotal] = useState(String(room.quantity_total));
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const n = Number(total);
+    if (!n || n < 1) { setErr('Must be at least 1'); return; }
+    setSaving(true);
+    setErr('');
+    const result = await updateRoomQuantity(room.id, n);
+    setSaving(false);
+    if (result.error) { setErr(result.error); return; }
+    onSaved(room.id, n, result.available);
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100">
+          <div>
+            <h2 className="text-base font-bold text-gray-900">Edit Room Inventory</h2>
+            <p className="text-xs text-gray-400 mt-0.5">{room.name} · {room.hotel_name}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-gray-50 rounded-xl p-3 text-center">
+              <p className="text-xs text-gray-400 mb-1">Currently Available</p>
+              <p className="text-2xl font-bold text-gray-700">{room.quantity_available}</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">Auto-calculated</p>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-3 text-center">
+              <p className="text-xs text-gray-400 mb-1">Total Inventory</p>
+              <p className="text-2xl font-bold text-gray-700">{room.quantity_total}</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">You control this</p>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">New Total Inventory</label>
+            <input
+              type="number"
+              min="1"
+              value={total}
+              onChange={(e) => setTotal(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+              required
+            />
+            <p className="text-xs text-gray-400 mt-1">Available rooms will be recalculated from actual bookings after saving.</p>
+          </div>
+          {err && <p className="text-red-500 text-xs">{err}</p>}
+          <div className="flex gap-3 pt-1">
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" disabled={saving} className="flex-1 px-4 py-2.5 rounded-xl bg-brand-blue text-white text-sm font-semibold hover:bg-brand-blue-dark transition-colors disabled:opacity-60">
+              {saving ? 'Saving…' : 'Update'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Add Deal Modal ─────────────────────────────────────────────────────────────
+
+interface AddDealModalProps {
+  rooms: DealRoom[];
+  onClose: () => void;
+  onCreated: () => void;
+}
+
+function AddDealModal({ rooms, onClose, onCreated }: AddDealModalProps) {
+  const today = new Date().toISOString().split('T')[0];
+  const [roomId,     setRoomId]     = useState('');
+  const [dealPrice,  setDealPrice]  = useState('');
+  const [title,      setTitle]      = useState('');
+  const [startDate,  setStartDate]  = useState(today);
+  const [endDate,    setEndDate]    = useState('');
+  const [saving,     setSaving]     = useState(false);
+  const [err,        setErr]        = useState('');
+
+  const selectedRoom = rooms.find((r) => String(r.id) === roomId);
+  const basePrice    = selectedRoom?.base_price ?? 0;
+  const discountPct  = dealPrice && basePrice ? calcDiscount(basePrice, Number(dealPrice)) : 0;
+
+  // Group rooms by hotel
+  const grouped: Record<string, DealRoom[]> = {};
+  for (const r of rooms) {
+    (grouped[r.hotel_name] = grouped[r.hotel_name] ?? []).push(r);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!roomId || !dealPrice || !startDate || !endDate) {
+      setErr('Please fill in all required fields.');
+      return;
+    }
+    if (endDate < startDate) {
+      setErr('End date must be on or after start date.');
+      return;
+    }
+    if (Number(dealPrice) <= 0) {
+      setErr('Deal price must be greater than 0.');
+      return;
+    }
+
+    setSaving(true);
+    setErr('');
+
+    const data: CreateDealData = {
+      hotel_id:   selectedRoom!.hotel_id,
+      room_id:    Number(roomId),
+      deal_price: Number(dealPrice),
+      title:      title.trim() || undefined,
+      start_date: startDate,
+      end_date:   endDate,
+    };
+
+    const result = await createDeal(data);
+    setSaving(false);
+
+    if (result.error) { setErr(result.error); return; }
+    onCreated();
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900">Add Special Deal</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+          {/* Room selector */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">Room *</label>
+            <select
+              value={roomId}
+              onChange={(e) => setRoomId(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+              required
+            >
+              <option value="">Select a room…</option>
+              {Object.entries(grouped).map(([hotelName, hotelRooms]) => (
+                <optgroup key={hotelName} label={hotelName}>
+                  {hotelRooms.map((r) => (
+                    <option key={r.id} value={String(r.id)}>
+                      {r.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          {/* Base price (read-only reference) */}
+          {selectedRoom && (
+            <div className="bg-gray-50 rounded-xl px-3 py-2.5 flex items-center justify-between">
+              <span className="text-xs text-gray-500">Original price</span>
+              <span className="text-sm font-semibold text-gray-700">
+                <AEDAmount amount={basePrice} /> <span className="text-xs text-gray-400">/night</span>
+              </span>
+            </div>
+          )}
+
+          {/* Deal price + live discount */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">Deal Price (AED) *</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min="1"
+                step="0.01"
+                value={dealPrice}
+                onChange={(e) => setDealPrice(e.target.value)}
+                placeholder="e.g. 350"
+                className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+                required
+              />
+              {discountPct > 0 && (
+                <span className="shrink-0 bg-brand-gold text-white text-xs font-bold px-2.5 py-1.5 rounded-lg">
+                  -{discountPct}% OFF
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Title (optional) */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">Deal Label (optional)</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Weekend Flash Sale"
+              maxLength={80}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+            />
+          </div>
+
+          {/* Dates */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Start Date *</label>
+              <input
+                type="date"
+                value={startDate}
+                min={today}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">End Date *</label>
+              <input
+                type="date"
+                value={endDate}
+                min={startDate || today}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+                required
+              />
+            </div>
+          </div>
+
+          {err && <p className="text-red-500 text-xs">{err}</p>}
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 px-4 py-2.5 rounded-xl bg-brand-blue text-white text-sm font-semibold hover:bg-brand-blue-dark transition-colors disabled:opacity-60"
+            >
+              {saving ? 'Saving…' : 'Add Deal'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+
+export default function PartnerDealsPage() {
+  const [deals,         setDeals]         = useState<PartnerDeal[]>([]);
+  const [rooms,         setRooms]         = useState<DealRoom[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [filter,        setFilter]        = useState<DealStatus | 'all'>('all');
+  const [showModal,     setShowModal]     = useState(false);
+  const [editingRoom,   setEditingRoom]   = useState<DealRoom | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [importMsg,     setImportMsg]     = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const roomsMap = Object.fromEntries(rooms.map((r) => [r.id, r]));
+
+  async function load() {
+    setLoading(true);
+    const [d, r] = await Promise.all([getMyDeals(), getMyRooms()]);
+    setDeals(d);
+    setRooms(r);
+    setLoading(false);
+  }
+
+  useEffect(() => { load(); }, []);
+
+  const filtered = filter === 'all' ? deals : deals.filter((d) => d.status === filter);
+
+  const counts = {
+    all:    deals.length,
+    active: deals.filter((d) => d.status === 'active').length,
+    paused: deals.filter((d) => d.status === 'paused').length,
+    ended:  deals.filter((d) => d.status === 'ended').length,
+  };
+
+  function handleInventorySaved(roomId: number, newTotal: number, newAvailable: number) {
+    setRooms((prev) =>
+      prev.map((r) => r.id === roomId ? { ...r, quantity_total: newTotal, quantity_available: newAvailable } : r)
+    );
+  }
+
+  async function handleAction(deal: PartnerDeal, action: Action) {
+    setActionLoading(deal.id);
+    if (action === 'end') {
+      if (!confirm(`End deal for "${deal.room_name}"? This cannot be undone.`)) {
+        setActionLoading(null);
+        return;
+      }
+    }
+    const newStatus = ACTION_STATUS[action];
+    setDeals((prev) => prev.map((d) => d.id === deal.id ? { ...d, status: newStatus } : d));
+    await updateDealStatus(deal.id, newStatus);
+    setActionLoading(null);
+  }
+
+  async function handleDelete(deal: PartnerDeal) {
+    if (!confirm(`Delete deal for "${deal.room_name}"?`)) return;
+    setDeals((prev) => prev.filter((d) => d.id !== deal.id));
+    await deleteDeal(deal.id);
+  }
+
+  async function handleExport() {
+    const csv = await exportDealsCSV();
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `deals_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    setImportMsg('Importing…');
+    const result = await importDealsCSV(text);
+    if (result.errors.length > 0) {
+      setImportMsg(`Imported ${result.imported} row(s). ${result.errors.length} error(s): ${result.errors.slice(0, 3).join('; ')}`);
+    } else {
+      setImportMsg(`Successfully imported ${result.imported} deal(s).`);
+    }
+    await load();
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setTimeout(() => setImportMsg(''), 6000);
+  }
+
+  function getRowActions(deal: PartnerDeal): Action[] {
+    if (deal.status === 'active') return ['pause', 'end'];
+    if (deal.status === 'paused') return ['activate', 'end'];
+    return [];
+  }
+
+  const actionStyles: Record<Action, string> = {
+    activate: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100',
+    pause:    'bg-amber-50 text-amber-700 hover:bg-amber-100',
+    end:      'bg-red-50 text-red-600 hover:bg-red-100',
+  };
+  const actionLabels: Record<Action, string> = { activate: 'Activate', pause: 'Pause', end: 'End' };
+
+  function fmtDate(iso: string) {
+    return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  return (
+    <div className="p-6 lg:p-8 max-w-[1400px]">
+      {/* Page header */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-xs text-gray-400">
+          CSV import format: <code className="font-mono text-gray-600">room_id, hotel_id, deal_price, start_date, end_date, title</code>
+          &nbsp;(header row required, dates as YYYY-MM-DD)
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Import CSV */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={handleImport}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            Import CSV
+          </button>
+
+          {/* Export CSV */}
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Export CSV
+          </button>
+
+          {/* Add Deal */}
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-brand-blue rounded-xl hover:bg-brand-blue-dark transition-colors shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Deal
+          </button>
+        </div>
+      </div>
+
+      {/* Import feedback */}
+      {importMsg && (
+        <div className="mb-4 px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-700">
+          {importMsg}
+        </div>
+      )}
+
+
+      {/* Status tabs */}
+      <div className="flex gap-1 mb-6 bg-white rounded-xl border border-gray-100 p-1 w-fit shadow-sm">
+        {STATUS_FILTERS.map(({ label, value }) => (
+          <button
+            key={value}
+            onClick={() => setFilter(value)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              filter === value
+                ? 'bg-brand-blue text-white shadow-sm'
+                : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+            }`}
+          >
+            {label}
+            <span className={`ml-1.5 text-xs ${filter === value ? 'text-white/70' : 'text-gray-400'}`}>
+              {counts[value]}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <svg className="animate-spin w-8 h-8 text-brand-blue" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16 text-gray-400">
+          <svg className="w-12 h-12 mx-auto mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+          <p className="font-medium text-gray-500">No deals in this category</p>
+          {filter === 'all' && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="mt-4 text-sm text-brand-blue hover:underline font-medium"
+            >
+              + Create your first deal
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/60">
+                  <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Room · Hotel</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Base</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Deal Price</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Discount</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">From</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">To</th>
+                  <th className="text-center px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Availability</th>
+                  <th className="text-center px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Status</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filtered.map((deal) => {
+                  const disc = calcDiscount(deal.base_price, deal.deal_price);
+                  const rowActions = getRowActions(deal);
+                  const roomInfo = roomsMap[deal.room_id];
+                  return (
+                    <tr key={deal.id} className="hover:bg-gray-50/40 transition-colors">
+                      {/* Room + Hotel */}
+                      <td className="px-5 py-3.5">
+                        <p className="font-semibold text-gray-900 truncate max-w-[180px]">{deal.room_name}</p>
+                        <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[180px]">
+                          {deal.hotel_name}
+                          {deal.title && (
+                            <span className="ml-1.5 bg-brand-gold/10 text-brand-gold px-1.5 py-0.5 rounded text-[10px] font-medium">
+                              {deal.title}
+                            </span>
+                          )}
+                        </p>
+                      </td>
+                      {/* Base */}
+                      <td className="px-4 py-3.5 text-right text-gray-400 line-through text-xs">
+                        <AEDAmount amount={deal.base_price} />
+                      </td>
+                      {/* Deal Price */}
+                      <td className="px-4 py-3.5 text-right font-bold text-green-600">
+                        <AEDAmount amount={deal.deal_price} />
+                        <span className="text-xs font-normal text-gray-400">/night</span>
+                      </td>
+                      {/* Discount */}
+                      <td className="px-4 py-3.5 text-right">
+                        {disc > 0 ? (
+                          <span className="bg-brand-gold text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                            -{disc}%
+                          </span>
+                        ) : '—'}
+                      </td>
+                      {/* Dates */}
+                      <td className="px-4 py-3.5 text-gray-600 whitespace-nowrap">{fmtDate(deal.start_date)}</td>
+                      <td className="px-4 py-3.5 text-gray-600 whitespace-nowrap">{fmtDate(deal.end_date)}</td>
+                      {/* Availability */}
+                      <td className="px-4 py-3.5 text-center">
+                        {roomInfo ? (
+                          <AvailabilityBadge
+                            available={roomInfo.quantity_available}
+                            total={roomInfo.quantity_total}
+                            onClick={() => setEditingRoom(roomInfo)}
+                          />
+                        ) : '—'}
+                      </td>
+                      {/* Status */}
+                      <td className="px-4 py-3.5 text-center">
+                        <StatusBadge status={deal.status} variant="deal" />
+                      </td>
+                      {/* Actions */}
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-1.5 justify-end">
+                          {rowActions.map((action) => (
+                            <button
+                              key={action}
+                              disabled={actionLoading === deal.id}
+                              onClick={() => handleAction(deal, action)}
+                              className={`px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 ${actionStyles[action]}`}
+                            >
+                              {actionLabels[action]}
+                            </button>
+                          ))}
+                          {deal.status === 'ended' && (
+                            <button
+                              onClick={() => handleDelete(deal)}
+                              className="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Add Deal Modal */}
+      {showModal && (
+        <AddDealModal
+          rooms={rooms}
+          onClose={() => setShowModal(false)}
+          onCreated={load}
+        />
+      )}
+
+      {/* Edit Inventory Modal */}
+      {editingRoom && (
+        <EditInventoryModal
+          room={editingRoom}
+          onClose={() => setEditingRoom(null)}
+          onSaved={handleInventorySaved}
+        />
+      )}
+    </div>
+  );
+}
