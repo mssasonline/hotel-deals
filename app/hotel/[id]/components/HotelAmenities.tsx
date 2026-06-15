@@ -51,7 +51,7 @@ function AmenityGroup({ title, items }: { title: string; items: string[] }) {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-2">
         {items.map((item, i) => (
           <div key={i} className="flex items-center gap-2.5 bg-gray-50 hover:bg-blue-50 rounded-xl px-3 py-2 transition-colors duration-150">
-            <AmenityIcon label={item} className="w-4 h-4 text-brand-blue shrink-0" />
+            <AmenityIcon label={item} className="w-5 h-5 text-brand-blue shrink-0" />
             <span className="text-gray-700 text-sm leading-snug">{item}</span>
           </div>
         ))}
@@ -88,7 +88,7 @@ export default function HotelAmenities({ amenities }: Props) {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-2">
           {amenities.map((item, i) => (
             <div key={i} className="flex items-center gap-2.5 bg-gray-50 hover:bg-blue-50 rounded-xl px-3 py-2 transition-colors duration-150">
-              <AmenityIcon label={item} className="w-4 h-4 text-brand-blue shrink-0" />
+              <AmenityIcon label={item} className="w-5 h-5 text-brand-blue shrink-0" />
               <span className="text-gray-700 text-sm leading-snug">{item}</span>
             </div>
           ))}

@@ -143,7 +143,7 @@ export default function HotelBookingSection({ hotel }: { hotel: HotelDetail }) {
                   key={amenity.label}
                   className="flex items-center gap-2.5 bg-gray-50 hover:bg-blue-50 rounded-xl px-3 py-2.5 transition-colors duration-150"
                 >
-                  <AmenityIcon label={amenity.label} className="w-4 h-4 text-brand-blue shrink-0" />
+                  <AmenityIcon label={amenity.label} className="w-5 h-5 text-brand-blue shrink-0" />
                   <span className="text-gray-700 text-sm font-medium leading-tight">{amenity.label}</span>
                 </div>
               ))}
