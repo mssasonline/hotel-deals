@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import AmenityIcon from '@/app/components/AmenityIcon';
 
 interface Props {
   amenities: string[];
@@ -38,20 +39,6 @@ function categorize(amenities: string[]) {
   return { hotel, room, food };
 }
 
-function CheckIcon() {
-  return (
-    <svg
-      className="w-4 h-4 text-green-500 shrink-0 mt-0.5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-    </svg>
-  );
-}
-
 function AmenityGroup({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
@@ -61,11 +48,11 @@ function AmenityGroup({ title, items }: { title: string; items: string[] }) {
         {title}
         <span className="flex-1 border-t border-gray-100" />
       </h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-2">
         {items.map((item, i) => (
-          <div key={i} className="flex items-start gap-2 text-sm text-gray-700">
-            <CheckIcon />
-            <span className="leading-snug">{item}</span>
+          <div key={i} className="flex items-center gap-2.5 bg-gray-50 hover:bg-blue-50 rounded-xl px-3 py-2 transition-colors duration-150">
+            <AmenityIcon label={item} className="w-4 h-4 text-brand-blue shrink-0" />
+            <span className="text-gray-700 text-sm leading-snug">{item}</span>
           </div>
         ))}
       </div>
@@ -98,11 +85,11 @@ export default function HotelAmenities({ amenities }: Props) {
         </div>
       ) : (
         /* Flat grid when keywords don't split cleanly */
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-2">
           {amenities.map((item, i) => (
-            <div key={i} className="flex items-start gap-2 text-sm text-gray-700">
-              <CheckIcon />
-              <span className="leading-snug">{item}</span>
+            <div key={i} className="flex items-center gap-2.5 bg-gray-50 hover:bg-blue-50 rounded-xl px-3 py-2 transition-colors duration-150">
+              <AmenityIcon label={item} className="w-4 h-4 text-brand-blue shrink-0" />
+              <span className="text-gray-700 text-sm leading-snug">{item}</span>
             </div>
           ))}
         </div>
