@@ -51,7 +51,7 @@ function AmenityGroup({ title, items }: { title: string; items: string[] }) {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-2">
         {items.map((item, i) => (
           <div key={i} className="flex items-center gap-2.5 bg-gray-50 hover:bg-blue-50 rounded-xl px-3 py-2 transition-colors duration-150">
-            <AmenityIcon label={item} className="w-5 h-5 text-brand-blue shrink-0" />
+            <AmenityIcon label={item} className="w-6 h-6 text-brand-blue shrink-0" />
             <span className="text-gray-700 text-sm leading-snug">{item}</span>
           </div>
         ))}
@@ -71,7 +71,7 @@ export default function HotelAmenities({ amenities }: Props) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
       <h2 className="font-extrabold text-gray-900 text-xl mb-6 flex items-center gap-3">
-        <svg className="w-5 h-5 text-brand-blue shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-6 h-6 text-brand-blue shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
         </svg>
         {t['hotel.amenities']}
@@ -88,7 +88,7 @@ export default function HotelAmenities({ amenities }: Props) {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-2">
           {amenities.map((item, i) => (
             <div key={i} className="flex items-center gap-2.5 bg-gray-50 hover:bg-blue-50 rounded-xl px-3 py-2 transition-colors duration-150">
-              <AmenityIcon label={item} className="w-5 h-5 text-brand-blue shrink-0" />
+              <AmenityIcon label={item} className="w-6 h-6 text-brand-blue shrink-0" />
               <span className="text-gray-700 text-sm leading-snug">{item}</span>
             </div>
           ))}
