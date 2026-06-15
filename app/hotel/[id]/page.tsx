@@ -95,26 +95,25 @@ function parseAmenities(raw: unknown): string[] {
   return [];
 }
 
-// Maps partner-portal amenity keys → display strings with emoji
 const AMENITY_DISPLAY: Record<string, string> = {
-  pool:            '🏊 Swimming Pool',
-  gym:             '🏋️ Gym / Fitness Center',
-  spa:             '💆 Spa & Wellness',
-  restaurant:      '🍽️ Restaurant',
-  free_parking:    '🅿️ Free Parking',
-  airport_shuttle: '🚌 Airport Shuttle',
-  business_center: '💼 Business Center',
-  conference:      '🏛️ Conference Room',
-  free_wifi:       '📶 Free Wi-Fi',
-  room_service:    '🛎️ Room Service',
-  pet_friendly:    '🐾 Pet Friendly',
-  kids_club:       '🧒 Kids Club',
-  beach_access:    '🏖️ Beach Access',
-  golf:            '⛳ Golf Course',
-  bar_lounge:      '🍸 Bar & Lounge',
-  rooftop:         '🌆 Rooftop',
-  valet_parking:   '🚗 Valet Parking',
-  casino:          '🎰 Casino',
+  pool:            'Swimming Pool',
+  gym:             'Gym & Fitness Center',
+  spa:             'Spa & Wellness',
+  restaurant:      'Restaurant',
+  free_parking:    'Free Parking',
+  airport_shuttle: 'Airport Shuttle',
+  business_center: 'Business Center',
+  conference:      'Conference Room',
+  free_wifi:       'Free Wi-Fi',
+  room_service:    'Room Service',
+  pet_friendly:    'Pet Friendly',
+  kids_club:       'Kids Club',
+  beach_access:    'Beach Access',
+  golf:            'Golf Course',
+  bar_lounge:      'Bar & Lounge',
+  rooftop:         'Rooftop',
+  valet_parking:   'Valet Parking',
+  casino:          'Casino',
 };
 
 export default async function HotelPage({ params }: Props) {
@@ -237,7 +236,7 @@ export default async function HotelPage({ params }: Props) {
     <>
       <Header />
 
-      <main className="bg-gray-50 min-h-screen pb-16">
+      <main className="min-h-screen pb-16" style={{ background: '#F8FAFC' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
           {/* ── Breadcrumb ── */}
@@ -295,7 +294,7 @@ export default async function HotelPage({ params }: Props) {
 
               {rating > 0 && (
                 <div className="flex items-center gap-2">
-                  <div className="bg-brand-blue text-white font-extrabold text-base px-2.5 py-1 rounded-xl leading-none">
+                  <div className="text-white font-extrabold text-base px-2.5 py-1 rounded-xl leading-none" style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
                     {rating.toFixed(1)}
                   </div>
                   <div>
@@ -360,13 +359,13 @@ export default async function HotelPage({ params }: Props) {
               <div className="flex flex-wrap items-center gap-2 mb-5">
                 <div className="flex items-center gap-1.5 bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-full">
                   <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                  LIVE
+                  <HotelClientLabel translationKey="sections.live" fallback="LIVE" />
                 </div>
                 <h2 className="font-bold text-gray-900 text-xl sm:text-2xl">
-                  Tonight&apos;s Deals
+                  <HotelClientLabel translationKey="nav.lastMinute" fallback="Tonight's Deals" />
                 </h2>
                 <span className="text-xs text-blue-500 bg-white border border-blue-100 px-2.5 py-1 rounded-full font-semibold">
-                  Track 1 · Automatic
+                  <HotelClientLabel translationKey="sections.trackAutomatic" fallback="Track 1 · Automatic" />
                 </span>
               </div>
               <RoomsGrid
