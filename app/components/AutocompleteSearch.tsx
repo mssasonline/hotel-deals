@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 interface AutocompleteItem {
   type: 'city' | 'hotel' | 'country';
@@ -60,6 +61,7 @@ export default function AutocompleteSearch({
   onEnter,
 }: AutocompleteSearchProps) {
   const router = useRouter();
+  const t = useTranslation();
   const [query, setQuery] = useState(value);
   const [results, setResults] = useState<AutocompleteItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -227,8 +229,12 @@ export default function AutocompleteSearch({
             if (group.length === 0) return null;
             const prevTypes = (['city', 'country', 'hotel'] as const).slice(0, ['city', 'country', 'hotel'].indexOf(type));
             const hasPrev = prevTypes.some(t => results.some(r => r.type === t));
-            const label = type === 'city' ? 'Cities' : type === 'country' ? 'Countries' : 'Hotels';
-            const icon  = type === 'city' ? '📍' : type === 'country' ? '🌍' : '🏨';
+            const label = type === 'city' ? t['search.citiesLabel'] : type === 'country' ? t['search.countriesLabel'] : t['search.hotelsLabel'];
+            const icon  = type === 'city'
+              ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              : type === 'country'
+              ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+              : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18M3 7l9-4 9 4M4 7v14M20 7v14M9 21v-4a3 3 0 016 0v4"/></svg>;
             const badge = type === 'city'
               ? 'bg-blue-100 text-blue-700'
               : type === 'country'
@@ -253,8 +259,8 @@ export default function AutocompleteSearch({
                             globalIdx === activeIndex ? 'bg-blue-50' : 'hover:bg-gray-50'
                           }`}
                         >
-                          <span className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 text-base ${
-                            type === 'city' ? 'bg-blue-100' : type === 'country' ? 'bg-green-100' : 'bg-amber-100'
+                          <span className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 ${
+                            type === 'city' ? 'bg-blue-100 text-blue-600' : type === 'country' ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'
                           }`}>
                             {icon}
                           </span>
@@ -269,7 +275,7 @@ export default function AutocompleteSearch({
                             )}
                           </div>
                           <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${badge}`}>
-                            {type === 'city' ? 'City' : type === 'country' ? 'Country' : 'Hotel'}
+                            {type === 'city' ? t['search.cityLabel'] : type === 'country' ? t['search.countryLabel'] : t['search.hotelLabel']}
                           </span>
                         </button>
                       </li>

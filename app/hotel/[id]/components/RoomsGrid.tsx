@@ -5,6 +5,7 @@ import { getCurrentTier, calcLivePrice, calcActualDiscount, isBookingOpen, type 
 import { getRoomImage } from '@/lib/roomImages';
 import CurrencyAmount from '@/app/components/CurrencyAmount';
 import LiveBookingModal from './LiveBookingModal';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 function useLiveTier(): PriceTier {
   const [tier, setTier] = useState<PriceTier>(() => getCurrentTier());
@@ -63,11 +64,12 @@ export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, a
   const [modalRoom, setModalRoom] = useState<Room | null>(null);
   const tier        = useLiveTier();
   const bookingOpen = useBookingOpen();
+  const t           = useTranslation();
 
   if (rooms.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center text-gray-500">
-        No rooms available for this hotel.
+        {t['hotel.noRoomsAvailable']}
       </div>
     );
   }
@@ -127,7 +129,7 @@ export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, a
                         </span>
                       )}
                       <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
-                        Non-refundable
+                        {t['booking.nonRefundableBadge']}
                       </span>
                     </div>
 
@@ -138,7 +140,7 @@ export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, a
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
                         </svg>
-                        Up to {room.capacity} guests
+                        {t['hotel.upToGuests'].replace('{n}', String(room.capacity))}
                       </span>
                       {room.area_sqm && (
                         <span className="flex items-center gap-1">
@@ -157,8 +159,22 @@ export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, a
                         </span>
                       )}
                       {quantityAvailable !== null && quantityAvailable <= 5 && (
-                        <span className={`font-semibold ${soldOut ? 'text-red-600' : 'text-orange-600'}`}>
-                          {soldOut ? '✕ Sold out tonight' : `⚡ ${quantityAvailable} left tonight`}
+                        <span className={`inline-flex items-center gap-1 font-semibold ${soldOut ? 'text-red-600' : 'text-orange-600'}`}>
+                          {soldOut ? (
+                            <>
+                              <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5} strokeLinecap="round">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                              </svg>
+                              {t['hotel.soldOutTonight']}
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                              </svg>
+                              {t['hotel.leftTonight'].replace('{n}', String(quantityAvailable))}
+                            </>
+                          )}
                         </span>
                       )}
                     </div>
@@ -189,7 +205,7 @@ export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, a
                         <span className="text-xl font-extrabold text-green-600">
                           <CurrencyAmount amount={livePrice} />
                         </span>
-                        <span className="text-xs text-gray-400">/night</span>
+                        <span className="text-xs text-gray-400">{t['price.perNight']}</span>
                       </div>
                     </div>
 
@@ -200,10 +216,11 @@ export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, a
                       className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
                         !bookingOpen || soldOut
                           ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                          : 'bg-brand-gold hover:bg-yellow-500 text-white shadow-sm hover:shadow-md hover:shadow-brand-gold/30'
+                          : 'text-white hover:-translate-y-0.5'
                       }`}
+                      style={!bookingOpen || soldOut ? {} : { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
                     >
-                      {!bookingOpen ? 'تفتح الساعة 12 PM' : soldOut ? 'Sold Out' : 'Book Now'}
+                      {!bookingOpen ? t['hotel.bookingOpensNoon'] : soldOut ? t['booking.soldOutBtn'] : t['hotel.bookNow']}
                     </button>
                   </div>
                 </div>
