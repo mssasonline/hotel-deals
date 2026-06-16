@@ -27,7 +27,7 @@ export default function AboutPage() {
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h2>
             <p className="text-gray-600 leading-relaxed mb-4">
-              We believe great hotel rooms shouldn't require endless searching. SelectedRoom surfaces last-minute deals,
+              We believe great hotel rooms shouldn&apos;t require endless searching. SelectedRoom surfaces last-minute deals,
               flash discounts, and time-sensitive offers so guests can book confidently and partners can fill rooms fast.
             </p>
             <p className="text-gray-600 leading-relaxed">

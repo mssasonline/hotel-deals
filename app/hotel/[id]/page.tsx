@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
@@ -249,9 +250,9 @@ export default async function HotelPage({ params }: Props) {
 
           {/* ── Breadcrumb ── */}
           <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
-            <a href="/" className="hover:text-brand-blue transition-colors">
+            <Link href="/" className="hover:text-brand-blue transition-colors">
               <HotelClientLabel translationKey="hotel.breadcrumbHome" fallback="Home" />
-            </a>
+            </Link>
             <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

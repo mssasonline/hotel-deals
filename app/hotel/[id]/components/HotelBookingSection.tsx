@@ -157,7 +157,7 @@ export default function HotelBookingSection({ hotel }: { hotel: HotelDetail }) {
               Choose Your Room
             </h2>
             <p className="text-gray-500 text-sm mb-5 ml-3">
-              All rooms at tonight's exclusive last-minute rate
+              All rooms at tonight&apos;s exclusive last-minute rate
             </p>
 
             <div className="space-y-4">

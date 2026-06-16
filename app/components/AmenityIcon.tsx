@@ -385,6 +385,5 @@ interface AmenityIconProps {
 }
 
 export default function AmenityIcon({ label, className = 'w-5 h-5' }: AmenityIconProps) {
-  const Icon = resolveIcon(label);
-  return <Icon className={className} />;
+  return resolveIcon(label)({ className });
 }

@@ -258,6 +258,8 @@ export default function HotelBookingPanel({
       ? t['urgency.medium']
       : t['urgency.low'];
 
+  const avgPerNight = pricing?.avgPerNight ?? 0;
+
   // ── Handlers ─────────────────────────────────────────────────
   const handleDatesChange = useCallback((newCheckIn: string, newCheckOut: string) => {
     setCheckIn(newCheckIn);
@@ -330,7 +332,6 @@ export default function HotelBookingPanel({
   const taxes          = pricing?.taxes ?? 0;
   const total          = pricing?.total ?? 0;
   const discountPercent = tonightRate ? calcActualDiscount(tonightPublished, pricePerNight) : 0;
-  const avgPerNight    = pricing?.avgPerNight ?? 0;
 
   // ── Render ───────────────────────────────────────────────────
   return (

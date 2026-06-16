@@ -24,6 +24,9 @@ function StarIcon() {
 }
 
 export default function BookingSummaryCard({ hotel, room, checkIn, checkOut, guests }: Props) {
+  const language = useAppSettingsStore((s) => s.language);
+  const t = getTranslations(language);
+
   if (!hotel) return null;
 
   const pricing = room ? calcRoomPrice(room.basePrice, room.pricePerNight) : null;
@@ -33,9 +36,6 @@ export default function BookingSummaryCard({ hotel, room, checkIn, checkOut, gue
   const discount = originalPrice - discountedPrice;
   const taxes = Math.round(discountedPrice * 0.15);
   const total = discountedPrice + taxes;
-
-  const language = useAppSettingsStore((s) => s.language);
-  const t = getTranslations(language);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">

@@ -170,7 +170,7 @@ export default function NotificationBell({ variant = 'dark' }: { variant?: 'dark
                   </svg>
                 </div>
                 <p className="text-gray-500 text-sm font-medium">No notifications yet</p>
-                <p className="text-gray-400 text-xs mt-1">We'll notify you about your bookings</p>
+                <p className="text-gray-400 text-xs mt-1">We&apos;ll notify you about your bookings</p>
               </div>
             ) : (
               notifications.map((n) => (

@@ -225,7 +225,7 @@ export default function SettingsPage() {
             <div>
               <p className="text-sm font-medium text-gray-900">Change Password</p>
               <p className="text-xs text-gray-400 mt-0.5">
-                We'll send a reset link to <span className="font-medium text-gray-600">{profile?.email}</span>
+                We&apos;ll send a reset link to <span className="font-medium text-gray-600">{profile?.email}</span>
               </p>
             </div>
             <button
