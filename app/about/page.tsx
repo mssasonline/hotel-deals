@@ -12,12 +12,12 @@ export default function AboutPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen" style={{ background: '#F8FAFC' }}>
         {/* Hero */}
-        <section className="py-20 px-6 text-center" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
-          <p className="text-sm font-semibold tracking-widest uppercase text-brand-gold mb-3">About Us</p>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Built for Smarter Stays</h1>
-          <p className="text-white/70 text-lg max-w-xl mx-auto">
+        <section className="py-20 px-6 text-center" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+          <p className="text-sm font-semibold tracking-widest uppercase mb-4" style={{ color: '#D97706' }}>About Us</p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>Built for Smarter Stays</h1>
+          <p className="text-lg max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.65)' }}>
             SelectedRoom connects travelers with the best hotel deals — at the right price, at the right time.
           </p>
         </section>
@@ -34,7 +34,7 @@ export default function AboutPage() {
               Our platform is built on transparency — real prices, real availability, and real reviews.
             </p>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 space-y-5">
+          <div className="bg-white rounded-2xl p-8 space-y-5" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
             {[
               { n: '500+', label: 'Partner Hotels' },
               { n: '50K+', label: 'Happy Guests' },
@@ -58,7 +58,7 @@ export default function AboutPage() {
                 { title: 'Speed',        desc: 'Book in under a minute. No account required for browsing.' },
                 { title: 'Trust',        desc: 'Every hotel is vetted. Every review is verified.' },
               ].map(({ title, desc }) => (
-                <div key={title} className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                <div key={title} className="bg-white rounded-2xl p-6" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
                   <div className="w-10 h-10 rounded-xl bg-[#EEF4FF] flex items-center justify-center mb-4">
                     <div className="w-3 h-3 rounded-full bg-[#1E3A8A]" />
                   </div>

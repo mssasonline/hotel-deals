@@ -46,12 +46,12 @@ export default function ContactPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen" style={{ background: '#F8FAFC' }}>
         {/* Hero */}
-        <section className="py-14 px-6 text-center" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
-          <p className="text-sm font-semibold tracking-widest uppercase text-brand-gold mb-3">Get in Touch</p>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">Contact Us</h1>
-          <p className="text-white/70 max-w-md mx-auto">
+        <section className="py-14 px-6 text-center" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+          <p className="text-sm font-semibold tracking-widest uppercase mb-3" style={{ color: '#D97706' }}>Get in Touch</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-3" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>Contact Us</h1>
+          <p className="max-w-md mx-auto" style={{ color: 'rgba(255,255,255,0.65)' }}>
             We typically respond within one business day.
           </p>
         </section>
@@ -60,7 +60,7 @@ export default function ContactPage() {
         <section className="max-w-4xl mx-auto px-6 py-14">
           <div className="grid sm:grid-cols-2 gap-5">
             {CHANNELS.map(({ title, desc, email, icon }) => (
-              <div key={title} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex gap-4">
+              <div key={title} className="bg-white rounded-2xl p-6 flex gap-4" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
                 <div className="w-11 h-11 rounded-xl bg-[#EEF4FF] flex items-center justify-center shrink-0">
                   <svg className="w-5 h-5 text-[#1E3A8A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {icon}
