@@ -135,10 +135,12 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
     area_sqm:       String(room.area_sqm ?? ''),
     bed_type:       room.bed_type ?? '',
     room_type:      room.type ?? '',
-    image_url:      room.image_url ?? '',
+    image_url:      room.image_url   ?? '',
+    image_url_2:    room.image_url_2 ?? '',
+    image_url_3:    room.image_url_3 ?? '',
   });
   const [features, setFeatures] = useState<string[]>(room.features ?? []);
-  const [imgError, setImgError] = useState(false);
+  const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState<string | null>(null);
 
@@ -172,7 +174,9 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
       type:           form.room_type,
       area_sqm:       form.area_sqm ? parseFloat(form.area_sqm) : null,
       bed_type:       form.bed_type || null,
-      image_url:      form.image_url.trim() || null,
+      image_url:      form.image_url.trim()   || null,
+      image_url_2:    form.image_url_2.trim() || null,
+      image_url_3:    form.image_url_3.trim() || null,
       features,
     });
   }
@@ -239,26 +243,48 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
             <FeaturePicker selected={features} onChange={setFeatures} />
           </div>
 
-          {/* Image URL */}
+          {/* Images — up to 3 */}
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{t['partner.rooms.imageLabel']}</p>
-            <input
-              type="url" name="image_url" value={form.image_url}
-              onChange={e => { setImgError(false); handleChange(e); }}
-              placeholder={t['partner.rooms.imagePlaceholder']}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
-            />
-            {form.image_url && (
-              <div className="mt-2 rounded-xl overflow-hidden border border-gray-100 h-36 bg-gray-50 flex items-center justify-center">
-                {imgError ? (
-                  <span className="text-xs text-gray-400">Invalid image URL</span>
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={form.image_url} alt="preview" className="h-full w-full object-cover"
-                    onError={() => setImgError(true)} />
-                )}
-              </div>
-            )}
+            <div className="grid grid-cols-3 gap-3">
+              {(['image_url', 'image_url_2', 'image_url_3'] as const).map((field, i) => {
+                const url = form[field];
+                const hasErr = imgErrors[field];
+                return (
+                  <div key={field} className="flex flex-col gap-1.5">
+                    <div className={`relative rounded-xl overflow-hidden border h-24 bg-gray-50 flex items-center justify-center transition-all ${url && !hasErr ? 'border-brand-blue/30' : 'border-gray-200 border-dashed'}`}>
+                      {url && !hasErr ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={url} alt={`photo ${i + 1}`} className="h-full w-full object-cover"
+                          onError={() => setImgErrors(p => ({ ...p, [field]: true }))} />
+                      ) : (
+                        <div className="flex flex-col items-center gap-1 text-gray-300">
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-[10px] font-medium">{i === 0 ? t['partner.rooms.mainPhoto'] : `${t['partner.rooms.photo']} ${i + 1}`}</span>
+                        </div>
+                      )}
+                      {url && (
+                        <button type="button" onClick={() => { setForm(p => ({ ...p, [field]: '' })); setImgErrors(p => ({ ...p, [field]: false })); }}
+                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-red-500 transition-colors">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="url" name={field} value={url}
+                      onChange={e => { setImgErrors(p => ({ ...p, [field]: false })); handleChange(e); }}
+                      placeholder="https://..."
+                      className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
+                    />
+                    {hasErr && <p className="text-[10px] text-red-400">{t['partner.rooms.invalidImageUrl']}</p>}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Pricing */}
@@ -380,6 +406,8 @@ function AddRoomModal({ hotelIds, hotelNames, onAdd, onClose, t }: AddRoomModalP
     area_sqm:       '',
     bed_type:       '',
     image_url:      '',
+    image_url_2:    '',
+    image_url_3:    '',
     capacity:       '2',
     base_price:     '',
     min_price:      '',
@@ -388,7 +416,7 @@ function AddRoomModal({ hotelIds, hotelNames, onAdd, onClose, t }: AddRoomModalP
   const [features, setFeatures] = useState<string[]>([]);
   const [saving,   setSaving]   = useState(false);
   const [error,    setError]    = useState<string | null>(null);
-  const [imgError, setImgError] = useState(false);
+  const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({});
 
   const basePrice   = parseFloat(form.base_price) || 0;
   const minPrice    = parseFloat(form.min_price) || 0;
@@ -421,13 +449,15 @@ function AddRoomModal({ hotelIds, hotelNames, onAdd, onClose, t }: AddRoomModalP
       room_type:          form.room_type,
       area_sqm:           form.area_sqm ? parseFloat(form.area_sqm) : null,
       bed_type:           form.bed_type || null,
-      image_url:          form.image_url.trim() || null,
+      image_url:          form.image_url.trim()   || null,
+      image_url_2:        form.image_url_2.trim() || null,
+      image_url_3:        form.image_url_3.trim() || null,
       features,
       base_price:         toAED(bp, currency),
       min_price:          toAED(mp, currency),
       capacity:           cap,
       quantity_total:     qt,
-      quantity_available: qt, // new room has no bookings → all rooms available
+      quantity_available: qt,
     });
     setSaving(false);
 
@@ -508,25 +538,48 @@ function AddRoomModal({ hotelIds, hotelNames, onAdd, onClose, t }: AddRoomModalP
             <FeaturePicker selected={features} onChange={setFeatures} />
           </div>
 
-          {/* Image URL */}
+          {/* Images — up to 3 */}
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{t['partner.rooms.imageLabel']}</p>
-            <input type="url" name="image_url" value={form.image_url}
-              onChange={e => { setImgError(false); handleChange(e); }}
-              placeholder={t['partner.rooms.imagePlaceholder']}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
-            />
-            {form.image_url && (
-              <div className="mt-2 rounded-xl overflow-hidden border border-gray-100 h-36 bg-gray-50 flex items-center justify-center">
-                {imgError ? (
-                  <span className="text-xs text-gray-400">Invalid image URL</span>
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={form.image_url} alt="preview" className="h-full w-full object-cover"
-                    onError={() => setImgError(true)} />
-                )}
-              </div>
-            )}
+            <div className="grid grid-cols-3 gap-3">
+              {(['image_url', 'image_url_2', 'image_url_3'] as const).map((field, i) => {
+                const url = form[field];
+                const hasErr = imgErrors[field];
+                return (
+                  <div key={field} className="flex flex-col gap-1.5">
+                    <div className={`relative rounded-xl overflow-hidden border h-24 bg-gray-50 flex items-center justify-center transition-all ${url && !hasErr ? 'border-brand-blue/30' : 'border-gray-200 border-dashed'}`}>
+                      {url && !hasErr ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={url} alt={`photo ${i + 1}`} className="h-full w-full object-cover"
+                          onError={() => setImgErrors(p => ({ ...p, [field]: true }))} />
+                      ) : (
+                        <div className="flex flex-col items-center gap-1 text-gray-300">
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-[10px] font-medium">{i === 0 ? t['partner.rooms.mainPhoto'] : `${t['partner.rooms.photo']} ${i + 1}`}</span>
+                        </div>
+                      )}
+                      {url && (
+                        <button type="button" onClick={() => { setForm(p => ({ ...p, [field]: '' })); setImgErrors(p => ({ ...p, [field]: false })); }}
+                          className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-red-500 transition-colors">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="url" name={field} value={url}
+                      onChange={e => { setImgErrors(p => ({ ...p, [field]: false })); handleChange(e); }}
+                      placeholder="https://..."
+                      className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
+                    />
+                    {hasErr && <p className="text-[10px] text-red-400">{t['partner.rooms.invalidImageUrl']}</p>}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Pricing */}
@@ -686,6 +739,8 @@ export default function RoomsPage() {
       min_price:      fields.min_price,
       quantity_total: fields.quantity_total,
       image_url:      fields.image_url,
+      image_url_2:    fields.image_url_2,
+      image_url_3:    fields.image_url_3,
       features:       fields.features,
       type:           fields.type,
       area_sqm:       fields.area_sqm,
@@ -873,22 +928,29 @@ export default function RoomsPage() {
 
                 return (
                   <tr key={room.id} className={`hover:bg-gray-50/40 transition-colors border-b border-gray-50 last:border-0 ${isDeleting ? 'opacity-40' : ''}`}>
-                    {/* Room name + thumbnail */}
+                    {/* Room name + thumbnails */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
-                        {room.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={room.image_url} alt={room.name}
-                            className="w-9 h-9 rounded-lg object-cover shrink-0 border border-gray-100"
-                            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                          />
-                        ) : (
-                          <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                            <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                          </div>
-                        )}
+                        <div className="flex shrink-0 -space-x-2">
+                          {[room.image_url, room.image_url_2, room.image_url_3]
+                            .filter(Boolean)
+                            .slice(0, 3)
+                            .map((url, idx) => (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img key={idx} src={url!} alt=""
+                                className="w-8 h-8 rounded-lg object-cover border-2 border-white shadow-sm"
+                                style={{ zIndex: 3 - idx }}
+                                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ))}
+                          {![room.image_url, room.image_url_2, room.image_url_3].some(Boolean) && (
+                            <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                              <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
                         <span className="font-semibold text-gray-900 text-sm">{room.name}</span>
                       </div>
                     </td>

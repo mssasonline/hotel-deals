@@ -32,6 +32,8 @@ export type PartnerRoom = {
   area_sqm: number | null;
   bed_type: string | null;
   image_url: string | null;
+  image_url_2: string | null;
+  image_url_3: string | null;
   features: string[];
   base_price: number;
   min_price: number;
@@ -312,7 +314,7 @@ export async function getMyRooms(): Promise<PartnerRoom[]> {
   const admin = createAdminClient();
   const { data: roomData, error } = await admin
     .from('rooms')
-    .select('id, hotel_id, name, room_type, area_sqm, bed_type, image_url, features, base_price, min_price, capacity, available, quantity_total, quantity_available')
+    .select('id, hotel_id, name, room_type, area_sqm, bed_type, image_url, image_url_2, image_url_3, features, base_price, min_price, capacity, available, quantity_total, quantity_available')
     .in('hotel_id', hotelIds)
     .order('hotel_id')
     .order('name');
@@ -330,6 +332,8 @@ export async function getMyRooms(): Promise<PartnerRoom[]> {
     area_sqm: number | null;
     bed_type: string | null;
     image_url: string | null;
+    image_url_2: string | null;
+    image_url_3: string | null;
     features: string[] | null;
     base_price: number;
     min_price: number | null;
@@ -346,7 +350,9 @@ export async function getMyRooms(): Promise<PartnerRoom[]> {
     type:               r.room_type ?? '',
     area_sqm:           r.area_sqm ?? null,
     bed_type:           r.bed_type ?? null,
-    image_url:          r.image_url ?? null,
+    image_url:          r.image_url   ?? null,
+    image_url_2:        r.image_url_2 ?? null,
+    image_url_3:        r.image_url_3 ?? null,
     features:           r.features  ?? [],
     base_price:         r.base_price,
     min_price:          r.min_price ?? 0,
@@ -398,6 +404,8 @@ export async function updateMyRoom(
     quantity_total?: number;
     available?: number;
     image_url?: string | null;
+    image_url_2?: string | null;
+    image_url_3?: string | null;
     features?: string[];
     type?: string;
     area_sqm?: number | null;
@@ -451,6 +459,8 @@ export async function addRoom(
     area_sqm?: number | null;
     bed_type?: string | null;
     image_url?: string | null;
+    image_url_2?: string | null;
+    image_url_3?: string | null;
     features?: string[];
     base_price: number;
     min_price: number;
@@ -482,8 +492,10 @@ export async function addRoom(
       room_type:          fields.room_type || null,
       area_sqm:           fields.area_sqm ?? null,
       bed_type:           fields.bed_type  ?? null,
-      image_url:          fields.image_url ?? null,
-      features:           fields.features  ?? [],
+      image_url:          fields.image_url   ?? null,
+      image_url_2:        fields.image_url_2 ?? null,
+      image_url_3:        fields.image_url_3 ?? null,
+      features:           fields.features    ?? [],
       base_price:         fields.base_price,
       min_price:          fields.min_price,
       capacity:           fields.capacity,
@@ -491,14 +503,15 @@ export async function addRoom(
       quantity_available: fields.quantity_available,
       available:          fields.quantity_available > 0,
     })
-    .select('id, hotel_id, name, room_type, area_sqm, bed_type, image_url, features, base_price, min_price, capacity, available, quantity_total, quantity_available')
+    .select('id, hotel_id, name, room_type, area_sqm, bed_type, image_url, image_url_2, image_url_3, features, base_price, min_price, capacity, available, quantity_total, quantity_available')
     .single();
 
   if (error) return { data: null, error: error.message };
 
   type R = {
     id: number; hotel_id: number; name: string; room_type: string | null;
-    area_sqm: number | null; bed_type: string | null; image_url: string | null;
+    area_sqm: number | null; bed_type: string | null;
+    image_url: string | null; image_url_2: string | null; image_url_3: string | null;
     features: string[] | null;
     base_price: number; min_price: number | null; capacity: number;
     available: boolean | number; quantity_total: number; quantity_available: number;
@@ -512,7 +525,9 @@ export async function addRoom(
       type:               r.room_type ?? '',
       area_sqm:           r.area_sqm ?? null,
       bed_type:           r.bed_type ?? null,
-      image_url:          r.image_url ?? null,
+      image_url:          r.image_url   ?? null,
+      image_url_2:        r.image_url_2 ?? null,
+      image_url_3:        r.image_url_3 ?? null,
       features:           r.features  ?? [],
       base_price:         r.base_price,
       min_price:          r.min_price ?? 0,
