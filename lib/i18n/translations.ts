@@ -690,7 +690,7 @@ const en = {
   // Hero section (current design)
   'hero.titleLine1': 'Your Room Tonight',
   'hero.titleLine2': 'At the Best Price Before It Expires',
-  'hero.heroSubtitle': 'We offer exclusive hotel room discounts that increase every 4 hours — Book now and guarantee your price.',
+  'hero.heroSubtitle': 'Every room on SelectedRoom is hand-selected for quality and priced for value. Discounts increase every 4 hours — book yours before the price climbs.',
   'hero.tierBannerText': '{label} — {pct}% off all rooms now',
   'hero.locating': 'Locating you…',
   'hero.nearMeBtn': 'Hotels Near Me',
