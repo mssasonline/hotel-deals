@@ -99,7 +99,7 @@ export default function Header() {
               <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 0 0 3px rgba(217,119,6,0.35)' }} />
             </div>
             <div className="leading-none">
-              <span className="font-bold text-2xl block" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', letterSpacing: '-0.01em' }}>
+              <span className="font-bold block" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '21px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
               </span>
               <span className="text-[10px] font-semibold uppercase block mt-0.5" style={{ color: '#FCD34D', letterSpacing: '0.22em' }}>
