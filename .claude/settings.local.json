@@ -34,7 +34,14 @@
       "Bash(python skills/ui-ux-pro-max/scripts/search.py \"luxury hotel booking travel premium UAE Middle East\" --design-system -p \"HotelDeals Premium\" -f markdown)",
       "PowerShell(python3 skills/ui-ux-pro-max/scripts/search.py \"luxury hotel booking travel premium UAE Middle East\" --design-system -p \"HotelDeals Premium\" -f markdown 2>&1)",
       "Bash(git commit -m ' *)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(where.exe python *)",
+      "Bash(where.exe python3 *)",
+      "Bash(Get-Command python *)",
+      "PowerShell(Get-Command python -ErrorAction SilentlyContinue; Get-Command py -ErrorAction SilentlyContinue; \\(Get-Command python3.exe -ErrorAction SilentlyContinue\\).Source)",
+      "Bash(npx supabase *)",
+      "PowerShell($env:SUPABASE_ACCESS_TOKEN; [System.Environment]::GetEnvironmentVariable\\(\"SUPABASE_ACCESS_TOKEN\", \"User\"\\); [System.Environment]::GetEnvironmentVariable\\(\"SUPABASE_ACCESS_TOKEN\", \"Machine\"\\))",
+      "PowerShell(Get-Command psql -ErrorAction SilentlyContinue)"
     ]
   }
 }

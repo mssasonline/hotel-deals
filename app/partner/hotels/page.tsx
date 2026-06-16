@@ -516,6 +516,29 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
           {/* ── Images tab ── */}
           {tab === 'images' && (
             <div className="space-y-4">
+              {/* Counter */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">
+                  {t['partner.hotels.imageCounter']
+                    .replace('{count}', String(images.length))
+                    .replace('{max}', '15')}
+                </span>
+                <div className="flex-1 mx-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${Math.min((images.length / 15) * 100, 100)}%`,
+                      background: images.length >= 15
+                        ? 'linear-gradient(90deg, #ef4444, #dc2626)'
+                        : 'linear-gradient(90deg, #1E3A8A, #2563EB)',
+                    }}
+                  />
+                </div>
+                <span className={`text-xs font-semibold ${images.length >= 15 ? 'text-red-500' : 'text-brand-blue'}`}>
+                  {Math.round((images.length / 15) * 100)}%
+                </span>
+              </div>
+
               {/* Add URL row */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.hotels.imageUrlLabel']}</label>
