@@ -106,6 +106,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Recover from a wedged Supabase auth client after the tab returns from the
+  // background. Every DB query resolves its token through auth.getSession(),
+  // which acquires GoTrue's in-process lock. If the tab is frozen mid
+  // token-refresh (e.g. the user left for another site and came back), that
+  // lock's reentrancy guard deadlocks and getSession() never resolves — so
+  // every query hangs. The only recovery is to recreate the client, which is
+  // exactly what a manual page refresh does. We probe getSession() with a
+  // timeout on return; if it doesn't answer, the client is wedged → reload.
+  useEffect(() => {
+    let recovering = false;
+
+    async function recoverIfWedged() {
+      if (recovering || document.visibilityState !== 'visible') return;
+      recovering = true;
+      // An error means the client *responded* (not wedged) — only a
+      // non-response (timeout) indicates the deadlock.
+      const result = await Promise.race([
+        supabase.auth.getSession().then(() => 'ok').catch(() => 'ok'),
+        new Promise<'wedged'>((resolve) => setTimeout(() => resolve('wedged'), 6000)),
+      ]);
+      if (result === 'wedged') {
+        window.location.reload();
+        return;
+      }
+      recovering = false;
+    }
+
+    function onVisibility() {
+      if (document.visibilityState === 'visible') void recoverIfWedged();
+    }
+    function onPageShow(e: PageTransitionEvent) {
+      // Restored from the back/forward cache: the frozen client is stale.
+      if (e.persisted) window.location.reload();
+    }
+
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pageshow', onPageShow);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pageshow', onPageShow);
+    };
+  }, []);
+
   async function signOut() {
     await supabase.auth.signOut();
   }

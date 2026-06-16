@@ -179,15 +179,22 @@ export default function BookingPageClient({
     setSubmitting(true);
     setSubmitError('');
 
-    // Force-refresh the session so the access token is guaranteed fresh before
-    // any DB write. getSession() only reads cookies and can return an expired
-    // token that is mid-refresh; refreshSession() exchanges the refresh token
-    // and updates the cookie, eliminating the race that caused TIMEOUT on
-    // return from another site.
-    try {
-      const { data, error } = await supabase.auth.refreshSession();
-      if (error || !data.session) throw error ?? new Error('no session');
-    } catch {
+    // Backstop for a wedged auth client (see authContext recovery): every DB
+    // query resolves its token through getSession(), which can deadlock after
+    // the tab was suspended. Probe it with a timeout first — if it doesn't
+    // answer the client is wedged, so reload to recreate it. The booking
+    // context is persisted in the Zustand store, so the page returns intact.
+    const preflight = await Promise.race([
+      supabase.auth.getSession()
+        .then(({ data }) => (data.session ? 'ok' : 'no-session'))
+        .catch(() => 'error'),
+      new Promise<'wedged'>((resolve) => setTimeout(() => resolve('wedged'), 6000)),
+    ]);
+    if (preflight === 'wedged') {
+      window.location.reload();
+      return;
+    }
+    if (preflight !== 'ok') {
       saveLoginRedirect(window.location.pathname);
       router.push('/login');
       return;
