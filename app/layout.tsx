@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Plus_Jakarta_Sans, Cairo, Montserrat } from "next/font/google";
+import { Cormorant_Garamond, Plus_Jakarta_Sans, Cairo } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/authContext";
 import HtmlLangUpdater from "@/app/components/HtmlLangUpdater";
@@ -24,12 +24,6 @@ const cairo = Cairo({
   display: "swap",
 });
 
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "SelectedRoom — Tonight's Best Hotel Prices",
@@ -43,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`${cormorant.variable} ${jakarta.variable} ${cairo.variable} ${montserrat.variable} h-full antialiased`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${cormorant.variable} ${jakarta.variable} ${cairo.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <HtmlLangUpdater />
         <AuthProvider>{children}</AuthProvider>
