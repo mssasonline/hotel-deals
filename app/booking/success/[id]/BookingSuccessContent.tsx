@@ -28,33 +28,53 @@ function formatDate(dateStr: string): string {
   });
 }
 
+const STATUS_UI: Record<string, { label: string; badgeBg: string; badgeText: string; dot: string }> = {
+  confirmed: { label: 'Confirmed',  badgeBg: 'bg-green-400',  badgeText: 'text-green-900', dot: 'bg-green-700' },
+  pending:   { label: 'Pending',    badgeBg: 'bg-amber-400',  badgeText: 'text-amber-900', dot: 'bg-amber-700' },
+  completed: { label: 'Completed',  badgeBg: 'bg-brand-blue-light', badgeText: 'text-brand-blue', dot: 'bg-brand-blue' },
+  cancelled: { label: 'Cancelled',  badgeBg: 'bg-red-100',    badgeText: 'text-red-700',   dot: 'bg-red-500'   },
+};
+
 export default function BookingSuccessContent({ data }: { data: BookingSuccessData }) {
   const t = useTranslation();
-  const { shortId, hotelName, hotelCity, roomName, roomType, checkIn, checkOut, nights, guestsCount, roomCount, totalPrice, guestName } = data;
+  const { shortId, hotelName, hotelCity, roomName, roomType, checkIn, checkOut, nights, guestsCount, roomCount, totalPrice, guestName, status } = data;
+
+  const isFresh = status === 'confirmed' || status === 'pending';
+  const statusUi = STATUS_UI[status] ?? STATUS_UI['confirmed'];
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6">
 
-      {/* ── Success Banner ─────────────────────────── */}
+      {/* ── Header Banner ─────────────────────────── */}
       <div className="text-center mb-8">
         <div className="relative inline-flex mb-5">
-          <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30">
-              <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
+          <div className={`w-24 h-24 rounded-full flex items-center justify-center ${isFresh ? 'bg-green-100' : 'bg-brand-blue-light'}`}>
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${isFresh ? 'bg-green-500 shadow-green-500/30' : 'bg-brand-blue shadow-brand-blue/30'}`}>
+              {isFresh ? (
+                <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              )}
             </div>
           </div>
-          <div className="absolute inset-0 rounded-full border-2 border-brand-gold/40 animate-ping" style={{ animationDuration: '2.5s' }} />
+          {isFresh && (
+            <div className="absolute inset-0 rounded-full border-2 border-brand-gold/40 animate-ping" style={{ animationDuration: '2.5s' }} />
+          )}
         </div>
         <h1 className="font-extrabold text-gray-900 text-3xl sm:text-4xl mb-2 leading-tight">
-          {t['success.bookingConfirmed']}
+          {isFresh ? t['success.bookingConfirmed'] : 'Booking Details'}
         </h1>
-        <p className="text-gray-500 text-base">{t['success.roomReserved']}</p>
+        <p className="text-gray-500 text-base">
+          {isFresh ? t['success.roomReserved'] : `${hotelName} · SR-${shortId}`}
+        </p>
       </div>
 
       {/* ── Booking ID + Status ────────────────────── */}
-      <div className="bg-brand-blue rounded-2xl px-6 py-5 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="rounded-2xl px-6 py-5 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
         <div>
           <p className="text-white/55 text-[11px] font-medium uppercase tracking-widest mb-1">
             {t['success.bookingId']}
@@ -65,9 +85,9 @@ export default function BookingSuccessContent({ data }: { data: BookingSuccessDa
           <p className="text-white/55 text-[11px] font-medium uppercase tracking-widest mb-1">
             {t['success.status']}
           </p>
-          <span className="inline-flex items-center gap-1.5 bg-green-400 text-green-900 text-sm font-bold px-3 py-1.5 rounded-full capitalize">
-            <span className="w-2 h-2 rounded-full bg-green-700 inline-block" />
-            {t['success.statusConfirmed']}
+          <span className={`inline-flex items-center gap-1.5 ${statusUi.badgeBg} ${statusUi.badgeText} text-sm font-bold px-3 py-1.5 rounded-full capitalize`}>
+            <span className={`w-2 h-2 rounded-full ${statusUi.dot} inline-block`} />
+            {statusUi.label}
           </span>
         </div>
       </div>
@@ -221,7 +241,8 @@ export default function BookingSuccessContent({ data }: { data: BookingSuccessDa
         </Link>
         <Link
           href="/"
-          className="flex items-center justify-center gap-2 w-full bg-brand-blue hover:bg-brand-blue-dark text-white font-extrabold py-4 rounded-2xl transition-all duration-200 shadow-lg shadow-brand-blue/25 hover:shadow-brand-blue/40 active:scale-[0.99]"
+          className="flex items-center justify-center gap-2 w-full text-white font-extrabold py-4 rounded-2xl transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99]"
+          style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />

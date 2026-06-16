@@ -72,11 +72,12 @@ function TaskCard({
         <button
           type="button"
           onClick={() => onMove(task.id)}
-          className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+          className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
             isDone
               ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              : 'bg-brand-blue text-white hover:bg-brand-blue-dark'
+              : 'text-white'
           }`}
+          style={!isDone ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
         >
           {isDone ? (
             <>
@@ -201,7 +202,8 @@ function AddTaskModal({
             <button
               type="submit"
               disabled={!title.trim()}
-              className="bg-brand-blue hover:bg-brand-blue-dark disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+              className="disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
             >
               Add Task
             </button>
@@ -277,7 +279,8 @@ export default function TasksPage() {
         <button
           type="button"
           onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

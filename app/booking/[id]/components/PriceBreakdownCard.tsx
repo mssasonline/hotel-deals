@@ -10,6 +10,9 @@ import type { HotelDetail, RoomType } from '@/app/hotel/[id]/lib/hotelDetailData
 interface PriceBreakdownCardProps {
   hotel: HotelDetail;
   room: RoomType;
+  taxVatPct?: number;
+  fixedFeePerNight?: number;
+  taxCountryCode?: string;
 }
 
 function parseToISO(dateStr: string): string {
@@ -24,7 +27,13 @@ function parseToISO(dateStr: string): string {
   return `${year}-${mm}-${day.padStart(2, '0')}`;
 }
 
-export default function PriceBreakdownCard({ hotel, room }: PriceBreakdownCardProps) {
+export default function PriceBreakdownCard({
+  hotel,
+  room,
+  taxVatPct = 15,
+  fixedFeePerNight = 0,
+  taxCountryCode = 'AE',
+}: PriceBreakdownCardProps) {
   const { checkInDate, checkOutDate } = useBookingStore();
   const language = useAppSettingsStore((s) => s.language);
   const t = getTranslations(language);
@@ -42,9 +51,22 @@ export default function PriceBreakdownCard({ hotel, room }: PriceBreakdownCardPr
 
   const roomsCount = Math.max(1, room.quantity ?? 1);
   const { currentPrice, basePrice, discountPercent, subtotal, taxes, total } =
-    calcRoomStayPrice({ basePrice: room.basePrice, pricePerNight: room.pricePerNight, nights, rooms: roomsCount });
+    calcRoomStayPrice({
+      basePrice: room.basePrice,
+      pricePerNight: room.pricePerNight,
+      nights,
+      rooms: roomsCount,
+      taxVatPct,
+      fixedFeePerNight,
+    });
+
   const totalBasePrice = basePrice * nights * roomsCount;
   const savings = totalBasePrice - subtotal;
+
+  // Tax breakdown for tooltip/display
+  const vatAmount = Math.round(subtotal * (taxVatPct / 100));
+  const fixedFees = taxes - vatAmount;
+  const showFixedFee = fixedFees > 0;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -74,13 +96,26 @@ export default function PriceBreakdownCard({ hotel, room }: PriceBreakdownCardPr
               <span className="font-medium text-gray-900"><CurrencyAmount amount={subtotal} /></span>
             </div>
           )}
+
+          {/* Tax breakdown */}
           <div className="flex justify-between items-center">
-            <span className="text-gray-500">{t['price.taxes']}</span>
-            <span className="font-medium text-gray-900"><CurrencyAmount amount={taxes} /></span>
+            <span className="text-gray-500 flex items-center gap-1.5">
+              {t['price.taxes']}
+              <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full font-medium">
+                {taxCountryCode} · {taxVatPct}% VAT
+              </span>
+            </span>
+            <span className="font-medium text-gray-900"><CurrencyAmount amount={vatAmount} /></span>
           </div>
+          {showFixedFee && (
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 text-xs">Tourism fee ({nights} {nights === 1 ? 'night' : 'nights'})</span>
+              <span className="font-medium text-gray-900 text-xs"><CurrencyAmount amount={fixedFees} /></span>
+            </div>
+          )}
         </div>
 
-        {/* Divider */}
+        {/* Divider + total */}
         <div className="border-t border-gray-200 pt-3">
           <div className="flex justify-between items-center">
             <span className="font-bold text-gray-900">{t['price.total']}</span>

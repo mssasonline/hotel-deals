@@ -8,6 +8,7 @@ import RoomCard from './RoomCard';
 import BookingCTA from './BookingCTA';
 import { useBookingStore } from '@/store/bookingStore';
 import { calcRoomPrice, isBookingOpen } from '@/lib/pricingEngine';
+import AmenityIcon from '@/app/components/AmenityIcon';
 
 function deriveCity(location: string): string {
   const parts = location.split(',');
@@ -140,9 +141,9 @@ export default function HotelBookingSection({ hotel }: { hotel: HotelDetail }) {
               {hotel.amenities.map((amenity) => (
                 <div
                   key={amenity.label}
-                  className="flex items-center gap-2.5 bg-gray-50 rounded-xl px-3 py-2.5"
+                  className="flex items-center gap-2.5 bg-gray-50 hover:bg-blue-50 rounded-xl px-3 py-2.5 transition-colors duration-150"
                 >
-                  <span className="text-lg leading-none">{amenity.emoji}</span>
+                  <AmenityIcon label={amenity.label} className="w-6 h-6 text-brand-blue shrink-0" />
                   <span className="text-gray-700 text-sm font-medium leading-tight">{amenity.label}</span>
                 </div>
               ))}
@@ -252,7 +253,8 @@ export default function HotelBookingSection({ hotel }: { hotel: HotelDetail }) {
           {bookingOpen ? (
             <Link
               href={`/booking/${hotel.id}`}
-              className="shrink-0 bg-brand-gold hover:bg-yellow-500 text-white font-bold px-7 py-3 rounded-xl text-sm transition-colors shadow-lg shadow-brand-gold/30 active:scale-[0.97]"
+              className="shrink-0 text-white font-bold px-7 py-3 rounded-xl text-sm transition-all active:scale-[0.97] hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
             >
               Book Now
             </Link>

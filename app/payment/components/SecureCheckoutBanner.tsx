@@ -30,7 +30,7 @@ export default function SecureCheckoutBanner() {
   ];
 
   return (
-    <div className="bg-brand-blue rounded-2xl px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg shadow-brand-blue/20">
+    <div className="rounded-2xl px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

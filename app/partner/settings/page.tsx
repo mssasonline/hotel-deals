@@ -147,7 +147,7 @@ export default function SettingsPage() {
         <Section title="Partner Profile" description="Your name and contact information visible to the platform.">
           {/* Avatar preview */}
           <div className="flex items-center gap-4 pb-2">
-            <div className="w-14 h-14 rounded-full bg-brand-blue flex items-center justify-center text-white text-xl font-bold shrink-0">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0" style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
               {profile?.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={profile.avatar_url} alt="avatar" className="w-full h-full rounded-full object-cover" />
@@ -306,7 +306,8 @@ export default function SettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-6 py-2.5 text-sm font-semibold text-white bg-brand-blue hover:bg-brand-blue-dark rounded-xl transition-colors shadow-sm disabled:opacity-60 flex items-center gap-2"
+            className="px-6 py-2.5 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60 flex items-center gap-2 hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
           >
             {saving && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
             {saving ? 'Saving…' : 'Save Changes'}

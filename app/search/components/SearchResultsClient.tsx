@@ -333,9 +333,10 @@ export default function SearchResultsClient({
                       onClick={() => setSortBy(opt.value)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
                         sortBy === opt.value
-                          ? 'bg-brand-blue text-white shadow-sm'
+                          ? 'text-white shadow-sm'
                           : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
                       }`}
+                      style={sortBy === opt.value ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
                     >
                       {opt.label}
                     </button>
@@ -387,7 +388,8 @@ export default function SearchResultsClient({
                       setNameInput('');
                       setNameQuery('');
                     }}
-                    className="bg-brand-blue hover:bg-brand-blue-dark text-white font-semibold px-6 py-2.5 rounded-xl transition-colors text-sm"
+                    className="text-white font-semibold px-6 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 text-sm"
+                    style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
                   >
                     {t['search.clearAllFilters']}
                   </button>
@@ -470,7 +472,8 @@ export default function SearchResultsClient({
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(false)}
-                className="w-full bg-brand-blue hover:bg-brand-blue-dark text-white font-semibold py-3 rounded-xl transition-colors text-sm"
+                className="w-full text-white font-semibold py-3 rounded-xl transition-all hover:-translate-y-0.5 text-sm"
+                style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
               >
                 {sortedHotels.length === 1
                   ? t['search.showHotel'].replace('{n}', String(sortedHotels.length))

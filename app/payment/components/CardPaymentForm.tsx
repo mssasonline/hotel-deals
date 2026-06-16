@@ -341,7 +341,8 @@ export default function CardPaymentForm({ method, onSubmit, isProcessing, totalP
           <button
             type="submit"
             disabled={isProcessing}
-            className="w-full bg-brand-blue hover:bg-brand-blue-dark text-white font-extrabold py-4 rounded-2xl text-lg transition-all duration-200 shadow-lg shadow-brand-blue/25 hover:shadow-brand-blue/40 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+            className="w-full text-white font-extrabold py-4 rounded-2xl text-lg transition-all duration-200 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
           >
             {isProcessing ? (
               <>

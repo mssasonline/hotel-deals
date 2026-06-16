@@ -38,6 +38,7 @@ export type Language =
   | 'lv'     // Latviski
   | 'uk'     // Українська
   | 'hi'     // हिन्दी
+  | 'ur'     // اردو
   | 'id'     // Bahasa Indonesia
   | 'ms'     // Bahasa Malaysia
   | 'th'     // ภาษาไทย

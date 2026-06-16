@@ -33,7 +33,7 @@ export default async function PartnerLayout({ children }: { children: React.Reac
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#F8FAFC]">
       <Sidebar />
       <div className="flex flex-col flex-1 min-w-0">
         <TopBar />

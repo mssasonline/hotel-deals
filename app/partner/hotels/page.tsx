@@ -113,10 +113,17 @@ function StarDisplay({ rating }: { rating: number | null }) {
 function AmenityPicker({
   selected,
   onChange,
+  t,
 }: {
   selected: string[];
   onChange: (next: string[]) => void;
+  t: ReturnType<typeof getTranslations>;
 }) {
+  const [customInput, setCustomInput] = useState('');
+
+  const predefinedKeys: Set<string> = new Set(HOTEL_AMENITIES.map(a => a.key));
+  const customAmenities = selected.filter(k => !predefinedKeys.has(k));
+
   function toggle(key: string) {
     onChange(
       selected.includes(key)
@@ -124,26 +131,89 @@ function AmenityPicker({
         : [...selected, key]
     );
   }
+
+  function addCustom() {
+    const val = customInput.trim();
+    if (!val || selected.includes(val)) return;
+    onChange([...selected, val]);
+    setCustomInput('');
+  }
+
+  function removeCustom(key: string) {
+    onChange(selected.filter(k => k !== key));
+  }
+
   return (
-    <div className="flex flex-wrap gap-2">
-      {HOTEL_AMENITIES.map(a => {
-        const on = selected.includes(a.key);
-        return (
-          <button
-            key={a.key}
-            type="button"
-            onClick={() => toggle(a.key)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-              on
-                ? 'bg-brand-blue text-white border-brand-blue shadow-sm'
-                : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-brand-blue hover:text-brand-blue'
-            }`}
-          >
-            <span>{a.icon}</span>
-            <span>{a.label}</span>
-          </button>
-        );
-      })}
+    <div className="space-y-4">
+      {/* Predefined amenity chips */}
+      <div className="flex flex-wrap gap-2">
+        {HOTEL_AMENITIES.map(a => {
+          const on = selected.includes(a.key);
+          return (
+            <button
+              key={a.key}
+              type="button"
+              onClick={() => toggle(a.key)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                on
+                  ? 'text-white border-transparent shadow-sm'
+                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-brand-blue hover:text-brand-blue'
+              }`}
+              style={on ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
+            >
+              <span>{a.icon}</span>
+              <span>{a.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Custom amenities */}
+      {customAmenities.length > 0 && (
+        <div>
+          <p className="text-xs font-medium text-gray-500 mb-2">{t['partner.hotels.customAmenities']}</p>
+          <div className="flex flex-wrap gap-2">
+            {customAmenities.map(key => (
+              <span
+                key={key}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200"
+              >
+                {key}
+                <button
+                  type="button"
+                  onClick={() => removeCustom(key)}
+                  className="ml-0.5 hover:text-red-500 transition-colors"
+                  aria-label={`Remove ${key}`}
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Add custom amenity */}
+      <div className="flex gap-2 pt-1 border-t border-gray-100">
+        <input
+          value={customInput}
+          onChange={e => setCustomInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && addCustom()}
+          placeholder={t['partner.hotels.customAmenityPlaceholder']}
+          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
+        />
+        <button
+          type="button"
+          onClick={addCustom}
+          disabled={!customInput.trim()}
+          className="px-3 py-2 text-xs font-semibold text-white rounded-xl disabled:opacity-50 shrink-0 hover:-translate-y-0.5 transition-all"
+          style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
+        >
+          {t['partner.hotels.addCustomAmenity']}
+        </button>
+      </div>
     </div>
   );
 }
@@ -292,12 +362,12 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
         setLocationForm(p => ({ ...p, latitude: String(geo.lat), longitude: String(geo.lng) }));
         setMapsUrl('');
       } else {
-        setMapsError(`لم يُعثر على إحداثيات "${booking.name}" — أدخلها يدوياً أو استخدم رابط Google Maps`);
+        setMapsError(t['partner.hotels.locationNotFound'].replace('{name}', booking.name));
       }
       return;
     }
 
-    setMapsError('رابط غير مدعوم — الصق رابط Google Maps أو Booking.com');
+    setMapsError(t['partner.hotels.locationUnsupported']);
   }
 
   // ── Save location
@@ -308,7 +378,7 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
     const code = locationForm.airport_code.trim() || null;
 
     if ((locationForm.latitude.trim() && isNaN(lat!)) || (locationForm.longitude.trim() && isNaN(lng!))) {
-      setLocationMsg('قيمة غير صالحة — أدخل أرقاماً فقط');
+      setLocationMsg(t['partner.hotels.locationInvalid']);
       return;
     }
 
@@ -319,8 +389,8 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
       airport_code: code,
     });
     setLocationSaving(false);
-    if (error) { setLocationMsg(`خطأ: ${error}`); return; }
-    setLocationMsg('تم حفظ الموقع');
+    if (error) { setLocationMsg(t['partner.hotels.locationErrorPrefix'] + error); return; }
+    setLocationMsg(t['partner.hotels.locationSaved']);
     setTimeout(() => setLocationMsg(null), 2500);
     onSaved({ ...hotel, latitude: lat, longitude: lng, airport_code: code });
   }
@@ -341,7 +411,7 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
     { key: 'details',   label: t['partner.hotels.tabDetails']   },
     { key: 'images',    label: t['partner.hotels.tabImages']    },
     { key: 'amenities', label: t['partner.hotels.tabAmenities'] },
-    { key: 'location',  label: 'الموقع' },
+    { key: 'location',  label: t['partner.hotels.tabLocation']  },
   ];
 
   return (
@@ -460,7 +530,8 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
                   <button
                     onClick={handleAddImage}
                     disabled={addingImg || !newUrl.trim()}
-                    className="px-4 py-2 text-sm font-semibold text-white bg-brand-blue hover:bg-brand-blue-dark rounded-xl transition-colors disabled:opacity-50 shrink-0"
+                    className="px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-50 shrink-0 hover:-translate-y-0.5"
+                    style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
                   >
                     {addingImg
                       ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" />
@@ -540,17 +611,15 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                   </svg>
-                  استخرج الإحداثيات من الرابط
+                  {t['partner.hotels.locationExtractTitle']}
                 </p>
-                <p className="text-xs text-blue-600">
-                  يدعم روابط <strong>Google Maps</strong> و<strong>Booking.com</strong> — الصق الرابط هنا
-                </p>
+                <p className="text-xs text-blue-600">{t['partner.hotels.locationExtractDesc']}</p>
                 <div className="flex gap-2">
                   <input
                     value={mapsUrl}
                     onChange={e => { setMapsUrl(e.target.value); setMapsError(null); }}
                     onKeyDown={e => e.key === 'Enter' && !geocoding && handleParseMapsUrl()}
-                    placeholder="https://maps.google.com/... أو https://www.booking.com/hotel/..."
+                    placeholder={t['partner.hotels.locationUrlPlaceholder']}
                     dir="ltr"
                     className={`${INPUT} flex-1 text-xs`}
                   />
@@ -558,11 +627,12 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
                     type="button"
                     onClick={handleParseMapsUrl}
                     disabled={!mapsUrl.trim() || geocoding}
-                    className="px-3 py-2 text-xs font-semibold text-white bg-brand-blue hover:bg-brand-blue-dark rounded-xl transition-colors disabled:opacity-50 shrink-0 whitespace-nowrap flex items-center gap-1.5"
+                    className="px-3 py-2 text-xs font-semibold text-white rounded-xl transition-all disabled:opacity-50 shrink-0 whitespace-nowrap flex items-center gap-1.5 hover:-translate-y-0.5"
+                    style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
                   >
                     {geocoding
-                      ? <><div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />بحث...</>
-                      : 'استخرج'
+                      ? <><div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />{t['partner.hotels.locationExtracting']}</>
+                      : t['partner.hotels.locationExtractBtn']
                     }
                   </button>
                 </div>
@@ -572,7 +642,7 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
               {/* Manual coordinate inputs */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">خط العرض (Latitude)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.hotels.locationLatLabel']}</label>
                   <input
                     value={locationForm.latitude}
                     onChange={e => setLocationForm(p => ({ ...p, latitude: e.target.value }))}
@@ -582,7 +652,7 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">خط الطول (Longitude)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.hotels.locationLngLabel']}</label>
                   <input
                     value={locationForm.longitude}
                     onChange={e => setLocationForm(p => ({ ...p, longitude: e.target.value }))}
@@ -595,7 +665,7 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
 
               {/* Airport code */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">كود المطار (اختياري)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.hotels.locationAirportLabel']}</label>
                 <input
                   value={locationForm.airport_code}
                   onChange={e => setLocationForm(p => ({ ...p, airport_code: e.target.value.toUpperCase() }))}
@@ -617,19 +687,19 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
-                  تحقق من الموقع على الخريطة
+                  {t['partner.hotels.locationVerifyLink']}
                 </a>
               )}
 
               {/* Status messages */}
               {locationMsg && (
                 <div className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm ${
-                  locationMsg.startsWith('خطأ')
+                  locationMsg.startsWith(t['partner.hotels.locationErrorPrefix'])
                     ? 'bg-red-50 border border-red-100 text-red-600'
                     : 'bg-green-50 border border-green-100 text-green-700'
                 }`}>
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    {locationMsg.startsWith('خطأ')
+                    {locationMsg.startsWith(t['partner.hotels.locationErrorPrefix'])
                       ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     }
@@ -643,8 +713,11 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
           {/* ── Amenities tab ── */}
           {tab === 'amenities' && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-500">{t['partner.hotels.amenitiesLabel']}</p>
-              <AmenityPicker selected={amenities} onChange={setAmenities} />
+              <div>
+                <p className="text-sm font-medium text-gray-700">{t['partner.hotels.amenitiesLabel']}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{t['partner.hotels.amenitiesHint']}</p>
+              </div>
+              <AmenityPicker selected={amenities} onChange={setAmenities} t={t} />
               {amenitiesMsg && (
                 <div className="flex items-center gap-2 bg-green-50 border border-green-100 rounded-xl px-3 py-2 text-sm text-green-700">
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -663,17 +736,18 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
           >
-            Cancel
+            {t['partner.hotels.cancelBtn']}
           </button>
 
           {tab === 'details' && (
             <button
               onClick={saveDetails}
               disabled={detailsSaving}
-              className="px-5 py-2 text-sm font-semibold text-white bg-brand-blue hover:bg-brand-blue-dark rounded-xl transition-colors shadow-sm disabled:opacity-60 flex items-center gap-2"
+              className="px-5 py-2 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60 flex items-center gap-2 hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
             >
               {detailsSaving && <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-              {detailsSaving ? 'Saving…' : 'Save Changes'}
+              {detailsSaving ? t['partner.hotels.savingChanges'] : t['partner.hotels.saveChangesBtn']}
             </button>
           )}
 
@@ -681,10 +755,11 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
             <button
               onClick={saveAmenities}
               disabled={amenitiesSaving}
-              className="px-5 py-2 text-sm font-semibold text-white bg-brand-blue hover:bg-brand-blue-dark rounded-xl transition-colors shadow-sm disabled:opacity-60 flex items-center gap-2"
+              className="px-5 py-2 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60 flex items-center gap-2 hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
             >
               {amenitiesSaving && <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-              {amenitiesSaving ? 'Saving…' : 'Save Amenities'}
+              {amenitiesSaving ? t['partner.hotels.savingAmenities'] : t['partner.hotels.saveAmenitiesBtn']}
             </button>
           )}
 
@@ -692,10 +767,11 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
             <button
               onClick={saveLocation}
               disabled={locationSaving}
-              className="px-5 py-2 text-sm font-semibold text-white bg-brand-blue hover:bg-brand-blue-dark rounded-xl transition-colors shadow-sm disabled:opacity-60 flex items-center gap-2"
+              className="px-5 py-2 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60 flex items-center gap-2 hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
             >
               {locationSaving && <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-              {locationSaving ? 'جاري الحفظ…' : 'حفظ الموقع'}
+              {locationSaving ? t['partner.hotels.locationSaving'] : t['partner.hotels.locationSaveBtn']}
             </button>
           )}
         </div>

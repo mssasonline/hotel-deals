@@ -74,7 +74,7 @@ export default function SignupPage() {
     return (
       <>
         <Header />
-        <main className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+        <main className="min-h-screen flex items-center justify-center py-12 px-4" style={{ background: '#F8FAFC' }}>
           <div className="w-full max-w-md">
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden p-10 text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
@@ -88,7 +88,8 @@ export default function SignupPage() {
               </p>
               <Link
                 href="/login"
-                className="inline-block bg-brand-blue hover:bg-brand-blue-dark text-white font-bold px-6 py-3 rounded-xl transition-colors text-sm"
+                className="inline-block text-white font-bold px-6 py-3 rounded-xl transition-all hover:-translate-y-0.5 text-sm"
+                style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
               >
                 Back to Sign In
               </Link>
@@ -103,14 +104,14 @@ export default function SignupPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+      <main className="min-h-screen flex items-center justify-center py-12 px-4" style={{ background: '#F8FAFC' }}>
         <div className="w-full max-w-md">
 
           {/* Card */}
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
 
             {/* Header bar */}
-            <div className="bg-brand-blue px-8 py-7">
+            <div className="px-8 py-7" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
               <Link href="/" className="flex items-center gap-2.5 mb-5">
                 <div className="w-8 h-8 bg-brand-gold rounded-lg flex items-center justify-center shadow-sm">
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -120,7 +121,7 @@ export default function SignupPage() {
                 </div>
                 <span className="text-white font-bold text-base leading-none">SelectedRoom.com</span>
               </Link>
-              <h1 className="text-white font-extrabold text-2xl leading-tight">Create your account</h1>
+              <h1 className="!text-white font-extrabold text-2xl leading-tight">Create your account</h1>
               <p className="text-white/60 text-sm mt-1">Join thousands of smart travelers</p>
             </div>
 
@@ -294,7 +295,8 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   disabled={submitting || oauthLoading !== null}
-                  className="w-full bg-brand-gold hover:bg-yellow-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-base transition-all duration-200 shadow-sm shadow-brand-gold/30 active:scale-[0.99]"
+                  className="w-full disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-base transition-all hover:-translate-y-0.5 active:scale-[0.99]"
+                  style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
                 >
                   {submitting ? (
                     <span className="flex items-center justify-center gap-2">

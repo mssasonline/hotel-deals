@@ -26,7 +26,7 @@ export default function LiveDealsSection({ hotels }: Props) {
   if (hotels.length === 0) return null;
 
   return (
-    <section id="live-pricing" className="py-12 bg-white scroll-mt-20">
+    <section id="live-pricing" className="py-14 scroll-mt-20" style={{ background: '#ffffff' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ── Section header ─────────────────────────────────────── */}
@@ -44,18 +44,18 @@ export default function LiveDealsSection({ hotels }: Props) {
               <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">{t['sections.trackAutomatic']}</span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
+            <h2 className="text-2xl sm:text-3xl font-extrabold leading-tight" style={{ color: '#0F172A' }}>
               {t['sections.liveHourlyPricing']}
             </h2>
 
             {/* One-line mechanism explainer */}
-            <p className="text-gray-500 text-sm mt-2 leading-relaxed">
+            <p className="text-sm mt-2 leading-relaxed" style={{ color: '#64748B' }}>
               {t['sections.pricesDropDesc']}
             </p>
 
             {/* Current discount pill + countdown */}
             <div className="mt-3 flex items-center gap-2 flex-wrap">
-              <span className="bg-brand-blue text-white text-sm font-extrabold px-3 py-1.5 rounded-xl">
+              <span className="text-white text-sm font-extrabold px-3 py-1.5 rounded-xl" style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
                 -{tier.discountPercent}% {t['sections.rightNow']}
               </span>
               <span className="text-xs text-orange-600 font-medium">
@@ -67,11 +67,11 @@ export default function LiveDealsSection({ hotels }: Props) {
               </span>
             </div>
 
-            <div className="mt-3 h-1 w-14 bg-brand-blue rounded-full" />
+            <div className="mt-3 h-0.5 w-14 rounded-full" style={{ background: 'linear-gradient(90deg, #1E3A8A, #2563EB)' }} />
           </div>
 
           {/* Right: Tier Timeline — the core visual of the mechanism */}
-          <div className="w-full lg:max-w-md xl:max-w-lg bg-gray-50 rounded-2xl border border-gray-100 p-5">
+          <div className="w-full lg:max-w-md xl:max-w-lg rounded-2xl p-5" style={{ background: '#F8FAFC', border: '1px solid rgba(30,58,138,0.08)' }}>
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
               {t['sections.todayScheduleLabel']}
             </p>

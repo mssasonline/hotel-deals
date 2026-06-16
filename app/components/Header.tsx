@@ -43,7 +43,14 @@ export default function Header() {
     }
   }
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 16);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const language = useAppSettingsStore((s) => s.language);
   const currency = useAppSettingsStore((s) => s.currency);
@@ -72,51 +79,71 @@ export default function Header() {
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
 
   return (
-    <header className="sticky top-0 z-50 bg-brand-blue shadow-lg">
+    <header
+      className="sticky top-0 z-50"
+      style={{
+        background: scrolled
+          ? 'rgba(12, 26, 78, 0.92)'
+          : 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 50%, #1B3580 100%)',
+        backdropFilter: scrolled ? 'blur(24px) saturate(180%)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(24px) saturate(180%)' : 'none',
+        boxShadow: scrolled ? '0 4px 32px rgba(0,0,0,0.28), 0 1px 0 rgba(255,255,255,0.06)' : '0 1px 0 rgba(255,255,255,0.06)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        transition: 'background 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s cubic-bezier(0.4,0,0.2,1)',
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-[66px]">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="w-8 h-8 bg-brand-gold rounded-lg flex items-center justify-center shadow-sm">
+          <Link href="/" className="flex items-center gap-3 shrink-0 group">
+            <div
+              className="relative w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
+              style={{ background: 'linear-gradient(135deg, #92400E 0%, #B45309 45%, #D97706 100%)', boxShadow: '0 3px 14px rgba(180,83,9,0.45)' }}
+            >
               <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
+              {/* Premium ring glow */}
+              <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 0 0 3px rgba(217,119,6,0.35)' }} />
             </div>
             <div className="leading-none">
-              <span className="text-white font-bold text-2xl tracking-tight block">
+              <span className="text-white font-bold text-[1.15rem] tracking-tight block" style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
                 SelectedRoom
               </span>
-              <span className="text-brand-gold text-xs font-medium tracking-widest uppercase">
-                .com
+              <span className="text-[10px] font-semibold tracking-[0.18em] uppercase" style={{ color: '#FCD34D', letterSpacing: '0.18em' }}>
+                Premium Hotels
               </span>
             </div>
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-7">
+          <nav className="hidden md:flex items-center gap-6">
             {!loading && (role === 'partner' || role === 'admin') && (
               <Link
                 href="/partner/dashboard"
-                className="flex items-center gap-1.5 text-white/75 hover:text-brand-gold text-sm font-medium transition-colors duration-150"
+                className="relative flex items-center gap-1.5 text-white/70 hover:text-white text-sm font-medium transition-all duration-200 group py-1"
               >
-                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 shrink-0 text-white/50 group-hover:text-brand-gold-bright transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
                 {t['nav.partnerDashboard']}
+                <span className="absolute bottom-0 left-0 right-0 h-px bg-brand-gold-bright scale-x-0 group-hover:scale-x-100 transition-transform duration-250 origin-left" />
               </Link>
             )}
 
             {!loading && role === 'admin' && (
               <Link
                 href="/admin/dashboard"
-                className="flex items-center gap-1.5 text-brand-gold hover:text-yellow-400 text-sm font-semibold transition-colors duration-150"
+                className="relative flex items-center gap-1.5 text-sm font-semibold transition-all duration-200 group py-1"
+                style={{ color: '#FCD34D' }}
               >
                 <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
                 {t['nav.adminConsole']}
+                <span className="absolute bottom-0 left-0 right-0 h-px bg-yellow-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-250 origin-left" />
               </Link>
             )}
           </nav>
@@ -127,9 +154,12 @@ export default function Header() {
               aria-label="Language"
               value={language}
               onChange={(e) => setLanguage(e.target.value as Language)}
-              className="bg-white/10 text-white/80 text-xs border border-white/20 rounded-md px-2 py-1.5 cursor-pointer hover:border-brand-gold focus:outline-none focus:border-brand-gold transition-colors hidden sm:block"
+              className="text-white/85 text-xs rounded-lg px-2.5 py-1.5 cursor-pointer focus:outline-none transition-all hidden sm:block"
+              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(217,119,6,0.6)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)'; }}
             >
-              {LANGUAGES.map((lang) => (
+              {LANGUAGES.filter((l) => l.supported).map((lang) => (
                 <option key={lang.code} value={lang.code} className="bg-brand-blue text-white">
                   {lang.nativeName}
                 </option>
@@ -140,7 +170,10 @@ export default function Header() {
               aria-label="Currency"
               value={currency}
               onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
-              className="bg-white/10 text-white/80 text-xs border border-white/20 rounded-md px-2 py-1.5 cursor-pointer hover:border-brand-gold focus:outline-none focus:border-brand-gold transition-colors hidden sm:block"
+              className="text-white/85 text-xs rounded-lg px-2.5 py-1.5 cursor-pointer focus:outline-none transition-all hidden sm:block"
+              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(217,119,6,0.6)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)'; }}
             >
               {CURRENCIES.map((curr) => (
                 <option key={curr.code} value={curr.code} className="bg-brand-blue text-white">
@@ -186,68 +219,62 @@ export default function Header() {
                   </button>
 
                   {dropdownOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
-                      {/* User info */}
-                      <div className="px-4 py-2.5 border-b border-gray-100 mb-1">
-                        <p className="text-xs font-semibold text-gray-900 truncate">{displayName}</p>
-                        <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                    <div
+                      className="absolute right-0 top-full mt-2.5 w-64 bg-white rounded-2xl overflow-hidden z-50 animate-fade-in-up"
+                      style={{ boxShadow: '0 16px 48px rgba(15,23,42,0.18), 0 2px 8px rgba(15,23,42,0.08)', border: '1px solid rgba(30,58,138,0.08)' }}
+                    >
+                      {/* Gradient profile header */}
+                      <div className="relative px-4 py-4 flex items-center gap-3" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
+                        {avatarUrl ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img src={avatarUrl} alt={displayName} className="w-11 h-11 rounded-full object-cover shrink-0 ring-2 ring-white/40" />
+                        ) : (
+                          <div className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 ring-2 ring-white/40" style={{ background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)' }}>
+                            {getInitials(displayName)}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-white truncate leading-tight">{displayName}</p>
+                          <p className="text-xs text-white/65 truncate mt-0.5">{user.email}</p>
+                        </div>
                       </div>
 
-                      <Link
-                        href="/account"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-brand-blue-light hover:text-brand-blue transition-colors"
-                      >
-                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        {t['nav.myAccount']}
-                      </Link>
+                      {/* Menu items */}
+                      <div className="p-1.5">
+                        {[
+                          { href: '/account',      label: t['nav.myAccount'],   path: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+                          { href: '/my-trips',     label: t['nav.myTrips'],     path: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+                          { href: '/my-favorites', label: t['nav.myFavorites'], path: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
+                        ].map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setDropdownOpen(false)}
+                            className="group flex items-center gap-3 px-2.5 py-2 rounded-xl text-sm font-medium text-slate-700 hover:bg-brand-blue-light transition-colors"
+                          >
+                            <span className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors" style={{ background: '#EEF4FF', color: '#1E3A8A' }}>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.path} />
+                              </svg>
+                            </span>
+                            <span className="group-hover:text-brand-blue transition-colors">{item.label}</span>
+                          </Link>
+                        ))}
 
-                      <Link
-                        href="/my-trips"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-brand-blue-light hover:text-brand-blue transition-colors"
-                      >
-                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                        {t['nav.myTrips']}
-                      </Link>
+                        <div className="h-px bg-gray-100 my-1.5 mx-1" />
 
-                      <Link
-                        href="/my-bookings"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-brand-blue-light hover:text-brand-blue transition-colors"
-                      >
-                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        {t['nav.myBookings']}
-                      </Link>
-
-                      <Link
-                        href="/my-favorites"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-brand-blue-light hover:text-brand-blue transition-colors"
-                      >
-                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                        {t['nav.myFavorites']}
-                      </Link>
-
-                      <div className="h-px bg-gray-100 my-1" />
-
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                      >
-                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        {t['auth.signOut']}
-                      </button>
+                        <button
+                          onClick={handleLogout}
+                          className="group w-full flex items-center gap-3 px-2.5 py-2 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-red-50 text-red-500 group-hover:bg-red-100 transition-colors">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                          </span>
+                          {t['auth.signOut']}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -256,13 +283,16 @@ export default function Header() {
                 <div className="flex items-center gap-2 ml-1">
                   <Link
                     href="/login"
-                    className="text-white/75 hover:text-white text-sm font-medium px-3 py-1.5 transition-colors"
+                    className="text-white/70 hover:text-white text-sm font-medium px-3 py-1.5 transition-colors duration-200"
                   >
                     {t['auth.signIn']}
                   </Link>
                   <Link
                     href="/signup"
-                    className="bg-brand-gold hover:bg-yellow-500 text-white text-sm font-semibold px-4 py-1.5 rounded-lg transition-colors shadow-sm"
+                    className="text-white text-sm font-bold px-5 py-2 rounded-xl transition-all duration-250"
+                    style={{ background: 'linear-gradient(135deg, #92400E 0%, #B45309 45%, #D97706 100%)', boxShadow: '0 2px 14px rgba(180,83,9,0.4)' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 22px rgba(180,83,9,0.55)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 14px rgba(180,83,9,0.4)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
                   >
                     {t['auth.register']}
                   </Link>

@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
-import { fetchCommissionRate } from '@/app/admin/settings/actions';
 import { getMyHotels, getHotelData } from '../actions';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
@@ -24,6 +23,7 @@ type AnalyticsBooking = {
   total_price: number;
   created_at: string;
   rooms: { name: string } | null;
+  partner_amount: number | null;
 };
 
 type RawAnalyticsBookingRow = Omit<AnalyticsBooking, 'rooms'> & {
@@ -414,7 +414,6 @@ export default function AnalyticsPage() {
   const [rooms, setRooms]             = useState<AnalyticsRoom[]>([]);
   const [reviews, setReviews]         = useState<Review[]>([]);
   const [error, setError]             = useState<string | null>(null);
-  const [commissionRate, setCommissionRate] = useState(10);
 
   // ── Auth + load partner hotels ────────────────────────────────────────────
   useEffect(() => {
@@ -424,11 +423,7 @@ export default function AnalyticsPage() {
     setHotelsLoading(true);
     async function init() {
       try {
-        const [partnerHotels, rate] = await Promise.all([
-          getMyHotels(),
-          fetchCommissionRate(),
-        ]);
-        setCommissionRate(rate);
+        const partnerHotels = await getMyHotels();
         setHotels(partnerHotels as Hotel[]);
         if (partnerHotels.length > 0) setSelectedId(partnerHotels[0].id);
       } catch (err) {
@@ -469,7 +464,10 @@ export default function AnalyticsPage() {
   const grossRevenue = bookings
     .filter(b => b.payment_status === 'paid')
     .reduce((s, b) => s + (b.total_price ?? 0), 0);
-  const totalRevenue = Math.round(grossRevenue * ((100 - commissionRate) / 100) * 100) / 100;
+  // Use stored partner_amount — reflects the actual rate at time of each booking
+  const totalRevenue = bookings
+    .filter(b => b.payment_status === 'paid')
+    .reduce((s, b) => s + (b.partner_amount ?? 0), 0);
 
   const totalBookings   = bookings.length;
   const cancelledCount  = bookings.filter(b => b.status === 'cancelled').length;
@@ -555,9 +553,10 @@ export default function AnalyticsPage() {
               onClick={() => setSelectedId(h.id)}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 selectedId === h.id
-                  ? 'bg-brand-blue text-white shadow-sm'
+                  ? 'text-white shadow-sm'
                   : 'bg-white border border-gray-200 text-gray-600 hover:border-brand-blue/40 hover:text-brand-blue'
               }`}
+              style={selectedId === h.id ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
             >
               {h.name}
               {h.city && (

@@ -35,8 +35,7 @@ export default function DealsSection({
                 {subtitle}
               </p>
             )}
-            {/* Gold brand underline */}
-            <div className="mt-2.5 h-1 w-14 bg-brand-gold rounded-full" />
+            <div className="mt-2.5 h-0.5 w-14 rounded-full" style={{ background: 'linear-gradient(90deg, #B45309, #D97706)' }} />
           </div>
           <a
             href="#"

@@ -17,6 +17,10 @@ import {
 } from './actions';
 import AEDAmount from '@/app/partner/components/AEDAmount';
 import StatusBadge from '@/app/admin/components/StatusBadge';
+import { useAppSettingsStore } from '@/store/appSettingsStore';
+import { toAED } from '@/lib/currency';
+import { CURRENCY_MAP } from '@/lib/currencyData';
+import type { CurrencyCode } from '@/lib/currencyData';
 
 const STATUS_FILTERS: Array<{ label: string; value: DealStatus | 'all' }> = [
   { label: 'All',    value: 'all'    },
@@ -140,7 +144,7 @@ function EditInventoryModal({ room, onClose, onSaved }: EditInventoryModalProps)
             <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={saving} className="flex-1 px-4 py-2.5 rounded-xl bg-brand-blue text-white text-sm font-semibold hover:bg-brand-blue-dark transition-colors disabled:opacity-60">
+            <button type="submit" disabled={saving} className="flex-1 px-4 py-2.5 rounded-xl text-white text-sm font-semibold transition-all disabled:opacity-60 hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}>
               {saving ? 'Saving…' : 'Update'}
             </button>
           </div>
@@ -159,6 +163,8 @@ interface AddDealModalProps {
 }
 
 function AddDealModal({ rooms, onClose, onCreated }: AddDealModalProps) {
+  const currency   = useAppSettingsStore(s => s.currency) as CurrencyCode;
+  const currSymbol = CURRENCY_MAP[currency]?.symbol ?? 'AED';
   const today = new Date().toISOString().split('T')[0];
   const [roomId,     setRoomId]     = useState('');
   const [dealPrice,  setDealPrice]  = useState('');
@@ -199,7 +205,7 @@ function AddDealModal({ rooms, onClose, onCreated }: AddDealModalProps) {
     const data: CreateDealData = {
       hotel_id:   selectedRoom!.hotel_id,
       room_id:    Number(roomId),
-      deal_price: Number(dealPrice),
+      deal_price: toAED(Number(dealPrice), currency),
       title:      title.trim() || undefined,
       start_date: startDate,
       end_date:   endDate,
@@ -261,7 +267,7 @@ function AddDealModal({ rooms, onClose, onCreated }: AddDealModalProps) {
 
           {/* Deal price + live discount */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">Deal Price (AED) *</label>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">Deal Price ({currSymbol}) *</label>
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -334,7 +340,8 @@ function AddDealModal({ rooms, onClose, onCreated }: AddDealModalProps) {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-brand-blue text-white text-sm font-semibold hover:bg-brand-blue-dark transition-colors disabled:opacity-60"
+              className="flex-1 px-4 py-2.5 rounded-xl text-white text-sm font-semibold transition-all disabled:opacity-60 hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
             >
               {saving ? 'Saving…' : 'Add Deal'}
             </button>
@@ -492,7 +499,8 @@ export default function PartnerDealsPage() {
           {/* Add Deal */}
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-brand-blue rounded-xl hover:bg-brand-blue-dark transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -518,9 +526,10 @@ export default function PartnerDealsPage() {
             onClick={() => setFilter(value)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               filter === value
-                ? 'bg-brand-blue text-white shadow-sm'
+                ? 'text-white shadow-sm'
                 : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
             }`}
+            style={filter === value ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
           >
             {label}
             <span className={`ml-1.5 text-xs ${filter === value ? 'text-white/70' : 'text-gray-400'}`}>

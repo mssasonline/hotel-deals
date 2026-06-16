@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import ScrollReveal from './ScrollReveal';
 
 interface Feature {
   icon: ReactNode;
@@ -60,56 +61,78 @@ export default function WhyChooseUs() {
   const t = useTranslation();
 
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-20 relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 50%, #F8FAFC 100%)' }}>
+      {/* Subtle decorative background */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle, #1E3A8A 0%, transparent 70%)', filter: 'blur(60px)' }} />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle, #B45309 0%, transparent 70%)', filter: 'blur(50px)' }} />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
 
         {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+        <ScrollReveal className="text-center mb-14">
+          <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] mb-3 px-4 py-1.5 rounded-full" style={{ color: '#B45309', background: 'rgba(180,83,9,0.07)', border: '1px solid rgba(180,83,9,0.14)' }}>
+            Why SelectedRoom
+          </span>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: '#0F172A' }}>
             {t['why.heading']}
           </h2>
-          <p className="mt-2 text-gray-500 text-sm max-w-xl mx-auto">
+          <p className="mt-3 text-gray-500 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
             {t['why.subtitle']}
           </p>
-          <div className="mt-4 h-1 w-14 bg-brand-gold rounded-full mx-auto" />
-        </div>
+          <div className="mt-5 divider-gold w-16 mx-auto" />
+        </ScrollReveal>
 
         {/* Features */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {FEATURES.map((f) => (
-            <div
-              key={f.titleKey}
-              className="flex flex-col items-center text-center group"
-            >
-              <div className="w-16 h-16 rounded-2xl bg-brand-blue-light text-brand-blue flex items-center justify-center mb-4 transition-colors duration-300 group-hover:bg-brand-blue group-hover:text-white shadow-sm">
-                {f.icon}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
+          {FEATURES.map((f, i) => (
+            <ScrollReveal key={f.titleKey} delay={i * 80}>
+              <div className="flex flex-col items-center text-center group">
+                {/* Premium icon container with rotated accent */}
+                <div className="relative w-20 h-20 mb-6">
+                  <div
+                    className="absolute inset-0 rounded-2xl transition-all duration-400 group-hover:rotate-12 group-hover:scale-90 opacity-30"
+                    style={{ background: 'linear-gradient(135deg, #B45309, #D97706)', transform: 'rotate(8deg) scale(0.88)' }}
+                  />
+                  <div
+                    className="relative w-full h-full rounded-2xl flex items-center justify-center text-white transition-all duration-350 group-hover:scale-110 group-hover:-rotate-2"
+                    style={{
+                      background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
+                      boxShadow: '0 6px 20px rgba(30,58,138,0.25)',
+                    }}
+                  >
+                    {f.icon}
+                  </div>
+                </div>
+                <h3 className="font-bold mb-2 text-[1.05rem]" style={{ color: '#0F172A' }}>
+                  {t[f.titleKey as keyof typeof t]}
+                </h3>
+                <p className="text-sm leading-relaxed max-w-[200px]" style={{ color: '#64748B' }}>
+                  {t[f.descKey as keyof typeof t]}
+                </p>
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">
-                {t[f.titleKey as keyof typeof t]}
-              </h3>
-              <p className="text-gray-500 text-sm leading-relaxed">
-                {t[f.descKey as keyof typeof t]}
-              </p>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
 
         {/* Press / trust bar */}
-        <div className="mt-14 pt-10 border-t border-gray-100">
-          <p className="text-center text-gray-400 text-xs uppercase tracking-widest mb-5 font-medium">
+        <ScrollReveal delay={200} className="mt-16 pt-10 border-t border-gray-100">
+          <p className="text-center text-gray-400 text-xs uppercase tracking-[0.2em] mb-6 font-semibold">
             {t['why.featuredIn']}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-8">
+          <div className="flex flex-wrap items-center justify-center gap-10">
             {PRESS_NAMES.map((name) => (
               <span
                 key={name}
-                className="text-gray-300 font-bold text-base tracking-tight select-none"
+                className="font-bold text-base tracking-tight select-none transition-colors duration-200 hover:text-gray-500 cursor-default"
+                style={{ color: '#CBD5E1', fontFamily: 'var(--font-playfair), Georgia, serif', letterSpacing: '-0.01em' }}
               >
                 {name}
               </span>
             ))}
           </div>
-        </div>
+        </ScrollReveal>
 
       </div>
     </section>

@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/authContext';
 import { saveLoginRedirect } from '@/lib/auth';
 import CurrencyAmount from '@/app/components/CurrencyAmount';
 import DealBookingModal from './DealBookingModal';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 export interface PartnerDeal {
   id: string;
@@ -66,6 +67,7 @@ export default function PartnerDealsSection({
   const { user } = useAuth();
   const router   = useRouter();
   const pathname = usePathname();
+  const t        = useTranslation();
   const [modalDeal, setModalDeal] = useState<PartnerDeal | null>(null);
 
   const today = new Date().toISOString().split('T')[0];
@@ -108,11 +110,11 @@ export default function PartnerDealsSection({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
               d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
           </svg>
-          PARTNER DEAL
+          {t['hotel.partnerDealBadge']}
         </div>
-        <h2 className="font-bold text-gray-900 text-xl">Special Deals</h2>
+        <h2 className="font-bold text-gray-900 text-xl">{t['nav.specialDeals']}</h2>
         <span className="text-xs text-amber-700 bg-white border border-amber-200 px-2.5 py-1 rounded-full font-semibold">
-          Track 2 · Fixed Price
+          {t['sections.trackFixed']}
         </span>
       </div>
 
@@ -137,11 +139,11 @@ export default function PartnerDealsSection({
                       </span>
                     )}
                     <span className="text-xs font-bold text-brand-gold bg-brand-gold/10 border border-brand-gold/20 px-2.5 py-1 rounded-full">
-                      FIXED PRICE
+                      {t['hotel.fixedPriceBadge']}
                     </span>
                     <span className="flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full font-semibold">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                      Active Now
+                      {t['hotel.activeNow']}
                     </span>
                   </div>
 
@@ -157,12 +159,12 @@ export default function PartnerDealsSection({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    Valid {fmtDate(deal.start_date)} → {fmtDate(deal.end_date)}
+                    {t['hotel.validPeriod'].replace('{from}', fmtDate(deal.start_date)).replace('{to}', fmtDate(deal.end_date))}
                   </div>
 
                   {saving > 0 && (
                     <p className="mt-2 text-xs text-green-700 font-semibold">
-                      Save <CurrencyAmount amount={saving} /> per night vs rack rate
+                      {t['hotel.savePerNight'].replace('{amount}', '')}<CurrencyAmount amount={saving} />
                     </p>
                   )}
                 </div>
@@ -171,21 +173,22 @@ export default function PartnerDealsSection({
                 <div className="border-t sm:border-t-0 sm:border-l border-gray-100 bg-gray-50/50 px-5 py-5 flex flex-col justify-center items-end gap-2 sm:min-w-[170px]">
                   {deal.base_price > deal.deal_price && (
                     <p className="text-xs text-red-400 line-through">
-                      <CurrencyAmount amount={deal.base_price} />/night
+                      <CurrencyAmount amount={deal.base_price} />{t['price.perNight']}
                     </p>
                   )}
                   <div className="flex items-baseline gap-1">
                     <span className="text-2xl font-extrabold text-brand-gold">
                       <CurrencyAmount amount={deal.deal_price} />
                     </span>
-                    <span className="text-xs text-gray-400">/night</span>
+                    <span className="text-xs text-gray-400">{t['price.perNight']}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleOpen(deal)}
-                    className="w-full bg-brand-gold hover:bg-yellow-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors shadow-sm hover:shadow-md"
+                    className="w-full text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all hover:-translate-y-0.5"
+                    style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
                   >
-                    Book This Deal
+                    {t['hotel.bookThisDeal']}
                   </button>
                 </div>
               </div>
@@ -215,7 +218,7 @@ export default function PartnerDealsSection({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
                           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Coming Soon
+                      {t['hotel.comingSoon']}
                     </span>
                   </div>
 
@@ -231,7 +234,7 @@ export default function PartnerDealsSection({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    Starts {fmtDate(deal.start_date)} → ends {fmtDate(deal.end_date)}
+                    {t['hotel.startsPeriod'].replace('{from}', fmtDate(deal.start_date)).replace('{to}', fmtDate(deal.end_date))}
                   </div>
                 </div>
 
@@ -239,21 +242,21 @@ export default function PartnerDealsSection({
                 <div className="border-t sm:border-t-0 sm:border-l border-amber-100 bg-amber-50/30 px-5 py-5 flex flex-col justify-center items-end gap-2 sm:min-w-[170px]">
                   {deal.base_price > deal.deal_price && (
                     <p className="text-xs text-red-400 line-through">
-                      <CurrencyAmount amount={deal.base_price} />/night
+                      <CurrencyAmount amount={deal.base_price} />{t['price.perNight']}
                     </p>
                   )}
                   <div className="flex items-baseline gap-1">
                     <span className="text-2xl font-extrabold text-amber-600">
                       <CurrencyAmount amount={deal.deal_price} />
                     </span>
-                    <span className="text-xs text-gray-400">/night</span>
+                    <span className="text-xs text-gray-400">{t['price.perNight']}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleOpen(deal)}
                     className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors shadow-sm"
                   >
-                    Reserve in Advance
+                    {t['hotel.reserveInAdvance']}
                   </button>
                 </div>
               </div>

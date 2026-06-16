@@ -54,8 +54,11 @@ export type HotelBooking = {
   status: string;
   payment_status: string;
   total_price: number;
+  subtotal: number | null;
   created_at: string;
   rooms: { id: string; name: string } | null;
+  partner_amount: number | null;
+  admin_amount: number | null;
 };
 
 export type HotelRoom = {
@@ -78,6 +81,7 @@ export type HotelData = {
   bookings: HotelBooking[];
   rooms: HotelRoom[];
   reviews: HotelReview[];
+  imageCount: number;
 };
 
 export type MyProfile = {
@@ -99,7 +103,7 @@ export type MyProfile = {
 export async function getHotelData(hotelId: string): Promise<HotelData> {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { bookings: [], rooms: [], reviews: [] };
+  if (!user) return { bookings: [], rooms: [], reviews: [], imageCount: 0 };
 
   // Ownership check
   const { data: hp } = await supabase
@@ -108,13 +112,13 @@ export async function getHotelData(hotelId: string): Promise<HotelData> {
     .eq('user_id', user.id)
     .eq('hotel_id', hotelId)
     .maybeSingle();
-  if (!hp) return { bookings: [], rooms: [], reviews: [] };
+  if (!hp) return { bookings: [], rooms: [], reviews: [], imageCount: 0 };
 
   const admin = createAdminClient();
-  const [bookingsRes, roomsRes, reviewsRes] = await Promise.all([
+  const [bookingsRes, roomsRes, reviewsRes, imagesRes] = await Promise.all([
     admin
       .from('bookings')
-      .select('id, hotel_id, room_id, guest_name, guest_email, check_in, check_out, status, payment_status, total_price, created_at, rooms(id, name)')
+      .select('id, hotel_id, room_id, guest_name, guest_email, check_in, check_out, status, payment_status, total_price, subtotal, created_at, rooms(id, name), booking_revenue(partner_amount, admin_amount)')
       .eq('hotel_id', hotelId)
       .order('created_at', { ascending: false }),
     admin
@@ -127,19 +131,34 @@ export async function getHotelData(hotelId: string): Promise<HotelData> {
       .select('id, rating, comment, created_at')
       .eq('hotel_id', hotelId)
       .order('created_at', { ascending: false }),
+    admin
+      .from('hotel_images')
+      .select('id', { count: 'exact', head: true })
+      .eq('hotel_id', hotelId),
   ]);
 
-  type RawBooking = Omit<HotelBooking, 'rooms'> & { rooms: { id: string; name: string }[] | { id: string; name: string } | null };
+  type RawBooking = Omit<HotelBooking, 'rooms' | 'partner_amount' | 'admin_amount'> & {
+    rooms: { id: string; name: string }[] | { id: string; name: string } | null;
+    booking_revenue: { partner_amount: number; admin_amount: number }[] | { partner_amount: number; admin_amount: number } | null;
+  };
 
   return {
-    bookings: ((bookingsRes.data ?? []) as RawBooking[]).map(row => ({
-      ...row,
-      id: String(row.id),
-      hotel_id: String(row.hotel_id),
-      rooms: Array.isArray(row.rooms) ? (row.rooms[0] ?? null) : (row.rooms ?? null),
-    })),
+    bookings: ((bookingsRes.data ?? []) as RawBooking[]).map(row => {
+      const rev = Array.isArray(row.booking_revenue)
+        ? (row.booking_revenue[0] ?? null)
+        : (row.booking_revenue ?? null);
+      return {
+        ...row,
+        id: String(row.id),
+        hotel_id: String(row.hotel_id),
+        rooms: Array.isArray(row.rooms) ? (row.rooms[0] ?? null) : (row.rooms ?? null),
+        partner_amount: rev?.partner_amount ?? null,
+        admin_amount:   rev?.admin_amount   ?? null,
+      };
+    }),
     rooms: (roomsRes.data ?? []) as HotelRoom[],
     reviews: (reviewsRes.data ?? []) as HotelReview[],
+    imageCount: imagesRes.count ?? 0,
   };
 }
 
@@ -622,6 +641,17 @@ export async function addHotelImage(
   if (!hp) return { data: null, error: 'Access denied' };
 
   const admin = createAdminClient();
+
+  const MAX_IMAGES = 15;
+
+  // Count existing images and enforce limit
+  const { count } = await admin
+    .from('hotel_images')
+    .select('id', { count: 'exact', head: true })
+    .eq('hotel_id', hotelId);
+  if ((count ?? 0) >= MAX_IMAGES) {
+    return { data: null, error: `Maximum ${MAX_IMAGES} images allowed per hotel.` };
+  }
 
   // Next sort_order = max existing + 1
   const { data: existing } = await admin

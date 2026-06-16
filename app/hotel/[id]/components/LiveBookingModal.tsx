@@ -9,6 +9,7 @@ import CurrencyAmount from '@/app/components/CurrencyAmount';
 import { getCurrentTier, calcLivePrice, calcActualDiscount, isBookingOpen } from '@/lib/pricingEngine';
 import { localDateISO } from '@/lib/dateUtils';
 import type { RoomCategory } from '@/lib/roomImages';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 interface Room {
   id: string;
@@ -97,6 +98,7 @@ export default function LiveBookingModal({
   const router    = useRouter();
   const pathname  = usePathname();
   const { setRoom, setSelectedHotel, setDates, setGuests } = useBookingStore();
+  const t         = useTranslation();
 
   const tier      = getCurrentTier();
   const basePrice = Number(room.base_price) || 0;
@@ -187,59 +189,60 @@ export default function LiveBookingModal({
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
 
         {/* Header */}
-        <div className="flex items-start justify-between px-5 py-4 border-b border-gray-100">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="flex items-center gap-1 bg-blue-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                LIVE
-              </span>
-              {discount > 0 && (
-                <span className="bg-red-500 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-                  -{discount}% Tonight
+        <div className="relative px-5 py-4" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="flex items-center gap-1 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.18)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  {t['sections.live']}
                 </span>
-              )}
+                {discount > 0 && (
+                  <span className="text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full" style={{ background: 'rgba(180,83,9,0.85)' }}>
+                    -{discount}% {t['price.tonightOnly']}
+                  </span>
+                )}
+              </div>
+              <h2 className="font-bold text-white text-base leading-tight">{room.name}</h2>
             </div>
-            <h2 className="font-bold text-gray-900 text-base leading-tight">{room.name}</h2>
+            <button type="button" onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 shrink-0 ml-2 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-          <button type="button" onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 shrink-0 ml-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
         </div>
 
         <div className="px-5 py-4 space-y-4">
 
           {/* Price banner */}
-          <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-center justify-between">
+          <div className="rounded-xl px-4 py-3 flex items-center justify-between" style={{ background: 'rgba(30,58,138,0.06)', border: '1px solid rgba(30,58,138,0.12)' }}>
             <div>
-              <p className="text-xs text-gray-400 mb-0.5">Tonight's rate</p>
+              <p className="text-xs mb-0.5" style={{ color: '#64748B' }}>{t['hotel.tonightRate']}</p>
               {discount > 0 && (
-                <p className="text-xs text-red-400 line-through">
+                <p className="text-xs mb-0.5" style={{ color: '#94A3B8', textDecoration: 'line-through', textDecorationColor: '#CBD5E1', textDecorationThickness: '1.5px' }}>
                   <CurrencyAmount amount={basePrice} />
                 </p>
               )}
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-extrabold text-blue-700">
+                <span className="text-2xl font-extrabold" style={{ color: '#1E3A8A' }}>
                   <CurrencyAmount amount={livePrice} />
                 </span>
-                <span className="text-xs text-gray-400">/night</span>
+                <span className="text-xs" style={{ color: '#94A3B8' }}>{t['price.perNight']}</span>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xs text-gray-400 mb-1">Date</p>
-              <p className="text-xs font-semibold text-gray-700">{fmtDateShort(checkIn)}</p>
-              <p className="text-xs text-gray-400">1 night stay</p>
+              <p className="text-xs font-semibold" style={{ color: '#0F172A' }}>{fmtDateShort(checkIn)}</p>
+              <p className="text-xs" style={{ color: '#94A3B8' }}>{t['hotel.nightStay']}</p>
             </div>
           </div>
 
           {/* Guests */}
           <div className="border border-gray-200 rounded-xl px-4 divide-y divide-gray-100">
             <Counter
-              label="Adults"
-              sublabel="Age 18+"
+              label={t['hotel.adults']}
+              sublabel={t['hotel.adultsSublabel']}
               value={adults}
               onDec={() => setAdults((n) => Math.max(1, n - 1))}
               onInc={() => setAdults((n) => Math.min(maxAdults, n + 1))}
@@ -247,8 +250,8 @@ export default function LiveBookingModal({
               max={maxAdults}
             />
             <Counter
-              label="Children"
-              sublabel="Ages 0–17"
+              label={t['hotel.children']}
+              sublabel={t['hotel.childrenSublabel']}
               value={children}
               onDec={() => setChildren((n) => Math.max(0, n - 1))}
               onInc={() => setChildren((n) => Math.min(maxChildren, n + 1))}
@@ -256,7 +259,7 @@ export default function LiveBookingModal({
               max={Math.min(2, maxChildren)}
             />
             <div className="py-2 text-center text-xs text-gray-400">
-              {adults} adult{adults !== 1 ? 's' : ''}{children > 0 ? ` · ${children} child${children !== 1 ? 'ren' : ''}` : ''} · Room capacity: {capacity} adults
+              {t['hotel.roomCapacity'].replace('{n}', String(capacity))}
             </div>
           </div>
 
@@ -276,20 +279,20 @@ export default function LiveBookingModal({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Checking availability…
+                {t['hotel.checkingAvailability']}
               </>
             ) : soldOut ? (
-              'Sold out tonight'
+              t['hotel.soldOutTonight']
             ) : availability === 1 ? (
-              'Last room available tonight!'
+              t['hotel.lastRoomTonight']
             ) : availability !== null && availability <= 3 ? (
-              `Only ${availability} rooms left tonight`
+              t['hotel.onlyNRoomsLeft'].replace('{n}', String(availability))
             ) : (
               <>
                 <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                 </svg>
-                Available tonight
+                {t['hotel.availableTonight']}
               </>
             )}
           </div>
@@ -297,15 +300,15 @@ export default function LiveBookingModal({
           {/* Price breakdown */}
           <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm border border-gray-100">
             <div className="flex justify-between text-gray-600">
-              <span>1 night × <CurrencyAmount amount={livePrice} /></span>
+              <span>{t['hotel.nightStay']} × <CurrencyAmount amount={livePrice} /></span>
               <span className="font-semibold text-gray-800"><CurrencyAmount amount={livePrice} /></span>
             </div>
             <div className="flex justify-between text-gray-500">
-              <span>Taxes & fees (15%)</span>
+              <span>{t['hotel.taxesFees']}</span>
               <span><CurrencyAmount amount={taxes} /></span>
             </div>
             <div className="border-t border-gray-200 pt-2 flex justify-between font-extrabold text-gray-900">
-              <span>Total</span>
+              <span>{t['price.total']}</span>
               <span className="text-brand-blue text-base"><CurrencyAmount amount={total} /></span>
             </div>
           </div>
@@ -315,14 +318,15 @@ export default function LiveBookingModal({
             type="button"
             onClick={handleBook}
             disabled={!bookingOpen || soldOut || checkingAvail}
-            className="w-full bg-brand-gold hover:bg-yellow-500 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-brand-gold/25 text-base flex items-center justify-between px-5"
+            className="w-full disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-base flex items-center justify-between px-5 transition-all hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
           >
-            <span>{!bookingOpen ? 'تفتح الساعة 12:00 PM' : soldOut ? 'Sold Out' : 'Book Now'}</span>
+            <span>{!bookingOpen ? t['hotel.bookingOpensNoon'] : soldOut ? t['booking.soldOutBtn'] : t['hotel.bookNow']}</span>
             {!soldOut && <span><CurrencyAmount amount={total} /></span>}
           </button>
 
           <p className="text-center text-gray-400 text-xs -mt-2">
-            You won&apos;t be charged yet · Non-refundable
+            {t['booking.notChargedYet']}
           </p>
         </div>
       </div>

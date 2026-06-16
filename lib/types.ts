@@ -27,7 +27,17 @@ export type Booking = {
   check_out: string;
   status: string;
   payment_status: string;
+  /** Always in AED — the platform's base currency. */
   total_price: number;
+  subtotal: number | null;
+  /** Partner's share of total_price in AED (set when payment is settled). */
+  partner_amount?: number | null;
+  /** Platform's commission share in AED (set when payment is settled). */
+  admin_amount?: number | null;
+  /** ISO currency code the guest paid in (e.g. 'eur', 'usd'). Defaults to 'aed'. */
+  charged_currency: string;
+  /** AED → charged_currency rate locked at booking time. charged_amount = total_price × this. */
+  locked_exchange_rate: number;
   created_at: string;
   rooms: { name: string } | null;
 };

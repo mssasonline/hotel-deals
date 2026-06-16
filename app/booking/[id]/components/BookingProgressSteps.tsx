@@ -19,13 +19,16 @@ export default function BookingProgressSteps() {
           <div className={`flex items-center gap-2 text-sm font-medium ${
             step.active ? 'text-brand-blue' : step.done ? 'text-green-600' : 'text-gray-400'
           }`}>
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-              step.done
-                ? 'bg-green-500 text-white'
-                : step.active
-                ? 'bg-brand-blue text-white'
-                : 'bg-gray-200 text-gray-400'
-            }`}>
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                step.done
+                  ? 'bg-green-500 text-white'
+                  : step.active
+                  ? 'text-white'
+                  : 'bg-gray-200 text-gray-400'
+              }`}
+              style={step.active ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
+            >
               {step.done ? (
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
