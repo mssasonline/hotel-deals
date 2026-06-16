@@ -179,27 +179,9 @@ export default function BookingPageClient({
     setSubmitting(true);
     setSubmitError('');
 
-    // Backstop for a stuck client (see authContext recovery): after the tab was
-    // backgrounded the auth lock can deadlock or HTTP connections go stale, so
-    // every DB query hangs. Probe with a tiny REAL query (getSession() alone
-    // reads storage and would miss a dead socket). No answer → reload to
-    // recreate the client; the persisted Zustand store keeps our context intact.
-    const probe = await Promise.race([
-      supabase.from('platform_settings').select('key').limit(1)
-        .then(() => 'ok' as const, () => 'ok' as const),
-      new Promise<'stuck'>((resolve) => setTimeout(() => resolve('stuck'), 5000)),
-    ]);
-    if (probe === 'stuck') {
-      window.location.reload();
-      return;
-    }
-    // Network is alive — a genuinely missing session is now safe to check.
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      saveLoginRedirect(window.location.pathname);
-      router.push('/login');
-      return;
-    }
+    // NOTE: no reload/probe here on purpose. Recovering a stuck client belongs
+    // BEFORE the user acts (see the focus recovery in authContext) — reloading
+    // at submit time would throw away the booking the user just confirmed.
 
     // Timeout helper — rejects after ms milliseconds
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
