@@ -179,6 +179,15 @@ export default function BookingPageClient({
     setSubmitting(true);
     setSubmitError('');
 
+    // Verify session is still valid before hitting the DB — token may have
+    // expired while the user was on another tab/site.
+    const { data: { session: freshSession } } = await supabase.auth.getSession();
+    if (!freshSession) {
+      saveLoginRedirect(window.location.pathname);
+      router.push('/login');
+      return;
+    }
+
     // Timeout helper — rejects after ms milliseconds
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function withTimeout(p: Promise<any>, ms: number): Promise<any> {
