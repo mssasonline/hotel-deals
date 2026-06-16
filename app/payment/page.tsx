@@ -32,14 +32,6 @@ function parseToISO(dateStr: string): string {
   return `${year}-${months[mon] ?? '01'}-${day.padStart(2, '0')}`;
 }
 
-function ChevronIcon() {
-  return (
-    <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-    </svg>
-  );
-}
-
 function PaymentProgressSteps() {
   const steps = [
     { label: 'Search', done: true },
@@ -129,7 +121,7 @@ export default function PaymentPage() {
   if (!authChecked) return (
     <>
       <Header />
-      <main className="bg-gray-50 min-h-screen">
+      <main className="min-h-screen" style={{ background: '#F8FAFC' }}>
         <LoadingSpinner />
       </main>
       <Footer />
@@ -220,41 +212,44 @@ export default function PaymentPage() {
     <>
       <Header />
 
-      <main className="bg-gray-50 min-h-screen">
+      <main className="min-h-screen" style={{ background: '#F8FAFC' }}>
+
+        {/* ── Premium banner ── */}
+        <div style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
+            <nav className="flex items-center gap-2 text-xs mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <Link href="/" className="hover:text-white/70 transition-colors">Home</Link>
+              <svg className="w-3 h-3 shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              {selectedHotel && (
+                <>
+                  <Link href={`/hotel/${selectedHotel.id}`} className="hover:text-white/70 transition-colors truncate max-w-[140px]" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    {selectedHotel.name}
+                  </Link>
+                  <svg className="w-3 h-3 shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </>
+              )}
+              <span style={{ color: 'rgba(255,255,255,0.6)' }}>Payment</span>
+            </nav>
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 rounded-full shrink-0" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+              <div>
+                <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>
+                  Secure Payment
+                </h1>
+                <p className="text-white/45 text-xs mt-0.5">
+                  Complete your reservation for{' '}
+                  <span className="font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                    {selectedHotel?.name ?? 'your selected hotel'}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
-            <Link href="/" className="hover:text-brand-blue transition-colors">Home</Link>
-            <ChevronIcon />
-            <Link href="/search?city=Dubai" className="hover:text-brand-blue transition-colors">Search</Link>
-            <ChevronIcon />
-            {selectedHotel && (
-              <>
-                <Link href={`/hotel/${selectedHotel.id}`} className="hover:text-brand-blue transition-colors truncate max-w-[140px]">
-                  {selectedHotel.name}
-                </Link>
-                <ChevronIcon />
-              </>
-            )}
-            <span className="text-gray-700 font-medium">Payment</span>
-          </nav>
-
           {/* Progress steps */}
           <PaymentProgressSteps />
-
-          {/* Page title */}
-          <div className="mb-6">
-            <h1 className="font-extrabold text-gray-900 text-2xl sm:text-3xl leading-tight">
-              Secure Payment
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">
-              Complete your reservation for{' '}
-              <span className="font-semibold text-gray-700">
-                {selectedHotel?.name ?? 'your selected hotel'}
-              </span>
-            </p>
-          </div>
 
           {/* Secure checkout banner — full width */}
           <SecureCheckoutBanner />
@@ -273,7 +268,7 @@ export default function PaymentPage() {
               />
 
               {/* Reserve with confidence block */}
-              <div className="mt-4 bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-5">
+              <div className="mt-4 bg-white rounded-2xl overflow-hidden px-6 py-5" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
                 <h3 className="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
                   <svg className="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -407,7 +402,8 @@ export default function PaymentPage() {
                 ].map((badge) => (
                   <div
                     key={badge.label}
-                    className="bg-white rounded-2xl border border-gray-100 shadow-sm py-4 px-3 text-center"
+                    className="bg-white rounded-2xl overflow-hidden py-4 px-3 text-center"
+                    style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}
                   >
                     <div className="flex justify-center mb-2">{badge.icon}</div>
                     <p className="text-gray-800 text-xs font-bold leading-tight">{badge.label}</p>

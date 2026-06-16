@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 function ChevronIcon() {
   return (
-    <svg className="w-4 h-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="w-3 h-3 shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
     </svg>
   );
@@ -111,19 +111,32 @@ export default async function BookingPage({ params }: Props) {
       <Header />
 
       <main className="min-h-screen" style={{ background: '#F8FAFC' }}>
+
+        {/* ── Premium banner ── */}
+        <div style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
+            <nav className="flex items-center gap-2 text-xs text-white/40 mb-4">
+              <Link href="/" className="hover:text-white/70 transition-colors">Home</Link>
+              <ChevronIcon />
+              <Link href="/search?city=Dubai" className="hover:text-white/70 transition-colors">Search</Link>
+              <ChevronIcon />
+              <Link href={`/hotel/${hotelId}`} className="hover:text-white/70 transition-colors truncate max-w-[160px] text-white/50">{hotel.name}</Link>
+              <ChevronIcon />
+              <span className="text-white/60">Booking</span>
+            </nav>
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 rounded-full shrink-0" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+              <div>
+                <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>
+                  Complete Your Booking
+                </h1>
+                <p className="text-white/45 text-xs mt-0.5">{hotel.name} · Step 3 of 4</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
-            <Link href="/" className="hover:text-brand-blue transition-colors">Home</Link>
-            <ChevronIcon />
-            <Link href="/search?city=Dubai" className="hover:text-brand-blue transition-colors">Search</Link>
-            <ChevronIcon />
-            <Link href={`/hotel/${hotelId}`} className="hover:text-brand-blue transition-colors truncate max-w-[160px]">{hotel.name}</Link>
-            <ChevronIcon />
-            <span className="text-gray-700 font-medium">Booking</span>
-          </nav>
-
           {/* Progress steps */}
           <BookingProgressSteps />
 
@@ -133,7 +146,6 @@ export default async function BookingPage({ params }: Props) {
             fixedFeePerNight={taxRate.fixed_fee_per_night}
             taxCountryCode={taxRate.country_code}
           />
-
         </div>
       </main>
 

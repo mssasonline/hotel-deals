@@ -93,7 +93,7 @@ export default function BookingSuccessContent({ data }: { data: BookingSuccessDa
       </div>
 
       {/* ── QR Code ────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-5">
+      <div className="bg-white rounded-2xl overflow-hidden mb-5" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
         <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
           <div className="w-9 h-9 bg-brand-blue-light rounded-xl flex items-center justify-center shrink-0">
             <svg className="w-5 h-5 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,7 +130,7 @@ export default function BookingSuccessContent({ data }: { data: BookingSuccessDa
       </div>
 
       {/* ── Booking Details Card ───────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-5">
+      <div className="bg-white rounded-2xl overflow-hidden mb-5" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
         {/* Header */}
         <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
           <div className="w-9 h-9 bg-brand-blue-light rounded-xl flex items-center justify-center shrink-0">
@@ -224,7 +224,7 @@ export default function BookingSuccessContent({ data }: { data: BookingSuccessDa
       </div>
 
       {/* ── Actions ────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6 space-y-3">
+      <div className="bg-white rounded-2xl overflow-hidden p-6 mb-6 space-y-3" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
         <Link
           href="/my-trips"
           className="flex items-center justify-between w-full border border-gray-200 hover:border-brand-blue text-gray-700 hover:text-brand-blue font-semibold py-3.5 px-5 rounded-2xl transition-all duration-150 group"
@@ -282,7 +282,7 @@ export default function BookingSuccessContent({ data }: { data: BookingSuccessDa
             sub: t['success.emailSentConfirm'],
           },
         ].map((badge) => (
-          <div key={badge.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm py-4 px-3 text-center">
+          <div key={badge.label} className="bg-white rounded-2xl overflow-hidden py-4 px-3 text-center" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
             <div className="flex justify-center mb-2">{badge.icon}</div>
             <p className="text-gray-800 text-xs font-bold leading-tight">{badge.label}</p>
             <p className="text-gray-400 text-[11px] mt-0.5">{badge.sub}</p>
