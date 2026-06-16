@@ -328,33 +328,41 @@ export default function AccountPage() {
     <>
       <Header />
       <main className="min-h-screen pb-16" style={{ background: '#F8FAFC' }}>
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-          <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-            <Link href="/" className="hover:text-brand-blue transition-colors">
-              {t['account.breadcrumbHome']}
-            </Link>
-            <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-            <span className="text-gray-900 font-medium">{t['account.title']}</span>
-          </nav>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-6 mb-6 flex items-center gap-5">
-            {avatarUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={avatarUrl} alt={displayName} className="w-16 h-16 rounded-full object-cover shrink-0" />
-            ) : (
-              <div className="w-16 h-16 bg-brand-gold rounded-full flex items-center justify-center text-xl font-bold text-white shrink-0">
-                {getInitials(displayName)}
+        {/* ── Premium banner ── */}
+        <div style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <nav className="flex items-center gap-2 text-xs text-white/40 mb-5">
+              <Link href="/" className="hover:text-white/70 transition-colors">{t['account.breadcrumbHome']}</Link>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              <span className="text-white/60">{t['account.title']}</span>
+            </nav>
+            <div className="flex items-center gap-5">
+              {/* Avatar */}
+              <div className="shrink-0">
+                {avatarUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={avatarUrl} alt={displayName} className="w-16 h-16 rounded-2xl object-cover ring-2 ring-white/20" />
+                ) : (
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold text-white ring-2 ring-white/20" style={{ background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)' }}>
+                    {getInitials(displayName)}
+                  </div>
+                )}
               </div>
-            )}
-            <div className="min-w-0">
-              <h1 className="text-xl font-bold text-gray-900">{t['account.title']}</h1>
-              <p className="text-sm text-gray-500 mt-0.5 truncate">{displayName}</p>
-              <p className="text-xs text-gray-400 truncate">{user.email}</p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <div className="w-1 h-5 rounded-full shrink-0" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+                  <h1 className="text-xl font-bold truncate" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>
+                    {displayName}
+                  </h1>
+                </div>
+                <p className="text-white/45 text-xs pl-3">{user.email}</p>
+              </div>
             </div>
           </div>
+        </div>
+
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
           {successMsg && (
             <div className="mb-5 px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm flex items-center gap-2.5">

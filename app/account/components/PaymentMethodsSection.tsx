@@ -44,7 +44,7 @@ export function PaymentMethodsSection({
     <>
       <section className="mb-6">
         <h2 className="text-base font-bold text-gray-900 mb-3 px-1">{t['account.paymentMethods']}</h2>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
           <div className="px-6 py-3.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
               {t['account.paymentCards']}

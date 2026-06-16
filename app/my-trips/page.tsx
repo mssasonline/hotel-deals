@@ -399,7 +399,7 @@ function BookingCard({
   const canReview = booking.status === 'completed';
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-0.5" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }} onMouseEnter={e => (e.currentTarget.style.boxShadow='0 8px 28px rgba(15,34,96,0.13)')} onMouseLeave={e => (e.currentTarget.style.boxShadow='0 2px 12px rgba(15,34,96,0.06)')}>
       <div className="flex flex-col sm:flex-row">
         {/* Hotel image */}
         <div className="sm:w-52 sm:shrink-0 h-48 sm:h-auto relative overflow-hidden bg-brand-blue-light">
@@ -447,7 +447,7 @@ function BookingCard({
           </div>
 
           {/* Stay details */}
-          <div className="grid grid-cols-3 gap-3 bg-gray-50 rounded-xl px-4 py-3">
+          <div className="grid grid-cols-3 gap-3 rounded-xl px-4 py-3" style={{ background: 'rgba(30,58,138,0.04)', border: '1px solid rgba(30,58,138,0.06)' }}>
             <div>
               <p className="text-gray-400 text-[10px] font-medium uppercase tracking-wide mb-0.5">Check-in</p>
               <p className="text-gray-800 text-xs font-bold">{booking.checkIn}</p>
@@ -678,24 +678,27 @@ export default function MyTripsPage() {
 
       <main className="min-h-screen" style={{ background: '#F8FAFC' }}>
         {/* Page header */}
-        <div style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="w-10 h-10 bg-brand-gold rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)', boxShadow: '0 4px 12px rgba(180,83,9,0.4)' }}>
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-white font-extrabold text-2xl sm:text-3xl leading-tight">My Trips</h1>
-                <p className="text-white/55 text-sm mt-0.5">Manage your bookings and travel history</p>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+                  <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>My Trips</h1>
+                </div>
+                <p className="text-white/45 text-xs pl-3">Manage your bookings and travel history</p>
               </div>
             </div>
 
             {/* Stats row */}
-            <div className="grid grid-cols-4 gap-3 mt-6">
+            <div className="grid grid-cols-4 gap-3">
               {TAB_LABELS.map(({ key, label, status }) => (
-                <div key={key} className="bg-white/10 rounded-xl px-4 py-3 text-center">
+                <div key={key} className="rounded-xl px-4 py-3 text-center" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.10)' }}>
                   <p className="text-white font-extrabold text-xl">{countByStatus(status)}</p>
                   <p className="text-white/55 text-xs font-medium mt-0.5">{label}</p>
                 </div>
@@ -705,7 +708,7 @@ export default function MyTripsPage() {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white border-b border-gray-200 sticky top-16 z-30 shadow-sm">
+        <div className="bg-white sticky top-16 z-30" style={{ borderBottom: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 8px rgba(15,34,96,0.06)' }}>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex gap-0 overflow-x-auto">
               {TAB_LABELS.map(({ key, label, status }) => {

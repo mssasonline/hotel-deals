@@ -166,19 +166,22 @@ export default function MyFavoritesPage() {
       <Header />
       <main className="min-h-screen" style={{ background: '#F8FAFC' }}>
         {/* Page header */}
-        <div style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-brand-gold rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)', boxShadow: '0 4px 12px rgba(180,83,9,0.4)' }}>
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-white font-extrabold text-2xl sm:text-3xl leading-tight">
-                  My Favorites
-                </h1>
-                <p className="text-white/55 text-sm mt-0.5">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+                  <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>
+                    My Favorites
+                  </h1>
+                </div>
+                <p className="text-white/45 text-xs pl-3">
                   {fetching
                     ? 'Loading your saved hotels…'
                     : hotels.length > 0

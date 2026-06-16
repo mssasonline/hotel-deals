@@ -28,7 +28,7 @@ export function PreferencesSection({
         <h2 className="text-base font-bold text-gray-900">{t['account.customisationPreferences']}</h2>
         <p className="text-sm text-gray-500 mt-1">{t['account.customisationSubtitle']}</p>
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
 
         <div className="px-6 py-5 border-b border-gray-50">
           <div className="flex items-start gap-4">
