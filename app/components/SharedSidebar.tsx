@@ -203,29 +203,41 @@ export default function SharedSidebar({ variant }: Props) {
 
   return (
     <aside
-      className={`${collapsed ? 'w-16' : 'w-64'} flex-shrink-0 flex flex-col transition-all duration-200 min-h-screen`}
-      style={{ background: '#0F2260' }}
+      className={`${collapsed ? 'w-16' : 'w-64'} flex-shrink-0 flex flex-col transition-all duration-300 min-h-screen relative overflow-hidden`}
+      style={{ background: 'linear-gradient(180deg, #0A1A4F 0%, #0F2260 40%, #111F58 100%)' }}
     >
+      {/* Decorative background glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 right-0 h-48" style={{ background: 'radial-gradient(ellipse at top, rgba(37,99,235,0.15) 0%, transparent 70%)' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-32" style={{ background: 'radial-gradient(ellipse at bottom, rgba(180,83,9,0.08) 0%, transparent 70%)' }} />
+      </div>
+
       {/* Logo */}
-      <div className="flex items-center justify-between px-4 h-16 border-b border-white/10">
+      <div className="relative flex items-center justify-between px-4 h-16" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         {!collapsed ? (
-          <Link href={cfg.dashboardHref} className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 bg-brand-gold rounded-lg flex items-center justify-center shrink-0">
+          <Link href={cfg.dashboardHref} className="flex items-center gap-3 min-w-0">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)', boxShadow: '0 4px 12px rgba(180,83,9,0.4)' }}
+            >
               {cfg.logo}
             </div>
             <div className="leading-none min-w-0">
-              <span className="text-white font-bold text-sm tracking-tight block truncate">SelectedRoom</span>
-              <span className="text-brand-gold text-[9px] font-semibold tracking-widest uppercase">{cfg.subtitle}</span>
+              <span className="text-white font-bold text-sm tracking-tight block truncate" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)' }}>SelectedRoom</span>
+              <span className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: '#D97706' }}>{cfg.subtitle}</span>
             </div>
           </Link>
         ) : (
-          <div className="w-8 h-8 bg-brand-gold rounded-lg flex items-center justify-center mx-auto">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center mx-auto"
+            style={{ background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)', boxShadow: '0 4px 12px rgba(180,83,9,0.4)' }}
+          >
             {cfg.logoCollapsed}
           </div>
         )}
         <button
           onClick={() => setCollapsed((v) => !v)}
-          className="text-white/40 hover:text-white transition-colors ml-auto shrink-0"
+          className="text-white/30 hover:text-white/80 transition-colors ml-auto shrink-0 p-1 rounded-lg hover:bg-white/5"
           aria-label="Toggle sidebar"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,7 +249,7 @@ export default function SharedSidebar({ variant }: Props) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-4 px-2 space-y-0.5 overflow-y-auto">
+      <nav className="relative flex-1 py-4 px-2 space-y-0.5 overflow-y-auto">
         {navItems.map(({ href, label, icon }) => {
           const active =
             pathname === href ||
@@ -247,20 +259,30 @@ export default function SharedSidebar({ variant }: Props) {
               key={href}
               href={href}
               title={collapsed ? label : undefined}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer ${
                 active
-                  ? 'bg-white/15 text-white'
-                  : 'text-white/55 hover:bg-white/8 hover:text-white'
+                  ? 'text-white'
+                  : 'text-white/45 hover:text-white'
               }`}
+              style={active ? {
+                background: 'linear-gradient(135deg, rgba(37,99,235,0.25) 0%, rgba(30,58,138,0.18) 100%)',
+                boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08)',
+              } : {}}
+              onMouseEnter={e => {
+                if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)';
+              }}
+              onMouseLeave={e => {
+                if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent';
+              }}
             >
-              <span className={`shrink-0 ${active ? 'text-brand-gold' : 'group-hover:text-brand-gold transition-colors'}`}>
+              <span className={`shrink-0 transition-colors ${active ? '' : 'group-hover:text-white/80'}`} style={active ? { color: '#D97706' } : {}}>
                 {icon}
               </span>
               {!collapsed && (
                 <span className="text-sm font-medium truncate">{label}</span>
               )}
               {!collapsed && active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-gold shrink-0" />
+                <span className="ml-auto w-1.5 h-4 rounded-full shrink-0" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
               )}
             </Link>
           );
@@ -268,11 +290,13 @@ export default function SharedSidebar({ variant }: Props) {
       </nav>
 
       {/* Bottom */}
-      <div className="px-2 pb-4 border-t border-white/10 pt-3 space-y-1">
+      <div className="relative px-2 pb-4 pt-3 space-y-1" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         <Link
           href="/"
           title={collapsed ? backToSiteLabel : undefined}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/40 hover:bg-white/8 hover:text-white transition-all duration-150 group"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/35 hover:text-white/80 transition-all duration-200 group cursor-pointer"
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
         >
           <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -281,19 +305,22 @@ export default function SharedSidebar({ variant }: Props) {
         </Link>
 
         {!collapsed && user && (
-          <div className="px-3 py-3 mt-1 bg-white/6 rounded-xl">
+          <div className="px-3 py-3 mt-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
             <div className="flex items-center gap-2.5 mb-2.5">
-              <div className="w-8 h-8 bg-brand-gold rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0"
+                style={{ background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)', boxShadow: '0 2px 8px rgba(180,83,9,0.35)' }}
+              >
                 {initials}
               </div>
               <div className="min-w-0">
                 <p className="text-white text-sm font-semibold truncate">{displayName}</p>
-                <p className="text-white/40 text-xs truncate">{user.email}</p>
+                <p className="text-white/35 text-xs truncate">{user.email}</p>
               </div>
             </div>
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center justify-center gap-2 text-white/40 hover:text-red-400 text-sm font-medium transition-colors"
+              className="w-full flex items-center justify-center gap-2 text-white/35 hover:text-red-400 text-sm font-medium transition-colors py-1 rounded-lg cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

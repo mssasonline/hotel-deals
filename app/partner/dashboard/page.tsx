@@ -205,28 +205,44 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl">
-      {/* Page header */}
-      <div className="mb-6">
-        <p className="text-gray-500 text-sm">{t['partner.dash.subtitle']}</p>
+      {/* Premium page header */}
+      <div className="mb-8 rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+        <div className="px-6 py-5 flex items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+              <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>{t['partner.dash.subtitle'] ?? 'Partner Dashboard'}</h1>
+            </div>
+            <p className="text-white/45 text-xs pl-3">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
+            <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#10B981' }} />
+            <span className="text-white/70 text-xs font-medium">Live</span>
+          </div>
+        </div>
       </div>
 
       {/* Hotel tab selector */}
       {hotels.length > 1 && (
-        <div className="flex flex-wrap gap-2 mb-6 pb-5 border-b border-gray-100">
+        <div className="flex flex-wrap gap-2 mb-6 pb-5" style={{ borderBottom: '1px solid rgba(30,58,138,0.08)' }}>
           {hotels.map(h => (
             <button
               key={h.id}
               onClick={() => setSelectedId(h.id)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                selectedId === h.id
-                  ? 'text-white shadow-sm'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-brand-blue/40 hover:text-brand-blue'
-              }`}
-              style={selectedId === h.id ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
+              className="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer"
+              style={selectedId === h.id ? {
+                background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 100%)',
+                color: '#fff',
+                boxShadow: '0 4px 12px rgba(15,34,96,0.25)',
+              } : {
+                background: '#fff',
+                border: '1px solid rgba(30,58,138,0.12)',
+                color: '#334155',
+              }}
             >
               {h.name}
               {h.city && (
-                <span className={`ml-1.5 text-xs ${selectedId === h.id ? 'text-white/70' : 'text-gray-400'}`}>
+                <span className="ml-1.5 text-xs" style={{ color: selectedId === h.id ? 'rgba(255,255,255,0.6)' : '#94A3B8' }}>
                   {h.city}
                 </span>
               )}
@@ -237,19 +253,23 @@ export default function DashboardPage() {
 
       {/* Selected hotel label */}
       {selectedHotel && (
-        <div className="flex items-start gap-3 mb-6">
-          <div className="w-10 h-10 bg-brand-blue-light rounded-xl flex items-center justify-center shrink-0">
-            <svg className="w-5 h-5 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex items-center gap-4 mb-6 p-4 rounded-2xl" style={{ background: '#fff', border: '1px solid rgba(30,58,138,0.09)', boxShadow: '0 1px 6px rgba(15,34,96,0.05)' }}>
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-white" style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 12px rgba(37,99,235,0.25)' }}>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </div>
-          <div>
-            <h2 className="font-semibold text-gray-900 text-lg leading-tight">{selectedHotel.name}</h2>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-bold leading-tight" style={{ color: '#0F172A', fontFamily: 'var(--font-playfair, Georgia, serif)', fontSize: '1.1rem' }}>{selectedHotel.name}</h2>
             {selectedHotel.city && (
-              <p className="text-gray-400 text-xs mt-0.5">
+              <p className="text-xs mt-0.5" style={{ color: '#94A3B8' }}>
+                <svg className="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 {selectedHotel.city}{selectedHotel.address ? ` · ${selectedHotel.address}` : ''}
               </p>
             )}
+          </div>
+          <div className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ background: '#EEF4FF', color: '#1E3A8A' }}>
+            Active
           </div>
         </div>
       )}
@@ -351,7 +371,7 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Bookings table ────────────────────────────────────────────── */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+          <div className="bg-white rounded-2xl overflow-hidden mb-6" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div>
                 <h2 className="font-semibold text-gray-900">{t['partner.dash.recentBookings']}</h2>
@@ -419,8 +439,8 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
             {/* Rooms overview */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
+              <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(30,58,138,0.06)' }}>
                 <div>
                   <h2 className="font-semibold text-gray-900">{t['partner.dash.rooms']}</h2>
                   <p className="text-xs text-gray-400 mt-0.5">{rooms.length}</p>
@@ -461,8 +481,8 @@ export default function DashboardPage() {
             </div>
 
             {/* Reviews */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
+            <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
+              <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(30,58,138,0.06)' }}>
                 <h2 className="font-semibold text-gray-900">{t['partner.dash.guestReviews']}</h2>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {avgRating !== null

@@ -80,10 +80,11 @@ export default function PartnerTopBar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 h-14 bg-white flex items-center px-6 gap-4 shrink-0" style={{ borderBottom: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 1px 8px rgba(30,58,138,0.06)' }}>
+    <header className="sticky top-0 z-40 h-16 flex items-center px-6 gap-4 shrink-0" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(30,58,138,0.10)', boxShadow: '0 2px 16px rgba(15,34,96,0.08), 0 1px 0 rgba(255,255,255,0.8)' }}>
       {/* Page title */}
       <div className="flex-1 min-w-0">
-        <span className="text-xl font-bold" style={{ color: '#0F172A' }}>{pageTitle}</span>
+        <span className="text-lg font-bold tracking-tight" style={{ color: '#0F2260', fontFamily: 'var(--font-playfair, Georgia, serif)' }}>{pageTitle}</span>
+        <div className="w-8 h-0.5 rounded-full mt-0.5" style={{ background: 'linear-gradient(90deg, #B45309 0%, #D97706 100%)' }} />
       </div>
 
       {/* Controls */}
