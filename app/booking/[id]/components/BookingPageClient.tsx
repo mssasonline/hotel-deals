@@ -179,22 +179,23 @@ export default function BookingPageClient({
     setSubmitting(true);
     setSubmitError('');
 
-    // Backstop for a wedged auth client (see authContext recovery): every DB
-    // query resolves its token through getSession(), which can deadlock after
-    // the tab was suspended. Probe it with a timeout first — if it doesn't
-    // answer the client is wedged, so reload to recreate it. The booking
-    // context is persisted in the Zustand store, so the page returns intact.
-    const preflight = await Promise.race([
-      supabase.auth.getSession()
-        .then(({ data }) => (data.session ? 'ok' : 'no-session'))
-        .catch(() => 'error'),
-      new Promise<'wedged'>((resolve) => setTimeout(() => resolve('wedged'), 6000)),
+    // Backstop for a stuck client (see authContext recovery): after the tab was
+    // backgrounded the auth lock can deadlock or HTTP connections go stale, so
+    // every DB query hangs. Probe with a tiny REAL query (getSession() alone
+    // reads storage and would miss a dead socket). No answer → reload to
+    // recreate the client; the persisted Zustand store keeps our context intact.
+    const probe = await Promise.race([
+      supabase.from('platform_settings').select('key').limit(1)
+        .then(() => 'ok' as const, () => 'ok' as const),
+      new Promise<'stuck'>((resolve) => setTimeout(() => resolve('stuck'), 5000)),
     ]);
-    if (preflight === 'wedged') {
+    if (probe === 'stuck') {
       window.location.reload();
       return;
     }
-    if (preflight !== 'ok') {
+    // Network is alive — a genuinely missing session is now safe to check.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
       saveLoginRedirect(window.location.pathname);
       router.push('/login');
       return;
