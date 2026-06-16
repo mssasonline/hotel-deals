@@ -22,8 +22,8 @@ interface SectionProps {
 
 function Section({ title, description, children }: SectionProps) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="px-6 py-5 border-b border-gray-100">
+    <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(30,58,138,0.09)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
+      <div className="px-6 py-5" style={{ borderBottom: '1px solid rgba(30,58,138,0.06)' }}>
         <h2 className="font-semibold text-gray-900">{title}</h2>
         <p className="text-gray-500 text-xs mt-0.5">{description}</p>
       </div>
@@ -138,8 +138,15 @@ export default function SettingsPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-3xl">
-      <div className="mb-8">
-        <p className="text-gray-500 text-sm">Manage your partner account and preferences.</p>
+      {/* Page header */}
+      <div className="mb-8 rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+        <div className="px-6 py-5">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+            <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>Settings</h1>
+          </div>
+          <p className="text-white/45 text-xs pl-3">Manage your partner account and preferences.</p>
+        </div>
       </div>
 
       <div className="space-y-6">

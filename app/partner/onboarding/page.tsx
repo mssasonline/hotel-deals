@@ -117,25 +117,27 @@ export default function OnboardingPage() {
       <div className="w-full max-w-xl">
 
         {/* Header */}
-        <div className="mb-8">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
+        <div className="mb-8 rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+          <div className="px-6 py-6 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)' }}>
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>
+                {step === 1 ? 'Welcome to SelectedRoom' : 'About your hotel'}
+              </h1>
+              <p className="text-white/50 text-xs mt-0.5">
+                {step === 1 ? "Let's set up your hotel — it only takes a minute." : 'Add more details to help guests find you.'}
+              </p>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {step === 1 ? 'Welcome to SelectedRoom' : 'About your hotel'}
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            {step === 1
-              ? "Let's set up your hotel — it only takes a minute."
-              : 'Add more details to help guests find you.'}
-          </p>
         </div>
 
         <ProgressBar step={step} />
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+        <div className="bg-white rounded-2xl p-6 space-y-5" style={{ border: '1px solid rgba(30,58,138,0.09)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
 
           {/* ── Step 1 ── */}
           {step === 1 && (

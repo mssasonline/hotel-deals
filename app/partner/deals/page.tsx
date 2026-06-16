@@ -460,13 +460,16 @@ export default function PartnerDealsPage() {
   return (
     <div className="p-6 lg:p-8 max-w-[1400px]">
       {/* Page header */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-xs text-gray-400">
-          CSV import format: <code className="font-mono text-gray-600">room_id, hotel_id, deal_price, start_date, end_date, title</code>
-          &nbsp;(header row required, dates as YYYY-MM-DD)
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
+      <div className="mb-8 rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+        <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+              <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>Deals</h1>
+            </div>
+            <p className="text-white/45 text-xs pl-3">CSV: <code className="font-mono text-white/60">room_id, hotel_id, deal_price, start_date, end_date, title</code></p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
           {/* Import CSV */}
           <input
             ref={fileInputRef}
@@ -507,6 +510,7 @@ export default function PartnerDealsPage() {
             </svg>
             Add Deal
           </button>
+        </div>
         </div>
       </div>
 

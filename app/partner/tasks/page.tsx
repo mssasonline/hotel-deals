@@ -43,7 +43,7 @@ function TaskCard({
 }) {
   const isDone = task.status === 'done';
   return (
-    <div className={`bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col gap-3 transition-opacity ${isDone ? 'opacity-70' : ''}`}>
+    <div className={`bg-white rounded-xl p-4 flex flex-col gap-3 transition-all ${isDone ? 'opacity-60' : ''}`} style={{ border: '1px solid rgba(30,58,138,0.09)', boxShadow: '0 2px 8px rgba(15,34,96,0.05)' }}>
       <div className="flex items-start justify-between gap-2">
         <p className={`text-sm font-semibold text-gray-900 leading-snug flex-1 ${isDone ? 'line-through text-gray-400' : ''}`}>
           {task.title}
@@ -269,24 +269,28 @@ export default function TasksPage() {
     <div className="p-6 lg:p-8 max-w-5xl">
       {showAdd && <AddTaskModal hotels={hotelNames} onAdd={addTask} onClose={() => setShowAdd(false)} />}
 
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div>
-          <p className="text-gray-500 text-sm">
-            {todoTasks.length} pending · {doneTasks.length} completed
-          </p>
+      {/* Page header */}
+      <div className="mb-8 rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+        <div className="px-6 py-5 flex items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+              <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>Tasks</h1>
+            </div>
+            <p className="text-white/45 text-xs pl-3">{todoTasks.length} pending · {doneTasks.length} completed</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowAdd(true)}
+            className="inline-flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 cursor-pointer"
+            style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff' }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Task
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-2 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Task
-        </button>
       </div>
 
       {/* Kanban columns */}

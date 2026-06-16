@@ -808,15 +808,17 @@ export default function RoomsPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-2 text-sm text-brand-blue">
-          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span className="font-medium">{t['partner.rooms.infoNotice']}</span>
-        </div>
-        <div className="flex items-center gap-3">
+      {/* Page header */}
+      <div className="mb-8 rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+        <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+              <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>{t['partner.nav.rooms']}</h1>
+            </div>
+            <p className="text-white/45 text-xs pl-3">{t['partner.rooms.infoNotice']}</p>
+          </div>
+          <div className="flex items-center gap-3">
           {roomTypes.length > 1 && (
             <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
               className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/30 text-gray-700">
@@ -834,8 +836,8 @@ export default function RoomsPage() {
           {hotelIds.length > 0 && (
             <button
               onClick={() => setAddingRoom(true)}
-              className="flex items-center gap-2 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
+              className="flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 cursor-pointer"
+              style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff' }}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -843,6 +845,7 @@ export default function RoomsPage() {
               {t['partner.rooms.addRoom']}
             </button>
           )}
+        </div>
         </div>
       </div>
 
@@ -878,15 +881,15 @@ export default function RoomsPage() {
       {/* Summary bar */}
       {filtered.length > 0 && (
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
+          <div className="bg-white rounded-2xl p-4 text-center" style={{ border: '1px solid rgba(30,58,138,0.09)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
             <p className="text-2xl font-bold text-gray-900">{filtered.length}</p>
             <p className="text-xs text-gray-500 mt-0.5 font-medium">{t['partner.rooms.totalRooms']}</p>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
+          <div className="bg-white rounded-2xl p-4 text-center" style={{ border: '1px solid rgba(30,58,138,0.09)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
             <p className="text-2xl font-bold text-green-600">{totalAvailable}</p>
             <p className="text-xs text-gray-500 mt-0.5 font-medium">{t['partner.rooms.availTonight']}</p>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
+          <div className="bg-white rounded-2xl p-4 text-center" style={{ border: '1px solid rgba(30,58,138,0.09)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
             <p className={`text-2xl font-bold ${lowAvailRooms > 0 ? 'text-red-500' : 'text-gray-900'}`}>{lowAvailRooms}</p>
             <p className="text-xs text-gray-500 mt-0.5 font-medium">{t['partner.rooms.lowAvail']}</p>
           </div>
@@ -894,7 +897,7 @@ export default function RoomsPage() {
       )}
 
       {/* Rooms table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[1100px]">
             <thead>

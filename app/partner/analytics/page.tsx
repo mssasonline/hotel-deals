@@ -539,31 +539,34 @@ export default function AnalyticsPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl">
-      {/* Header */}
-      <div className="mb-6">
-        <p className="text-gray-500 text-sm">Performance insights for your hotel properties.</p>
+      {/* Page header */}
+      <div className="mb-8 rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+        <div className="px-6 py-5 flex items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+              <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>{t['partner.nav.analytics']}</h1>
+            </div>
+            <p className="text-white/45 text-xs pl-3">Performance insights for your hotel properties.</p>
+          </div>
+        </div>
       </div>
 
       {/* Hotel selector tabs */}
       {hotels.length > 1 && (
-        <div className="flex flex-wrap gap-2 mb-6 pb-5 border-b border-gray-100">
+        <div className="flex flex-wrap gap-2 mb-6 pb-5" style={{ borderBottom: '1px solid rgba(30,58,138,0.08)' }}>
           {hotels.map(h => (
             <button
               key={h.id}
               onClick={() => setSelectedId(h.id)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                selectedId === h.id
-                  ? 'text-white shadow-sm'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-brand-blue/40 hover:text-brand-blue'
-              }`}
-              style={selectedId === h.id ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
+              className="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer"
+              style={selectedId === h.id ? {
+                background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 100%)',
+                color: '#fff', boxShadow: '0 4px 12px rgba(15,34,96,0.25)',
+              } : { background: '#fff', border: '1px solid rgba(30,58,138,0.12)', color: '#334155' }}
             >
               {h.name}
-              {h.city && (
-                <span className={`ml-1.5 text-xs ${selectedId === h.id ? 'text-white/70' : 'text-gray-400'}`}>
-                  {h.city}
-                </span>
-              )}
+              {h.city && <span className="ml-1.5 text-xs" style={{ color: selectedId === h.id ? 'rgba(255,255,255,0.6)' : '#94A3B8' }}>{h.city}</span>}
             </button>
           ))}
         </div>

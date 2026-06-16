@@ -72,7 +72,24 @@ export default function BookingsPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl">
-      <div className="mb-8"></div>
+      {/* Page header */}
+      <div className="mb-8 rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+        <div className="px-6 py-5 flex items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+              <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>{t['partner.nav.bookings']}</h1>
+            </div>
+            <p className="text-white/45 text-xs pl-3">{bookings.length} {t['partner.dash.alltimeRes']}</p>
+          </div>
+          {filteredRevenue > 0 && (
+            <div className="text-right shrink-0 px-4 py-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.10)' }}>
+              <p className="text-white/50 text-xs">{t['partner.bookings.filteredRevenue']}</p>
+              <p className="text-white font-bold text-lg">{fmt(filteredRevenue)}</p>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Status summary pills */}
       <div className="flex flex-wrap gap-2 mb-6">
@@ -128,7 +145,7 @@ export default function BookingsPage() {
         )}
 
         {filteredRevenue > 0 && (
-          <div className="sm:ml-auto text-right">
+          <div className="sm:ml-auto text-right hidden">
             <p className="text-xs text-gray-400">{t['partner.bookings.filteredRevenue']}</p>
             <p className="text-base font-bold text-brand-blue">{fmt(filteredRevenue)}</p>
           </div>
@@ -136,7 +153,7 @@ export default function BookingsPage() {
       </div>
 
       {/* Bookings table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -216,7 +233,7 @@ export default function BookingsPage() {
         </div>
 
         {filtered.length > 0 && (
-          <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
+          <div className="px-6 py-3 flex items-center justify-between" style={{ borderTop: '1px solid rgba(30,58,138,0.06)' }}>
             <p className="text-xs text-gray-400">
               {t['partner.bookings.showing'].replace('{n}', String(filtered.length)).replace('{m}', String(bookings.length))}
             </p>
