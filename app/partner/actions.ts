@@ -343,24 +343,54 @@ export async function getMyRooms(): Promise<PartnerRoom[]> {
     quantity_available: number | null;
   };
 
-  return ((roomData ?? []) as RawRoom[]).map(r => ({
-    id:                 String(r.id),
-    hotel_id:           String(r.hotel_id),
-    name:               r.name,
-    type:               r.room_type ?? '',
-    area_sqm:           r.area_sqm ?? null,
-    bed_type:           r.bed_type ?? null,
-    image_url:          r.image_url   ?? null,
-    image_url_2:        r.image_url_2 ?? null,
-    image_url_3:        r.image_url_3 ?? null,
-    features:           r.features  ?? [],
-    base_price:         r.base_price,
-    min_price:          r.min_price ?? 0,
-    capacity:           r.capacity,
-    available:          typeof r.available === 'boolean' ? (r.available ? 1 : 0) : (r.available ?? 0),
-    quantity_total:     r.quantity_total     ?? 1,
-    quantity_available: r.quantity_available ?? 0,
-  }));
+  const rooms = (roomData ?? []) as RawRoom[];
+
+  // Compute live availability for TODAY in a single query (avoids N RPC calls).
+  // A booking overlaps today if check_in < tomorrow AND check_out > today.
+  const today    = new Date().toISOString().split('T')[0];
+  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().split('T')[0];
+  const roomIds  = rooms.map(r => r.id);
+
+  const { data: bookedRows } = roomIds.length > 0
+    ? await admin
+        .from('bookings')
+        .select('room_id, room_count')
+        .in('room_id', roomIds)
+        .in('status', ['upcoming', 'active'])
+        .lt('check_in', tomorrow)
+        .gt('check_out', today)
+    : { data: [] };
+
+  // Sum booked room_count per room_id
+  const bookedByRoom: Record<string, number> = {};
+  for (const b of (bookedRows ?? []) as { room_id: number; room_count: number | null }[]) {
+    const key = String(b.room_id);
+    bookedByRoom[key] = (bookedByRoom[key] ?? 0) + (b.room_count ?? 1);
+  }
+
+  return rooms.map(r => {
+    const qty       = r.quantity_total ?? 1;
+    const booked    = bookedByRoom[String(r.id)] ?? 0;
+    const liveAvail = Math.max(0, qty - booked);
+    return {
+      id:                 String(r.id),
+      hotel_id:           String(r.hotel_id),
+      name:               r.name,
+      type:               r.room_type ?? '',
+      area_sqm:           r.area_sqm ?? null,
+      bed_type:           r.bed_type ?? null,
+      image_url:          r.image_url   ?? null,
+      image_url_2:        r.image_url_2 ?? null,
+      image_url_3:        r.image_url_3 ?? null,
+      features:           r.features  ?? [],
+      base_price:         r.base_price,
+      min_price:          r.min_price ?? 0,
+      capacity:           r.capacity,
+      available:          liveAvail > 0 ? 1 : 0,
+      quantity_total:     qty,
+      quantity_available: liveAvail,
+    };
+  });
 }
 
 // ── updateMyRoom ──────────────────────────────────────────────────────────────
