@@ -54,7 +54,7 @@ export default async function SearchPage({
         initialCheckout={checkout}
         initialGuests={guests}
       />
-      <main className="flex-1 bg-gray-50 min-h-[calc(100vh-128px)]">
+      <main className="flex-1 min-h-[calc(100vh-128px)]" style={{ background: '#F8FAFC' }}>
         <SearchResultsClient
           city={city}
           checkin={checkin}

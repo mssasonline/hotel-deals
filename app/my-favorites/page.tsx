@@ -153,7 +153,7 @@ export default function MyFavoritesPage() {
     return (
       <>
         <Header />
-        <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <main className="min-h-screen flex items-center justify-center" style={{ background: '#F8FAFC' }}>
           <Spinner />
         </main>
         <Footer />
@@ -164,9 +164,9 @@ export default function MyFavoritesPage() {
   return (
     <>
       <Header />
-      <main className="bg-gray-50 min-h-screen">
+      <main className="min-h-screen" style={{ background: '#F8FAFC' }}>
         {/* Page header */}
-        <div className="bg-brand-blue">
+        <div style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-brand-gold rounded-xl flex items-center justify-center shrink-0 shadow-sm">
@@ -209,7 +209,8 @@ export default function MyFavoritesPage() {
               </p>
               <Link
                 href="/search?city=Dubai"
-                className="inline-flex items-center gap-2 bg-brand-gold hover:bg-yellow-500 text-white font-bold px-6 py-3 rounded-xl transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 text-white font-bold px-6 py-3 rounded-xl transition-all hover:-translate-y-0.5"
+                style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />

@@ -7,6 +7,7 @@ import { getMyHotels, getHotelData } from '../actions';
 import { fetchCommissionRate } from '@/app/admin/settings/actions';
 import DashboardCard from '../components/DashboardCard';
 import AEDAmount, { useAEDFormat } from '../components/AEDAmount';
+import SetupChecklist, { type SetupProgress } from '../components/SetupChecklist';
 import { type Booking, type RawBookingRow, normalizeBooking } from '@/lib/types';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
@@ -92,6 +93,7 @@ export default function DashboardPage() {
   const [bookings, setBookings]         = useState<Booking[]>([]);
   const [rooms, setRooms]               = useState<HotelRoom[]>([]);
   const [reviews, setReviews]           = useState<Review[]>([]);
+  const [imageCount, setImageCount]     = useState(0);
   const [error, setError]               = useState<string | null>(null);
   const [commissionRate, setCommissionRate] = useState(10);
 
@@ -109,7 +111,11 @@ export default function DashboardPage() {
         ]);
         setCommissionRate(rate);
         setHotels(partnerHotels);
-        if (partnerHotels.length > 0) setSelectedId(partnerHotels[0].id);
+        if (partnerHotels.length === 0) {
+          router.replace('/partner/onboarding');
+          return;
+        }
+        setSelectedId(partnerHotels[0].id);
       } catch (err) {
         console.error('[dashboard] init error:', err);
         setError('Failed to load dashboard data. Please refresh.');
@@ -124,10 +130,11 @@ export default function DashboardPage() {
   const fetchHotelData = useCallback(async (hotelId: string) => {
     setDataLoading(true);
     try {
-      const { bookings: b, rooms: r, reviews: rv } = await getHotelData(hotelId);
+      const { bookings: b, rooms: r, reviews: rv, imageCount: ic } = await getHotelData(hotelId);
       setBookings(b.map(row => normalizeBooking(row as unknown as RawBookingRow)));
       setRooms(r as HotelRoom[]);
       setReviews(rv as Review[]);
+      setImageCount(ic);
     } catch (err) {
       console.error('[dashboard] fetchHotelData error:', err);
     } finally {
@@ -142,11 +149,13 @@ export default function DashboardPage() {
   // ── Metrics ───────────────────────────────────────────────────────────────
   const totalBookings  = bookings.length;
   const activeBookings = bookings.filter(b => !['completed', 'cancelled'].includes(b.status)).length;
-  const grossRevenue   = bookings
-    .filter(b => b.payment_status === 'paid')
-    .reduce((sum, b) => sum + (b.total_price ?? 0), 0);
-  const partnerRevenue = Math.round(grossRevenue * ((100 - commissionRate) / 100) * 100) / 100;
-  const adminRevenue   = Math.round(grossRevenue * (commissionRate / 100) * 100) / 100;
+  const paidBookings   = bookings.filter(b => b.payment_status === 'paid');
+  // grossRevenue = total guest paid (room + taxes)
+  const grossRevenue   = paidBookings.reduce((sum, b) => sum + (b.total_price ?? 0), 0);
+  // Use stored amounts from booking_revenue — reflect the rate in effect at booking time
+  const partnerRevenue = paidBookings.reduce((sum, b) => sum + (b.partner_amount ?? 0), 0);
+  const adminRevenue   = paidBookings.reduce((sum, b) => sum + (b.admin_amount   ?? 0), 0);
+  const taxCollected   = grossRevenue - partnerRevenue - adminRevenue;
   const avgRating = reviews.length > 0
     ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length)
     : null;
@@ -155,6 +164,14 @@ export default function DashboardPage() {
   const fmt      = useAEDFormat();
   const language = useAppSettingsStore(s => s.language);
   const t        = getTranslations(language);
+
+  const setupProgress: SetupProgress = {
+    hasDescription: !!(selectedHotel as unknown as { description?: string } | undefined)?.description?.trim(),
+    hasLocation:    !!(selectedHotel as unknown as { latitude?: number | null } | undefined)?.latitude,
+    hasRooms:       rooms.length > 0,
+    hasAmenities:   ((selectedHotel as unknown as { amenities?: string[] } | undefined)?.amenities ?? []).length > 0,
+    hasImages:      imageCount > 0,
+  };
 
   // ── Render states ─────────────────────────────────────────────────────────
   if (authLoading || hotelsLoading) return <Spinner />;
@@ -202,9 +219,10 @@ export default function DashboardPage() {
               onClick={() => setSelectedId(h.id)}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 selectedId === h.id
-                  ? 'bg-brand-blue text-white shadow-sm'
+                  ? 'text-white shadow-sm'
                   : 'bg-white border border-gray-200 text-gray-600 hover:border-brand-blue/40 hover:text-brand-blue'
               }`}
+              style={selectedId === h.id ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
             >
               {h.name}
               {h.city && (
@@ -238,6 +256,9 @@ export default function DashboardPage() {
 
       {dataLoading ? <Spinner /> : (
         <>
+          {/* ── Setup checklist ──────────────────────────────────────────── */}
+          <SetupChecklist progress={setupProgress} />
+
           {/* ── KPI Cards ────────────────────────────────────────────────── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <DashboardCard
@@ -287,7 +308,7 @@ export default function DashboardPage() {
           </div>
 
           {/* ── Revenue hero ──────────────────────────────────────────────── */}
-          <div className="bg-brand-blue rounded-2xl p-6 mb-6">
+          <div className="rounded-2xl p-6 mb-6" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
               <div>
                 <p className="text-white/60 text-sm font-medium mb-1">{t['partner.dash.totalRevenue']}</p>
@@ -305,11 +326,16 @@ export default function DashboardPage() {
               </div>
             </div>
             {/* Revenue split breakdown */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-4 gap-3">
               <div className="bg-white/10 rounded-xl px-4 py-3">
                 <p className="text-white/50 text-xs mb-1">{t['partner.dash.totalRevBox']}</p>
                 <p className="text-white font-bold text-lg"><AEDAmount amount={grossRevenue} /></p>
-                <p className="text-white/40 text-xs mt-0.5">100%</p>
+                <p className="text-white/40 text-xs mt-0.5">Guest paid</p>
+              </div>
+              <div className="bg-white/5 rounded-xl px-4 py-3">
+                <p className="text-white/40 text-xs mb-1">Taxes (15%)</p>
+                <p className="text-white/60 font-bold text-lg"><AEDAmount amount={taxCollected} /></p>
+                <p className="text-white/30 text-xs mt-0.5">Gov. collected</p>
               </div>
               <div className="bg-emerald-500/20 border border-emerald-400/30 rounded-xl px-4 py-3">
                 <p className="text-emerald-200 text-xs mb-1">{t['partner.dash.partnerShare'].replace(/\d+%/, `${100 - commissionRate}%`)}</p>
@@ -370,8 +396,8 @@ export default function DashboardPage() {
                         }
                       </td>
                       <td className="px-6 py-3.5 text-right font-bold text-emerald-600">
-                        {b.payment_status === 'paid'
-                          ? <AEDAmount amount={Math.round((b.total_price ?? 0) * ((100 - commissionRate) / 100) * 100) / 100} />
+                        {b.payment_status === 'paid' && b.partner_amount != null
+                          ? <AEDAmount amount={b.partner_amount} />
                           : <span className="text-gray-300 font-normal">—</span>
                         }
                       </td>

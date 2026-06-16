@@ -11,6 +11,9 @@ import RateCalendar from './RateCalendar';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 import AEDAmount, { useAEDFormat } from '../components/AEDAmount';
+import { toAED, fromAEDTo } from '@/lib/currency';
+import { CURRENCY_MAP } from '@/lib/currencyData';
+import type { CurrencyCode } from '@/lib/currencyData';
 
 type Room = PartnerRoom;
 
@@ -61,9 +64,10 @@ function FeaturePicker({
             onClick={() => toggle(f.key)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
               active
-                ? 'bg-brand-blue text-white border-brand-blue shadow-sm'
+                ? 'text-white border-transparent shadow-sm'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-brand-blue/50 hover:text-brand-blue'
             }`}
+            style={active ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
           >
             <span>{f.icon}</span>
             {f.key}
@@ -119,10 +123,14 @@ interface EditRoomModalProps {
 }
 
 function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalProps) {
-  const fmt = useAEDFormat();
+  const fmt      = useAEDFormat();
+  const currency = useAppSettingsStore(s => s.currency) as CurrencyCode;
+  const currSymbol = CURRENCY_MAP[currency]?.symbol ?? 'AED';
+
+  // Pre-fill in partner's selected currency (DB stores AED)
   const [form, setForm] = useState({
-    base_price:     String(room.base_price ?? ''),
-    min_price:      String(room.min_price ?? ''),
+    base_price:     String(currency === 'aed' ? (room.base_price ?? '') : (fromAEDTo(room.base_price ?? 0, currency) || '')),
+    min_price:      String(currency === 'aed' ? (room.min_price ?? '') : (fromAEDTo(room.min_price ?? 0, currency) || '')),
     quantity_total: String(room.quantity_total ?? ''),
     area_sqm:       String(room.area_sqm ?? ''),
     bed_type:       room.bed_type ?? '',
@@ -158,8 +166,8 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
 
     setSaving(true);
     onSave(room.id, {
-      base_price:     bp,
-      min_price:      mp,
+      base_price:     toAED(bp, currency),
+      min_price:      toAED(mp, currency),
       quantity_total: qt,
       type:           form.room_type,
       area_sqm:       form.area_sqm ? parseFloat(form.area_sqm) : null,
@@ -263,7 +271,7 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
                   <span className="text-xs text-gray-400 font-normal ml-1">(base_price)</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">AED</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{currSymbol}</span>
                   <input type="number" name="base_price" value={form.base_price} onChange={handleChange} min="1" step="1"
                     className="w-full pl-12 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
                 </div>
@@ -274,7 +282,7 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
                   <span className="text-xs text-gray-400 font-normal ml-1">(min_price)</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">AED</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{currSymbol}</span>
                   <input type="number" name="min_price" value={form.min_price} onChange={handleChange} min="1" step="1"
                     className="w-full pl-12 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
                 </div>
@@ -285,8 +293,8 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
                 <div className="flex items-center justify-between">
                   <span className="text-gray-500">{t['partner.rooms.pricePreviewNow'].replace('{tier}', tier.label)}</span>
                   <div className="flex items-center gap-2">
-                    <span className="line-through text-gray-400 text-xs">{fmt(basePrice)}</span>
-                    <span className="font-bold text-brand-blue">{fmt(livePreview)}</span>
+                    <span className="line-through text-gray-400 text-xs">{fmt(toAED(basePrice, currency))}</span>
+                    <span className="font-bold text-brand-blue">{fmt(toAED(livePreview, currency))}</span>
                     {discountPreview > 0 && (
                       <span className="text-xs font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">-{discountPreview}%</span>
                     )}
@@ -297,7 +305,7 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
                     <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    {t['partner.rooms.priceAtFloor'].replace('{price}', fmt(minPrice))}
+                    {t['partner.rooms.priceAtFloor'].replace('{price}', fmt(toAED(minPrice, currency)))}
                   </div>
                 )}
               </div>
@@ -340,7 +348,8 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
             {t['partner.cancel']}
           </button>
           <button onClick={handleSave} disabled={saving}
-            className="px-5 py-2 text-sm font-semibold text-white bg-brand-blue hover:bg-brand-blue-dark rounded-xl transition-colors shadow-sm disabled:opacity-60 flex items-center gap-2">
+            className="px-5 py-2 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60 flex items-center gap-2 hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}>
             {saving && <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
             {saving ? t['partner.saving'] : t['partner.save']}
           </button>
@@ -361,7 +370,9 @@ interface AddRoomModalProps {
 }
 
 function AddRoomModal({ hotelIds, hotelNames, onAdd, onClose, t }: AddRoomModalProps) {
-  const fmt = useAEDFormat();
+  const fmt        = useAEDFormat();
+  const currency   = useAppSettingsStore(s => s.currency) as CurrencyCode;
+  const currSymbol = CURRENCY_MAP[currency]?.symbol ?? 'AED';
   const [form, setForm] = useState({
     hotel_id:       hotelIds[0] ?? '',
     name:           '',
@@ -412,8 +423,8 @@ function AddRoomModal({ hotelIds, hotelNames, onAdd, onClose, t }: AddRoomModalP
       bed_type:           form.bed_type || null,
       image_url:          form.image_url.trim() || null,
       features,
-      base_price:         bp,
-      min_price:          mp,
+      base_price:         toAED(bp, currency),
+      min_price:          toAED(mp, currency),
       capacity:           cap,
       quantity_total:     qt,
       quantity_available: qt, // new room has no bookings → all rooms available
@@ -528,7 +539,7 @@ function AddRoomModal({ hotelIds, hotelNames, onAdd, onClose, t }: AddRoomModalP
                   <span className="text-xs text-gray-400 font-normal ml-1">(base_price)</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">AED</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{currSymbol}</span>
                   <input type="number" name="base_price" value={form.base_price} onChange={handleChange} min="1" step="1" placeholder="500"
                     className="w-full pl-12 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
                 </div>
@@ -539,7 +550,7 @@ function AddRoomModal({ hotelIds, hotelNames, onAdd, onClose, t }: AddRoomModalP
                   <span className="text-xs text-gray-400 font-normal ml-1">(min_price)</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">AED</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{currSymbol}</span>
                   <input type="number" name="min_price" value={form.min_price} onChange={handleChange} min="1" step="1" placeholder="300"
                     className="w-full pl-12 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
                 </div>
@@ -550,8 +561,8 @@ function AddRoomModal({ hotelIds, hotelNames, onAdd, onClose, t }: AddRoomModalP
                 <div className="flex items-center justify-between">
                   <span className="text-gray-500">{t['partner.rooms.pricePreviewNow'].replace('{tier}', tier.label)}</span>
                   <div className="flex items-center gap-2">
-                    <span className="line-through text-gray-400 text-xs">{fmt(basePrice)}</span>
-                    <span className="font-bold text-brand-blue">{fmt(livePreview)}</span>
+                    <span className="line-through text-gray-400 text-xs">{fmt(toAED(basePrice, currency))}</span>
+                    <span className="font-bold text-brand-blue">{fmt(toAED(livePreview, currency))}</span>
                     {discountPreview > 0 && (
                       <span className="text-xs font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">-{discountPreview}%</span>
                     )}
@@ -605,7 +616,8 @@ function AddRoomModal({ hotelIds, hotelNames, onAdd, onClose, t }: AddRoomModalP
             {t['partner.cancel']}
           </button>
           <button onClick={handleAdd} disabled={saving}
-            className="px-5 py-2 text-sm font-semibold text-white bg-brand-blue hover:bg-brand-blue-dark rounded-xl transition-colors shadow-sm disabled:opacity-60 flex items-center gap-2">
+            className="px-5 py-2 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60 flex items-center gap-2 hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}>
             {saving && <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
             {saving ? t['partner.saving'] : t['partner.rooms.addRoom']}
           </button>
@@ -767,7 +779,8 @@ export default function RoomsPage() {
           {hotelIds.length > 0 && (
             <button
               onClick={() => setAddingRoom(true)}
-              className="flex items-center gap-2 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
+              className="flex items-center gap-2 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

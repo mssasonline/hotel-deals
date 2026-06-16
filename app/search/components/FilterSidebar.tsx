@@ -181,9 +181,10 @@ export default function FilterSidebar({ filters, onFiltersChange, availableCitie
                   }
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1 ${
                     selected
-                      ? 'bg-brand-blue text-white border-brand-blue'
+                      ? 'text-white border-transparent'
                       : 'bg-white text-gray-600 border-gray-200 hover:border-brand-blue hover:text-brand-blue'
                   }`}
+                  style={selected ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
                 >
                   {opt.stars != null ? (
                     <>

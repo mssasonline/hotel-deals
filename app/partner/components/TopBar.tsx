@@ -80,10 +80,10 @@ export default function PartnerTopBar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 h-14 bg-white border-b border-gray-100 flex items-center px-6 gap-4 shrink-0">
+    <header className="sticky top-0 z-40 h-14 bg-white flex items-center px-6 gap-4 shrink-0" style={{ borderBottom: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 1px 8px rgba(30,58,138,0.06)' }}>
       {/* Page title */}
       <div className="flex-1 min-w-0">
-        <span className="text-2xl font-bold text-gray-900">{pageTitle}</span>
+        <span className="text-xl font-bold" style={{ color: '#0F172A' }}>{pageTitle}</span>
       </div>
 
       {/* Controls */}
@@ -96,7 +96,7 @@ export default function PartnerTopBar() {
           onChange={e => setLanguage(e.target.value as Language)}
           className="text-xs text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 bg-white hover:border-brand-blue/40 focus:outline-none focus:border-brand-blue transition-colors cursor-pointer"
         >
-          {LANGUAGES.map(lang => (
+          {LANGUAGES.filter((l) => l.supported).map(lang => (
             <option key={lang.code} value={lang.code}>{lang.nativeName}</option>
           ))}
         </select>
@@ -143,24 +143,22 @@ export default function PartnerTopBar() {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
-                {/* User info */}
-                <div className="px-4 py-3 border-b border-gray-100 mb-1">
-                  <div className="flex items-center gap-2.5 mb-2">
-                    {avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={avatarUrl} alt={displayName} className="w-9 h-9 rounded-full object-cover shrink-0" />
-                    ) : (
-                      <div className="w-9 h-9 bg-brand-blue rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0">
-                        {initials}
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
-                      <p className="text-xs text-gray-400 truncate">{user.email}</p>
+              <div className="absolute right-0 top-full mt-2.5 w-64 bg-white rounded-2xl overflow-hidden z-50" style={{ boxShadow: '0 16px 48px rgba(15,23,42,0.18), 0 2px 8px rgba(15,23,42,0.08)', border: '1px solid rgba(30,58,138,0.08)' }}>
+                {/* Gradient header */}
+                <div className="relative px-4 py-4 flex items-center gap-3" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
+                  {avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={avatarUrl} alt={displayName} className="w-10 h-10 rounded-full object-cover ring-2 ring-white/30 shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full ring-2 ring-white/30 flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ background: 'rgba(255,255,255,0.15)' }}>
+                      {initials}
                     </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-white font-semibold text-sm truncate">{displayName}</p>
+                    <p className="text-white/55 text-xs truncate">{user.email}</p>
                   </div>
-                  <span className="inline-flex items-center gap-1 bg-brand-blue-light text-brand-blue text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                  <span className="shrink-0 inline-flex items-center gap-1 bg-brand-gold/20 border border-brand-gold/30 text-brand-gold text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
                     <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
@@ -168,15 +166,22 @@ export default function PartnerTopBar() {
                   </span>
                 </div>
 
-                <button
-                  onClick={handleSignOut}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  {t['partner.signOut']}
-                </button>
+                <div className="p-2">
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm rounded-xl transition-colors"
+                    style={{ color: '#EF4444' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#FEF2F2')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#FEE2E2' }}>
+                      <svg className="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                    </div>
+                    {t['partner.signOut']}
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -14,8 +14,10 @@ export type PaymentRow = {
   created_at: string;
   payment_status: string;
   total_price: number;
-  admin_amount: number;
+  subtotal: number;
+  tax_amount: number;
   partner_amount: number;
+  admin_amount: number;
 };
 
 type StatusFilter = 'all' | 'paid' | 'pending' | 'failed';
@@ -76,9 +78,12 @@ export default function PaymentsClient({ payments, commissionRate }: { payments:
     return matchStatus && matchSearch;
   });
 
-  const totalGross     = payments.filter(p => p.payment_status === 'paid').reduce((s, p) => s + p.total_price,   0);
-  const totalAdmin     = payments.filter(p => p.payment_status === 'paid').reduce((s, p) => s + p.admin_amount,  0);
-  const totalPartner   = payments.filter(p => p.payment_status === 'paid').reduce((s, p) => s + p.partner_amount, 0);
+  const paidPayments   = payments.filter(p => p.payment_status === 'paid');
+  const totalGross     = paidPayments.reduce((s, p) => s + p.total_price,    0);
+  const totalTax       = paidPayments.reduce((s, p) => s + p.tax_amount,     0);
+  const totalSubtotal  = paidPayments.reduce((s, p) => s + p.subtotal,       0);
+  const totalAdmin     = paidPayments.reduce((s, p) => s + p.admin_amount,   0);
+  const totalPartner   = paidPayments.reduce((s, p) => s + p.partner_amount, 0);
   const pendingCount   = payments.filter(p => p.payment_status === 'pending').length;
 
   const counts: Record<StatusFilter, number> = {
@@ -98,21 +103,26 @@ export default function PaymentsClient({ payments, commissionRate }: { payments:
       </div>
 
       {/* Revenue split summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-          <p className="text-xs text-gray-400 mb-1">Total Payments</p>
+          <p className="text-xs text-gray-400 mb-1">Guest Paid (Total)</p>
           <p className="text-2xl font-bold text-gray-900"><AEDAmount amount={totalGross} /></p>
           <p className="text-xs text-gray-400 mt-1">from {counts.paid} paid bookings</p>
         </div>
+        <div className="bg-orange-50 rounded-2xl border border-orange-100 shadow-sm p-5">
+          <p className="text-xs text-orange-600 mb-1">Taxes (Gov. collected)</p>
+          <p className="text-2xl font-bold text-orange-700"><AEDAmount amount={totalTax} /></p>
+          <p className="text-xs text-orange-500 mt-1">VAT + tourism fee</p>
+        </div>
         <div className="bg-emerald-50 rounded-2xl border border-emerald-100 shadow-sm p-5">
-          <p className="text-xs text-emerald-600 mb-1">Partner Share ({partnerRate}%)</p>
+          <p className="text-xs text-emerald-600 mb-1">Partner Share ({partnerRate}% of room)</p>
           <p className="text-2xl font-bold text-emerald-700"><AEDAmount amount={totalPartner} /></p>
-          <p className="text-xs text-emerald-500 mt-1">Due to partners</p>
+          <p className="text-xs text-emerald-500 mt-1">of <AEDAmount amount={totalSubtotal} /> room revenue</p>
         </div>
         <div className="bg-brand-blue/5 rounded-2xl border border-brand-blue/10 shadow-sm p-5">
-          <p className="text-xs text-brand-blue mb-1">Platform Commission ({commissionRate}%)</p>
+          <p className="text-xs text-brand-blue mb-1">Platform ({commissionRate}% of room)</p>
           <p className="text-2xl font-bold text-brand-blue"><AEDAmount amount={totalAdmin} /></p>
-          <p className="text-xs text-brand-blue/60 mt-1">Admin revenue</p>
+          <p className="text-xs text-brand-blue/60 mt-1">Platform commission</p>
         </div>
       </div>
 
@@ -125,9 +135,10 @@ export default function PaymentsClient({ payments, commissionRate }: { payments:
               onClick={() => setFilter(value)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 filter === value
-                  ? 'bg-brand-blue text-white shadow-sm'
+                  ? 'text-white shadow-sm'
                   : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
               }`}
+              style={filter === value ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
             >
               {label}
               <span className={`ml-1.5 text-xs ${filter === value ? 'text-white/70' : 'text-gray-400'}`}>

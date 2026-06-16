@@ -1,6 +1,7 @@
 import { createAdminClient } from './supabase-admin';
 
 export const DEFAULT_COMMISSION_RATE    = 10;
+export const DEFAULT_MIN_COMMISSION     = 5;
 export const DEFAULT_BOOKING_LIMIT      = 5;
 export const DEFAULT_SUSPEND_THRESHOLD  = 3;
 
@@ -45,9 +46,11 @@ async function saveSetting(key: string, value: number): Promise<{ error?: string
 }
 
 export const getCommissionRate       = () => getSetting('commission_rate',        DEFAULT_COMMISSION_RATE);
+export const getMinCommission        = () => getSetting('min_commission',          DEFAULT_MIN_COMMISSION);
 export const getGuestBookingLimit    = () => getSetting('guest_booking_limit',    DEFAULT_BOOKING_LIMIT);
 export const getAutoSuspendThreshold = () => getSetting('auto_suspend_threshold', DEFAULT_SUSPEND_THRESHOLD);
 
-export const saveCommissionRate       = (v: number) => saveSetting('commission_rate',       v);
-export const saveGuestBookingLimit    = (v: number) => saveSetting('guest_booking_limit',   v);
+export const saveCommissionRate       = (v: number) => saveSetting('commission_rate',        v);
+export const saveMinCommission        = (v: number) => saveSetting('min_commission',          v);
+export const saveGuestBookingLimit    = (v: number) => saveSetting('guest_booking_limit',    v);
 export const saveAutoSuspendThreshold = (v: number) => saveSetting('auto_suspend_threshold', v);

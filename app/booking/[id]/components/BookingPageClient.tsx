@@ -33,7 +33,17 @@ function parseToISO(dateStr: string): string {
   return `${year}-${mm}-${day.padStart(2, '0')}`;
 }
 
-export default function BookingPageClient({ hotel }: { hotel: HotelDetail }) {
+export default function BookingPageClient({
+  hotel,
+  taxVatPct = 15,
+  fixedFeePerNight = 0,
+  taxCountryCode = 'AE',
+}: {
+  hotel: HotelDetail;
+  taxVatPct?: number;
+  fixedFeePerNight?: number;
+  taxCountryCode?: string;
+}) {
   const router = useRouter();
   const { user, loading } = useAuth();
   const t = useTranslation();
@@ -72,7 +82,9 @@ export default function BookingPageClient({ hotel }: { hotel: HotelDetail }) {
   const pricePerNight = roomPricing.currentPrice;
   const roomsCount = Math.max(1, room.quantity ?? 1);
   const subtotal = nights * pricePerNight * roomsCount;
-  const taxes = Math.round(subtotal * 0.15);
+  const vatAmount = Math.round(subtotal * (taxVatPct / 100));
+  const fixedFees = Math.round(fixedFeePerNight * nights * roomsCount);
+  const taxes = vatAmount + fixedFees;
   const total = subtotal + taxes;
 
   useEffect(() => {
@@ -247,8 +259,13 @@ export default function BookingPageClient({ hotel }: { hotel: HotelDetail }) {
             guest_email:    user.email!,
             check_in:       checkInISO,
             check_out:      checkOutISO,
-            total_price:    total,
-            locked_price:   pricePerNight,
+            total_price:      total,
+            subtotal:         subtotal,
+            tax_country_code: taxCountryCode,
+            tax_vat_pct:      taxVatPct,
+            tax_fixed_fee:    fixedFeePerNight,
+            tax_amount:       taxes,
+            locked_price:     pricePerNight,
             room_count:     roomsCount,
             status:         'upcoming',
             payment_status: 'paid',     // change to: transactionId ? 'paid' : 'unpaid'  when payment is enabled
@@ -343,7 +360,7 @@ export default function BookingPageClient({ hotel }: { hotel: HotelDetail }) {
 
         {/* Mobile price breakdown between forms */}
         <div className="lg:hidden">
-          <PriceBreakdownCard hotel={hotel} room={room} />
+          <PriceBreakdownCard hotel={hotel} room={room} taxVatPct={taxVatPct} fixedFeePerNight={fixedFeePerNight} taxCountryCode={taxCountryCode} />
         </div>
 
         {/* Saved cards — shown when user has at least one */}
@@ -403,7 +420,8 @@ export default function BookingPageClient({ hotel }: { hotel: HotelDetail }) {
             type="button"
             onClick={handleConfirm}
             disabled={submitting || availability === 0}
-            className="w-full bg-brand-blue hover:bg-brand-blue-dark disabled:opacity-60 text-white font-extrabold py-4 rounded-2xl text-lg transition-all duration-200 shadow-lg shadow-brand-blue/25 hover:shadow-brand-blue/40 active:scale-[0.99]"
+            className="w-full disabled:opacity-60 text-white font-extrabold py-4 rounded-2xl text-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99]"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
           >
             {submitting
               ? t['booking.confirming']
@@ -480,7 +498,7 @@ export default function BookingPageClient({ hotel }: { hotel: HotelDetail }) {
       <div className="hidden lg:block">
         <div className="sticky top-24 space-y-4">
           <BookingSummary hotel={hotel} room={room} checkIn={checkIn} checkOut={checkOut} guests={guests} nights={nights} />
-          <PriceBreakdownCard hotel={hotel} room={room} />
+          <PriceBreakdownCard hotel={hotel} room={room} taxVatPct={taxVatPct} fixedFeePerNight={fixedFeePerNight} taxCountryCode={taxCountryCode} />
         </div>
       </div>
 

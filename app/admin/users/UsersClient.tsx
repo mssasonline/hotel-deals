@@ -261,8 +261,9 @@ export default function UsersClient({ initialUsers }: { initialUsers: AdminUser[
             key={value}
             onClick={() => setFilter(value)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              filter === value ? 'bg-brand-blue text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+              filter === value ? 'text-white shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
             }`}
+            style={filter === value ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
           >
             {label}
             <span className={`ml-1.5 text-xs ${filter === value ? 'text-white/70' : 'text-gray-400'}`}>

@@ -18,6 +18,8 @@ import type { PaymentMethod, CardDetails } from './lib/types';
 import { processPayment } from './lib/paymentService';
 import { supabase } from '@/lib/supabase';
 import { calcRoomPrice } from '@/lib/pricingEngine';
+import { useAppSettingsStore } from '@/store/appSettingsStore';
+import { CURRENCY_MAP } from '@/lib/currencyData';
 
 function parseToISO(dateStr: string): string {
   const months: Record<string, string> = {
@@ -61,9 +63,10 @@ function PaymentProgressSteps() {
                 step.done
                   ? 'bg-green-500 text-white'
                   : step.active
-                  ? 'bg-brand-blue text-white'
+                  ? 'text-white'
                   : 'bg-gray-200 text-gray-400'
               }`}
+              style={step.active ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
             >
               {step.done ? (
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -103,6 +106,7 @@ export default function PaymentPage() {
     useBookingStore();
 
   const { user, loading } = useAuth();
+  const selectedCurrency = useAppSettingsStore(s => s.currency);
   const [authChecked, setAuthChecked] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('credit-card');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -115,8 +119,12 @@ export default function PaymentPage() {
       router.replace('/login');
       return;
     }
+    if (!selectedHotel || !selectedRoom) {
+      router.replace('/search');
+      return;
+    }
     setAuthChecked(true);
-  }, [user, loading, router]);
+  }, [user, loading, router, selectedHotel, selectedRoom]);
 
   if (!authChecked) return (
     <>
@@ -139,10 +147,17 @@ export default function PaymentPage() {
     setIsProcessing(true);
     setPaymentError(null);
 
+    // Lock the AED → charged_currency rate at this exact moment.
+    // total_price is always stored in AED; Stripe receives the converted amount.
+    const aedRate      = CURRENCY_MAP['aed'].exchangeRate;          // 3.67
+    const chargedRate  = CURRENCY_MAP[selectedCurrency]?.exchangeRate ?? aedRate;
+    const lockedRate   = chargedRate / aedRate;                     // e.g. EUR: 0.92/3.67 = 0.2507
+    const chargedAmount = Math.round(totalPrice * lockedRate * 100) / 100;
+
     const result = await processPayment({
       method: selectedMethod,
-      amount: totalPrice,
-      currency: 'USD',
+      amount: chargedAmount,
+      currency: selectedCurrency.toUpperCase(),
       cardDetails,
     });
 
@@ -185,6 +200,8 @@ export default function PaymentPage() {
         status: 'upcoming',
         payment_status: 'paid',
         guests_count: guests,
+        charged_currency: selectedCurrency,
+        locked_exchange_rate: lockedRate,
       })
       .select('id')
       .single();

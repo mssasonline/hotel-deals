@@ -10,6 +10,9 @@ import { useAuth } from '@/lib/authContext';
 import { supabase } from '@/lib/supabase';
 import { fetchMyTrips } from '@/app/user-actions';
 import CurrencyAmount from '@/app/components/CurrencyAmount';
+import { submitReview } from '@/app/actions/submitReview';
+import ManageBookingModal from '@/app/components/ManageBookingModal';
+import type { ManageableBooking } from '@/app/components/ManageBookingModal';
 
 type BookingStatus = 'upcoming' | 'active' | 'completed' | 'cancelled';
 type PaymentStatus = 'unpaid' | 'pending' | 'paid' | 'failed';
@@ -251,39 +254,19 @@ function ReviewModal({ booking, onClose, onSubmitted, userId }: ReviewModalProps
     setSubmitting(true);
     setErrorMsg('');
 
-    const { error: insertError } = await supabase.from('reviews').insert({
-      booking_id: booking.id,
-      hotel_id: Number(booking.hotelId),
-      user_id: userId,
+    const result = await submitReview(
+      Number(booking.id),
+      Number(booking.hotelId),
       rating,
-      comment: comment.trim() || null,
-    });
+      comment.trim() || null,
+    );
 
-    if (insertError) {
-      setSubmitting(false);
-      if (insertError.code === '23505') {
-        setErrorMsg('You have already submitted a review for this booking.');
-      } else {
-        setErrorMsg(insertError.message);
-      }
+    setSubmitting(false);
+    if (!result.success) {
+      setErrorMsg(result.error ?? 'Failed to submit review. Please try again.');
       return;
     }
 
-    const { data: allReviews } = await supabase
-      .from('reviews')
-      .select('rating')
-      .eq('hotel_id', Number(booking.hotelId));
-
-    if (allReviews && allReviews.length > 0) {
-      const count = allReviews.length;
-      const avg = allReviews.reduce((s: number, r: { rating: number }) => s + r.rating, 0) / count;
-      await supabase
-        .from('hotels')
-        .update({ rating: parseFloat(avg.toFixed(2)), review_count: count })
-        .eq('id', Number(booking.hotelId));
-    }
-
-    setSubmitting(false);
     setSuccess(true);
     setTimeout(() => onSubmitted(booking.id), 1500);
   }
@@ -296,10 +279,10 @@ function ReviewModal({ booking, onClose, onSubmitted, userId }: ReviewModalProps
       }}
     >
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 py-5" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
           <div>
-            <h2 className="font-bold text-gray-900 text-lg">Leave a Review</h2>
-            <p className="text-sm text-gray-400 mt-0.5">
+            <h2 className="font-bold text-white text-lg">Leave a Review</h2>
+            <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
               {booking.hotelName} · {booking.bookingRef}
             </p>
           </div>
@@ -307,7 +290,7 @@ function ReviewModal({ booking, onClose, onSubmitted, userId }: ReviewModalProps
             type="button"
             onClick={onClose}
             disabled={submitting || success}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-40"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 disabled:opacity-40 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -385,7 +368,8 @@ function ReviewModal({ booking, onClose, onSubmitted, userId }: ReviewModalProps
               type="button"
               onClick={handleSubmit}
               disabled={submitting || rating === 0}
-              className="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-blue-dark disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 12px rgba(30,58,138,0.3)' }}
             >
               {submitting && <Spinner />}
               Submit Review
@@ -397,211 +381,6 @@ function ReviewModal({ booking, onClose, onSubmitted, userId }: ReviewModalProps
   );
 }
 
-interface ManageBookingModalProps {
-  booking: Booking;
-  onClose: () => void;
-  onUpdated: (updated: Partial<Booking>) => void;
-}
-
-function ManageBookingModal({ booking, onClose, onUpdated }: ManageBookingModalProps) {
-  const today = getTodayStr();
-  const isNonRefundable = booking.cancellationPolicy === 'non_refundable';
-  const isPaid = booking.paymentStatus === 'paid';
-  const isUpcoming = booking.status === 'upcoming';
-  const canEdit = isUpcoming && !isNonRefundable;
-  const canCancel = !isNonRefundable && !isPaid;
-
-  const [checkIn, setCheckIn] = useState(booking.checkInRaw);
-  const [checkOut, setCheckOut] = useState(booking.checkOutRaw);
-  const [guests, setGuests] = useState(booking.guests);
-  const [saving, setSaving] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
-  const [confirmingCancel, setConfirmingCancel] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-
-  async function handleSave() {
-    if (!canEdit) return;
-    if (checkOut <= checkIn) {
-      setErrorMsg('Check-out must be after check-in.');
-      return;
-    }
-    setSaving(true);
-    setErrorMsg('');
-    setSuccessMsg('');
-
-    const { error } = await supabase
-      .from('bookings')
-      .update({ check_in: checkIn, check_out: checkOut, guests_count: guests })
-      .eq('id', booking.id);
-
-    setSaving(false);
-    if (error) {
-      setErrorMsg(error.message);
-      return;
-    }
-
-    const nightCount = Math.max(
-      1,
-      Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86400000)
-    );
-    setSuccessMsg('Booking updated successfully.');
-    onUpdated({
-      checkIn: formatDate(checkIn),
-      checkOut: formatDate(checkOut),
-      checkInRaw: checkIn,
-      checkOutRaw: checkOut,
-      guests,
-      nights: nightCount,
-    });
-  }
-
-  async function handleCancelConfirm() {
-    if (!canCancel) return;
-    setCancelling(true);
-    setErrorMsg('');
-    setSuccessMsg('');
-
-    const { error } = await supabase
-      .from('bookings')
-      .update({ status: 'cancelled' })
-      .eq('id', booking.id);
-
-    setCancelling(false);
-    if (error) {
-      setConfirmingCancel(false);
-      setErrorMsg(error.message);
-      return;
-    }
-
-    setSuccessMsg('Booking cancelled.');
-    onUpdated({ status: 'cancelled' });
-    setTimeout(onClose, 1200);
-  }
-
-  return (
-    <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-      onClick={(e) => { if (e.target === e.currentTarget && !saving && !cancelling) onClose(); }}
-    >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-          <div>
-            <h2 className="font-bold text-gray-900 text-lg">Manage Booking</h2>
-            <p className="text-sm text-gray-400 mt-0.5">{booking.hotelName} · {booking.bookingRef}</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={saving || cancelling}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500 disabled:opacity-40"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="px-6 py-5 space-y-4">
-          {isNonRefundable && (
-            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex gap-3 items-start">
-              <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-              </svg>
-              <p className="text-red-700 text-sm font-medium">
-                This booking is <strong>non-refundable</strong> and cannot be modified or cancelled.
-              </p>
-            </div>
-          )}
-          {!isNonRefundable && !isUpcoming && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex gap-3 items-start">
-              <svg className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-              </svg>
-              <p className="text-amber-700 text-sm font-medium">
-                Check-in has begun. Dates and guest count cannot be modified.
-              </p>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
-                Check-in
-              </label>
-              <input
-                type="date"
-                value={checkIn}
-                min={today}
-                disabled={!canEdit}
-                onChange={(e) => { setCheckIn(e.target.value); setSuccessMsg(''); setErrorMsg(''); }}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
-                Check-out
-              </label>
-              <input
-                type="date"
-                value={checkOut}
-                min={checkIn || today}
-                disabled={!canEdit}
-                onChange={(e) => { setCheckOut(e.target.value); setSuccessMsg(''); setErrorMsg(''); }}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
-              Guests
-            </label>
-            <input
-              type="number"
-              min={1}
-              max={10}
-              value={guests}
-              disabled={!canEdit}
-              onChange={(e) => { setGuests(Math.max(1, parseInt(e.target.value, 10) || 1)); setSuccessMsg(''); setErrorMsg(''); }}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
-            />
-          </div>
-
-
-          {successMsg && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-center gap-2">
-              <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              </svg>
-              <p className="text-emerald-700 text-sm font-medium">{successMsg}</p>
-            </div>
-          )}
-          {errorMsg && (
-            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-              <p className="text-red-700 text-sm font-medium">{errorMsg}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={!canEdit || saving || !!successMsg}
-            className="inline-flex items-center gap-2 bg-brand-blue hover:bg-brand-blue-dark disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-sm"
-          >
-            {saving && <Spinner />}
-            Save Changes
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function BookingCard({
   booking,
@@ -617,7 +396,7 @@ function BookingCard({
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     `${booking.hotelName} ${booking.city}`
   )}`;
-  const canReview = booking.status === 'completed' && booking.paymentStatus === 'paid';
+  const canReview = booking.status === 'completed';
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
@@ -698,7 +477,8 @@ function BookingCard({
             <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
               <Link
                 href={`/booking/success/${booking.id}`}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors duration-150 shadow-sm"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5"
+                style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.28)' }}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -764,7 +544,8 @@ function EmptyState({ tab }: { tab: BookingStatus }) {
       <p className="text-gray-500 text-sm mb-7 max-w-xs">{sub}</p>
       <Link
         href="/search?city=Dubai"
-        className="inline-flex items-center gap-2 bg-brand-gold hover:bg-yellow-500 text-white font-bold px-6 py-3 rounded-xl transition-colors shadow-sm"
+        className="inline-flex items-center gap-2 text-white font-bold px-6 py-3 rounded-xl transition-all hover:-translate-y-0.5"
+        style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -878,7 +659,7 @@ export default function MyTripsPage() {
     return (
       <>
         <Header />
-        <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <main className="min-h-screen flex items-center justify-center" style={{ background: '#F8FAFC' }}>
           <Spinner className="w-8 h-8 text-brand-blue" />
         </main>
         <Footer />
@@ -895,9 +676,9 @@ export default function MyTripsPage() {
     <>
       <Header />
 
-      <main className="bg-gray-50 min-h-screen">
+      <main className="min-h-screen" style={{ background: '#F8FAFC' }}>
         {/* Page header */}
-        <div className="bg-brand-blue">
+        <div style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div className="flex items-center gap-4 mb-2">
               <div className="w-10 h-10 bg-brand-gold rounded-xl flex items-center justify-center shrink-0 shadow-sm">
@@ -944,8 +725,9 @@ export default function MyTripsPage() {
                     {count > 0 && (
                       <span
                         className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${
-                          isActive ? 'bg-brand-blue text-white' : 'bg-gray-100 text-gray-500'
+                          isActive ? 'text-white' : 'bg-gray-100 text-gray-500'
                         }`}
+                        style={isActive ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
                       >
                         {count}
                       </span>
@@ -992,7 +774,7 @@ export default function MyTripsPage() {
 
           {/* Upsell banner */}
           {!fetching && activeTab !== 'upcoming' && activeTab !== 'active' && (
-            <div className="mt-10 bg-brand-blue rounded-2xl px-6 py-6 text-center text-white">
+            <div className="mt-10 rounded-2xl px-6 py-6 text-center text-white" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
               <p className="text-white/55 text-[11px] font-medium uppercase tracking-widest mb-2">
                 Ready for your next adventure?
               </p>
@@ -1004,7 +786,8 @@ export default function MyTripsPage() {
               </p>
               <Link
                 href="/search?city=Dubai"
-                className="inline-block bg-brand-gold hover:bg-yellow-500 text-white font-bold px-6 py-2.5 rounded-xl transition-colors shadow-sm"
+                className="inline-block text-white font-bold px-6 py-2.5 rounded-xl transition-all hover:-translate-y-0.5"
+                style={{ background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)', boxShadow: '0 4px 12px rgba(180,83,9,0.35)' }}
               >
                 Browse Last Minute Deals
               </Link>
@@ -1017,9 +800,19 @@ export default function MyTripsPage() {
 
       {managingBooking && (
         <ManageBookingModal
-          booking={managingBooking}
+          booking={{
+            id: managingBooking.id,
+            hotelName: managingBooking.hotelName,
+            bookingRef: managingBooking.bookingRef,
+            checkInRaw: managingBooking.checkInRaw,
+            checkOutRaw: managingBooking.checkOutRaw,
+            guests: managingBooking.guests,
+            status: managingBooking.status,
+            paymentStatus: managingBooking.paymentStatus,
+            cancellationPolicy: managingBooking.cancellationPolicy,
+          } satisfies ManageableBooking}
           onClose={() => setManagingBooking(null)}
-          onUpdated={handleBookingUpdated}
+          onUpdated={(updated) => handleBookingUpdated(updated as Partial<Booking>)}
         />
       )}
 

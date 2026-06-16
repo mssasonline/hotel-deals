@@ -26,6 +26,8 @@ export type PartnerRevenueSummary = {
   hotel_count:      number;
   booking_count:    number;
   gross_revenue:    number;
+  subtotal:         number;
+  tax_collected:    number;
   partner_payout:   number;
   admin_commission: number;
 };
@@ -270,22 +272,26 @@ function StatusBreakdown({ counts, total }: { counts: Record<string, number>; to
 // ── Partner Revenue Table ─────────────────────────────────────
 
 function PartnerRevenueTable({ partners, commissionRate }: { partners: PartnerRevenueSummary[]; commissionRate: number }) {
-  const partnerRate = 100 - commissionRate;
-  const fmt = useAEDFormat();
-  const totalGross  = partners.reduce((s, p) => s + p.gross_revenue,    0);
-  const totalAdmin  = partners.reduce((s, p) => s + p.admin_commission, 0);
-  const totalPayout = partners.reduce((s, p) => s + p.partner_payout,   0);
+  const partnerRate    = 100 - commissionRate;
+  const totalGross     = partners.reduce((s, p) => s + p.gross_revenue,    0);
+  const totalTax       = partners.reduce((s, p) => s + p.tax_collected,    0);
+  const totalSubtotal  = partners.reduce((s, p) => s + p.subtotal,         0);
+  const totalAdmin     = partners.reduce((s, p) => s + p.admin_commission, 0);
+  const totalPayout    = partners.reduce((s, p) => s + p.partner_payout,   0);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
           <h2 className="font-semibold text-gray-900">Partner Revenue Distribution</h2>
-          <p className="text-xs text-gray-400 mt-0.5">{partnerRate}% Partner · {commissionRate}% Platform</p>
+          <p className="text-xs text-gray-400 mt-0.5">{partnerRate}% Partner · {commissionRate}% Platform · of room price (excl. taxes)</p>
         </div>
-        <div className="flex gap-3 text-xs shrink-0">
+        <div className="flex flex-wrap gap-2 text-xs shrink-0">
           <span className="px-3 py-1.5 bg-gray-50 rounded-lg text-gray-600">
-            Total: <strong className="text-gray-900"><AEDAmount amount={totalGross} /></strong>
+            Guest paid: <strong className="text-gray-900"><AEDAmount amount={totalGross} /></strong>
+          </span>
+          <span className="px-3 py-1.5 bg-orange-50 rounded-lg text-orange-700">
+            Taxes: <strong><AEDAmount amount={totalTax} /></strong>
           </span>
           <span className="px-3 py-1.5 bg-emerald-50 rounded-lg text-emerald-700">
             Partners: <strong><AEDAmount amount={totalPayout} /></strong>
@@ -299,13 +305,14 @@ function PartnerRevenueTable({ partners, commissionRate }: { partners: PartnerRe
         <div className="px-6 py-10 text-center text-gray-400 text-sm">No data yet.</div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[700px]">
+          <table className="w-full text-sm min-w-[800px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
                 <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Partner</th>
                 <th className="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase">Hotels</th>
                 <th className="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase">Bookings</th>
-                <th className="px-5 py-3 text-right text-xs font-semibold text-gray-400 uppercase">Total</th>
+                <th className="px-5 py-3 text-right text-xs font-semibold text-gray-400 uppercase">Guest Paid</th>
+                <th className="px-5 py-3 text-right text-xs font-semibold text-orange-500 uppercase">Taxes</th>
                 <th className="px-5 py-3 text-right text-xs font-semibold text-emerald-600 uppercase">Partner ({partnerRate}%)</th>
                 <th className="px-5 py-3 text-right text-xs font-semibold text-brand-blue uppercase">Platform ({commissionRate}%)</th>
               </tr>
@@ -320,6 +327,7 @@ function PartnerRevenueTable({ partners, commissionRate }: { partners: PartnerRe
                   <td className="px-5 py-4 text-center text-gray-600">{p.hotel_count}</td>
                   <td className="px-5 py-4 text-center text-gray-600">{p.booking_count}</td>
                   <td className="px-5 py-4 text-right font-semibold text-gray-900"><AEDAmount amount={p.gross_revenue} /></td>
+                  <td className="px-5 py-4 text-right text-orange-600"><AEDAmount amount={p.tax_collected} /></td>
                   <td className="px-5 py-4 text-right font-semibold text-emerald-600"><AEDAmount amount={p.partner_payout} /></td>
                   <td className="px-5 py-4 text-right font-semibold text-brand-blue"><AEDAmount amount={p.admin_commission} /></td>
                 </tr>
@@ -329,6 +337,7 @@ function PartnerRevenueTable({ partners, commissionRate }: { partners: PartnerRe
               <tr className="bg-gray-50 border-t-2 border-gray-200 font-bold">
                 <td className="px-5 py-3 text-gray-700" colSpan={3}>Total</td>
                 <td className="px-5 py-3 text-right text-gray-900"><AEDAmount amount={totalGross} /></td>
+                <td className="px-5 py-3 text-right text-orange-600"><AEDAmount amount={totalTax} /></td>
                 <td className="px-5 py-3 text-right text-emerald-600"><AEDAmount amount={totalPayout} /></td>
                 <td className="px-5 py-3 text-right text-brand-blue"><AEDAmount amount={totalAdmin} /></td>
               </tr>
@@ -359,7 +368,7 @@ export default function ReportsClient({
 }) {
   const fmt = useAEDFormat();
   const partnerRate     = 100 - commissionRate;
-  const adminCommission = Math.round(stats.total_revenue * (commissionRate / 100) * 100) / 100;
+  const adminCommission = Math.round(partnerRevenue.reduce((s, p) => s + p.admin_commission, 0) * 100) / 100;
 
   return (
     <div className="p-6 lg:p-8 max-w-[1400px]">

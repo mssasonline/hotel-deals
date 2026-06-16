@@ -107,7 +107,8 @@ export default function HotelPriceWidget({
       {bookingOpen ? (
         <Link
           href={`/booking/${hotelId}`}
-          className="block w-full bg-brand-gold hover:bg-yellow-500 text-white font-bold text-center py-4 rounded-xl transition-colors shadow-lg shadow-brand-gold/30 text-lg mb-4"
+          className="block w-full text-white font-bold text-center py-4 rounded-xl transition-all text-lg mb-4 hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
         >
           {t['hotel.bookNow']}
         </Link>

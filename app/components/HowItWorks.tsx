@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import ScrollReveal from './ScrollReveal';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 import { getCurrentTier, type PriceTier } from '@/lib/pricingEngine';
@@ -30,9 +31,6 @@ const TIER_COLORS = ['bg-blue-500', 'bg-orange-500', 'bg-red-500', 'bg-purple-70
 const TIER_DISCOUNTS = [10, 15, 35, 50];
 const TIER_LABEL_KEYS = ['tier.earlyBird', 'tier.afternoon', 'tier.evening', 'tier.midnight'] as const;
 
-// Display order is chronological for the booking day: Early Bird → Afternoon → Evening → Midnight
-// pricingEngine order is: Midnight(0) → Early Bird(1) → Afternoon(2) → Evening(3)
-// This maps display position → pricingEngine index
 const DISPLAY_TO_PE_IDX = [1, 2, 3, 0] as const;
 
 export default function HowItWorks() {
@@ -41,7 +39,6 @@ export default function HowItWorks() {
 
   const [activeTier, setActiveTier] = useState<PriceTier>(() => getCurrentTier());
 
-  // Keep the highlighted tier card in sync with the current time
   useEffect(() => {
     const id = setInterval(() => setActiveTier(getCurrentTier()), 60_000);
     return () => clearInterval(id);
@@ -57,11 +54,10 @@ export default function HowItWorks() {
   const TIER_LABELS = TIER_LABEL_KEYS.map((k) => t[k]);
 
   return (
-    <section className="py-16 bg-gray-50 border-t border-gray-100">
+    <section className="py-16 border-t" style={{ background: '#F8FAFC', borderColor: 'rgba(30,58,138,0.06)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Header */}
-        <div className="text-center mb-12">
+        <ScrollReveal className="text-center mb-12">
           <span className="inline-block bg-brand-blue-light text-brand-blue text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-3">
             {t['how.badge']}
           </span>
@@ -71,57 +67,61 @@ export default function HowItWorks() {
           <p className="mt-2 text-gray-500 text-sm max-w-lg mx-auto">
             {t['how.subtitle']}
           </p>
-        </div>
+        </ScrollReveal>
 
-        {/* 3 Steps */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-14">
           {STEPS.map((step, i) => (
-            <div key={i} className="relative flex flex-col items-center text-center group">
-              {/* Connector line */}
-              {i < STEPS.length - 1 && (
-                <div className="hidden md:block absolute top-10 left-[calc(50%+3rem)] right-0 h-px border-t-2 border-dashed border-gray-200" />
-              )}
-              <div className="w-20 h-20 rounded-2xl bg-white shadow-md border border-gray-100 flex items-center justify-center mb-4 text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-colors duration-300">
-                {step.icon}
+            <ScrollReveal key={i} delay={i * 150}>
+              <div className="relative flex flex-col items-center text-center group">
+                {i < STEPS.length - 1 && (
+                  <div className="hidden md:block absolute top-10 left-[calc(50%+3rem)] right-0 h-px border-t-2 border-dashed border-gray-200" />
+                )}
+                <div
+                  className="w-20 h-20 rounded-2xl flex items-center justify-center mb-4 text-white transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg"
+                  style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.2)' }}
+                >
+                  {step.icon}
+                </div>
+                <span className="text-xs font-bold text-brand-gold uppercase tracking-widest mb-1">{step.number}</span>
+                <h3 className="font-bold text-gray-900 mb-2 text-base">{step.title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{step.desc}</p>
               </div>
-              <span className="text-xs font-bold text-brand-gold uppercase tracking-widest mb-1">{step.number}</span>
-              <h3 className="font-bold text-gray-900 mb-2 text-base">{step.title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{step.desc}</p>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
 
-        {/* Price tier timeline */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <p className="text-center text-sm font-semibold text-gray-600 mb-5">{t['how.scheduleLabel']}</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {TIER_DISCOUNTS.map((discount, i) => {
-              const isActive = DISPLAY_TO_PE_IDX[i] === activeTier.tierIndex;
-              return (
-                <div
-                  key={i}
-                  className={`rounded-xl p-4 text-center border-2 transition-all ${
-                    isActive
-                      ? 'border-brand-gold shadow-lg shadow-brand-gold/10 scale-105'
-                      : 'border-transparent bg-gray-50'
-                  }`}
-                >
-                  <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${TIER_COLORS[i]} text-white font-extrabold text-lg mb-2 mx-auto`}>
-                    {discount}%
-                  </div>
-                  <div className="text-xs font-semibold text-gray-500 mb-0.5">{TIER_TIMES[i]}</div>
-                  <div className="text-[11px] text-gray-400">{TIER_LABELS[i]}</div>
-                  {isActive && (
-                    <div className="mt-2 text-[11px] font-bold text-brand-gold flex items-center justify-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-brand-gold rounded-full animate-pulse" />
-                      {t['how.tierNow']}
+        <ScrollReveal delay={100}>
+          <div className="bg-white rounded-2xl p-6" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(30,58,138,0.06)' }}>
+            <p className="text-center text-sm font-semibold text-gray-600 mb-5">{t['how.scheduleLabel']}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {TIER_DISCOUNTS.map((discount, i) => {
+                const isActive = DISPLAY_TO_PE_IDX[i] === activeTier.tierIndex;
+                return (
+                  <div
+                    key={i}
+                    className={`rounded-xl p-4 text-center border-2 transition-all ${
+                      isActive
+                        ? 'border-brand-gold shadow-lg shadow-brand-gold/10 scale-105'
+                        : 'border-transparent bg-gray-50'
+                    }`}
+                  >
+                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${TIER_COLORS[i]} text-white font-extrabold text-lg mb-2 mx-auto`}>
+                      {discount}%
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                    <div className="text-xs font-semibold text-gray-500 mb-0.5">{TIER_TIMES[i]}</div>
+                    <div className="text-[11px] text-gray-400">{TIER_LABELS[i]}</div>
+                    {isActive && (
+                      <div className="mt-2 text-[11px] font-bold text-brand-gold flex items-center justify-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-brand-gold rounded-full animate-pulse" />
+                        {t['how.tierNow']}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
 
       </div>
     </section>

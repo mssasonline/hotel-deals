@@ -17,9 +17,9 @@ export default function DualTrackNav() {
   }, []);
 
   return (
-    <div className="bg-gray-50 border-b border-gray-200">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <p className="text-center text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+    <div className="border-b" style={{ background: '#F8FAFC', borderColor: 'rgba(30,58,138,0.08)' }}>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <p className="text-center text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#94A3B8' }}>
           {t['nav.chooseTrack']}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -27,9 +27,12 @@ export default function DualTrackNav() {
           {/* Track 1 — Time-based */}
           <Link
             href="/search"
-            className="group flex items-center gap-4 bg-white border-2 border-brand-blue/20 hover:border-brand-blue rounded-2xl px-5 py-4 text-left transition-all hover:shadow-md hover:shadow-brand-blue/10"
+            className="group flex items-center gap-4 bg-white rounded-2xl px-5 py-4 text-left transition-all hover:-translate-y-0.5"
+            style={{ border: '1px solid rgba(30,58,138,0.12)', boxShadow: '0 1px 4px rgba(30,58,138,0.06)', transition: 'all 0.2s ease' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 20px rgba(30,58,138,0.12)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(30,58,138,0.3)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(30,58,138,0.06)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(30,58,138,0.12)'; }}
           >
-            <div className="w-12 h-12 rounded-xl bg-brand-blue flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 8px rgba(30,58,138,0.25)' }}>
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -54,9 +57,12 @@ export default function DualTrackNav() {
           {/* Track 2 — Partner deals */}
           <Link
             href="/special-deals"
-            className="group flex items-center gap-4 bg-white border-2 border-brand-gold/30 hover:border-brand-gold rounded-2xl px-5 py-4 text-left transition-all hover:shadow-md hover:shadow-brand-gold/10"
+            className="group flex items-center gap-4 bg-white rounded-2xl px-5 py-4 text-left transition-all hover:-translate-y-0.5"
+            style={{ border: '1px solid rgba(180,83,9,0.15)', boxShadow: '0 1px 4px rgba(180,83,9,0.06)', transition: 'all 0.2s ease' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 20px rgba(180,83,9,0.12)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(180,83,9,0.3)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(180,83,9,0.06)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(180,83,9,0.15)'; }}
           >
-            <div className="w-12 h-12 rounded-xl bg-brand-gold flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform" style={{ background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)', boxShadow: '0 2px 8px rgba(180,83,9,0.25)' }}>
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />

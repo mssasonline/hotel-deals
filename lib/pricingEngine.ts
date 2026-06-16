@@ -146,25 +146,33 @@ export function calcRoomPrice(
 }
 
 /**
- * Full stay price calculation including taxes (15% of subtotal).
+ * Full stay price calculation with country-specific taxes.
  *
- * @param basePrice   rooms.base_price (strikethrough)
+ * @param basePrice      rooms.base_price (strikethrough)
  * @param pricePerNight  calcLivePrice() result (the actual nightly price)
+ * @param taxVatPct      VAT % from tax_rates table (default 15 for backwards compat)
+ * @param fixedFeePerNight  Fixed fee per room per night (e.g. Tourism Dirham)
  */
 export function calcRoomStayPrice({
   basePrice,
   pricePerNight,
   nights = 1,
   rooms = 1,
+  taxVatPct = 15,
+  fixedFeePerNight = 0,
 }: {
   basePrice: number;
   pricePerNight: number;
   nights?: number;
   rooms?: number;
+  taxVatPct?: number;
+  fixedFeePerNight?: number;
 }): RoomStayPriceResult {
   const perNight = calcRoomPrice(basePrice, pricePerNight);
   const subtotal = perNight.currentPrice * nights * rooms;
-  const taxes = Math.round(subtotal * 0.15);
+  const vatAmount = Math.round(subtotal * (taxVatPct / 100));
+  const fixedFees = Math.round(fixedFeePerNight * nights * rooms);
+  const taxes = vatAmount + fixedFees;
 
   return {
     ...perNight,
@@ -264,10 +272,14 @@ export function calcNightlyRates(
 export function calcNightlyStayPrice(
   nights: NightRate[],
   roomsCount: number,
+  taxVatPct = 15,
+  fixedFeePerNight = 0,
 ): NightlyStayResult {
   const nightsTotal = nights.reduce((sum, n) => sum + n.finalPrice, 0);
   const subtotal    = Math.round(nightsTotal * roomsCount);
-  const taxes       = Math.round(subtotal * 0.15);
+  const vatAmount   = Math.round(subtotal * (taxVatPct / 100));
+  const fixedFees   = Math.round(fixedFeePerNight * nights.length * roomsCount);
+  const taxes       = vatAmount + fixedFees;
   const total       = subtotal + taxes;
   const avgPerNight = nights.length > 0 ? Math.round(nightsTotal / nights.length) : 0;
   return { nights, subtotal, taxes, total, avgPerNight };

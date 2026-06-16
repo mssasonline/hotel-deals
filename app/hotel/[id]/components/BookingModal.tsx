@@ -9,6 +9,7 @@ import { formatPrice } from '@/lib/currency';
 import CurrencyAmount from '@/app/components/CurrencyAmount';
 import { localDateISO } from '@/lib/dateUtils';
 import { getCurrentTier, calcLivePrice } from '@/lib/pricingEngine';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 interface Room {
   id: string;
@@ -27,6 +28,7 @@ export default function BookingModal({ room, hotelId, onClose }: Props) {
   const router = useRouter();
   const { user } = useAuth();
   const currency = useAppSettingsStore((s) => s.currency);
+  const t = useTranslation();
   const [guestName, setGuestName] = useState(
     (user?.user_metadata?.full_name as string | undefined) ?? ''
   );
@@ -73,11 +75,11 @@ export default function BookingModal({ room, hotelId, onClose }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (nights <= 0) {
-      setError('Check-out date must be after check-in date.');
+      setError(t['hotel.errorCheckoutAfterCheckin']);
       return;
     }
     if (availability !== null && availability <= 0) {
-      setError('This room is sold out for the selected dates.');
+      setError(t['hotel.errorRoomSoldOut']);
       return;
     }
     setLoading(true);
@@ -107,8 +109,8 @@ export default function BookingModal({ room, hotelId, onClose }: Props) {
       const msg = insertError?.message ?? '';
       setError(
         msg.includes('ROOM_UNAVAILABLE')
-          ? 'This room was just booked by someone else. Please choose different dates.'
-          : 'Booking failed. Please try again.'
+          ? t['hotel.errorJustBooked']
+          : t['hotel.errorBookingFailed']
       );
       return;
     }
@@ -123,15 +125,16 @@ export default function BookingModal({ room, hotelId, onClose }: Props) {
       }}
     >
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+        {/* Gradient header */}
+        <div className="relative px-6 py-5 flex items-center justify-between" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
           <div>
-            <h2 className="font-bold text-gray-900 text-lg">Book Room</h2>
-            <p className="text-sm text-gray-400 mt-0.5">{room.name}</p>
+            <h2 className="font-bold text-white text-lg">{t['hotel.bookRoom']}</h2>
+            <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>{room.name}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -145,18 +148,18 @@ export default function BookingModal({ room, hotelId, onClose }: Props) {
             <div className="flex items-center justify-between mb-1">
               <span className="font-semibold text-gray-900">{room.name}</span>
               <span className="font-extrabold text-brand-blue">
-                <CurrencyAmount amount={pricePerNight} />/night
+                <CurrencyAmount amount={pricePerNight} />{t['price.perNight']}
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-amber-600 text-xs font-medium">
-              <span>Non-refundable booking</span>
+              <span>{t['hotel.nonRefundableBooking']}</span>
             </div>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t['hotel.fullName']}</label>
             <input
               type="text"
               required
@@ -168,7 +171,7 @@ export default function BookingModal({ room, hotelId, onClose }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t['hotel.email']}</label>
             <input
               type="email"
               required
@@ -181,7 +184,7 @@ export default function BookingModal({ room, hotelId, onClose }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Check-In</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t['booking.checkIn']}</label>
               <input
                 type="date"
                 required
@@ -192,7 +195,7 @@ export default function BookingModal({ room, hotelId, onClose }: Props) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Check-Out</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t['booking.checkOut']}</label>
               <input
                 type="date"
                 required
@@ -213,7 +216,7 @@ export default function BookingModal({ room, hotelId, onClose }: Props) {
                 <span className="font-bold text-gray-900"><CurrencyAmount amount={totalPrice} /></span>
               </div>
               <div className="flex justify-between items-center font-bold text-gray-900 border-t border-gray-200 pt-2">
-                <span>Total</span>
+                <span>{t['price.total']}</span>
                 <span><CurrencyAmount amount={totalPrice} /></span>
               </div>
             </div>
@@ -236,14 +239,14 @@ export default function BookingModal({ room, hotelId, onClose }: Props) {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Checking availability…
+                  {t['hotel.checkingAvailability']}
                 </>
               ) : availability === null ? null : availability === 0 ? (
-                'Sold Out — no rooms available for these dates'
+                t['hotel.soldOutDates']
               ) : availability === 1 ? (
-                'Last room available!'
+                t['hotel.lastRoomTonight']
               ) : (
-                `${availability} rooms remaining`
+                t['hotel.roomsRemaining'].replace('{n}', String(availability))
               )}
             </div>
           )}
@@ -253,13 +256,14 @@ export default function BookingModal({ room, hotelId, onClose }: Props) {
           <button
             type="submit"
             disabled={loading || nights <= 0 || availability === 0}
-            className="w-full bg-brand-gold hover:bg-yellow-500 disabled:opacity-60 text-white font-bold py-3 rounded-xl transition-colors shadow shadow-brand-gold/30"
+            className="w-full disabled:opacity-60 text-white font-bold py-3 rounded-xl transition-all hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
           >
             {loading
-              ? 'Booking…'
+              ? t['hotel.bookingInProgress']
               : totalPrice > 0
-              ? `Confirm Booking — ${formatPrice(totalPrice, currency)}`
-              : 'Select dates to continue'}
+              ? t['hotel.confirmBookingAmount'].replace('{amount}', formatPrice(totalPrice, currency))
+              : t['hotel.selectDatesToContinue']}
           </button>
         </form>
       </div>

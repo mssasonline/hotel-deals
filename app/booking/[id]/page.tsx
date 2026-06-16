@@ -6,6 +6,7 @@ import Footer from '@/app/components/Footer';
 import { supabase } from '@/lib/supabase';
 import { getDealStatus, getUrgencyConfig } from '@/lib/dealsEngine';
 import { getCurrentTier, calcLivePrice } from '@/lib/pricingEngine';
+import { getTaxRateForHotel } from '@/lib/taxUtils';
 import type { RoomCategory } from '@/lib/roomImages';
 import type { HotelDetail, RoomType } from '@/app/hotel/[id]/lib/hotelDetailData';
 import BookingPageClient from './components/BookingPageClient';
@@ -44,13 +45,14 @@ export default async function BookingPage({ params }: Props) {
   const { id } = await params;
   const hotelId = Number(id);
 
-  const [{ data: row }, { data: rooms }] = await Promise.all([
+  const [{ data: row }, { data: rooms }, taxRate] = await Promise.all([
     supabase.from('hotels').select('*').eq('id', hotelId).single(),
     supabase
       .from('rooms')
       .select('*')
       .eq('hotel_id', hotelId)
       .order('base_price', { ascending: true, nullsFirst: false }),
+    getTaxRateForHotel(hotelId),
   ]);
 
   if (!row) notFound();
@@ -108,7 +110,7 @@ export default async function BookingPage({ params }: Props) {
     <>
       <Header />
 
-      <main className="bg-gray-50 min-h-screen">
+      <main className="min-h-screen" style={{ background: '#F8FAFC' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
           {/* Breadcrumb */}
@@ -125,7 +127,12 @@ export default async function BookingPage({ params }: Props) {
           {/* Progress steps */}
           <BookingProgressSteps />
 
-          <BookingPageClient hotel={hotel} />
+          <BookingPageClient
+            hotel={hotel}
+            taxVatPct={taxRate.vat_pct}
+            fixedFeePerNight={taxRate.fixed_fee_per_night}
+            taxCountryCode={taxRate.country_code}
+          />
 
         </div>
       </main>

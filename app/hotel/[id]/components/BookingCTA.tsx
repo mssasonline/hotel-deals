@@ -9,6 +9,7 @@ import CurrencyAmount from '@/app/components/CurrencyAmount';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { formatPrice } from '@/lib/currency';
 import { calcRoomPrice, isBookingOpen } from '@/lib/pricingEngine';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 interface BookingCTAProps {
   hotel: HotelDetail;
@@ -29,6 +30,7 @@ export default function BookingCTA({ hotel, selectedRoom }: BookingCTAProps) {
   const router = useRouter();
   const { user } = useAuth();
   const currency = useAppSettingsStore((s) => s.currency);
+  const t = useTranslation();
   const [bookingOpen, setBookingOpen] = useState(() => isBookingOpen());
   useEffect(() => {
     const id = setInterval(() => setBookingOpen(isBookingOpen()), 60_000);
@@ -43,7 +45,7 @@ export default function BookingCTA({ hotel, selectedRoom }: BookingCTAProps) {
   const taxes = Math.round(price * 0.15);
   const total = price + taxes;
   const savings = originalPrice - price;
-  const roomLabel = selectedRoom ? selectedRoom.name : 'Select a room below';
+  const roomLabel = selectedRoom ? selectedRoom.name : t['hotel.selectRoomBelow'];
 
   function handleBookNow() {
     if (!user) {
@@ -57,18 +59,18 @@ export default function BookingCTA({ hotel, selectedRoom }: BookingCTAProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
       {/* Header */}
-      <div className="bg-brand-blue px-5 py-4">
+      <div className="px-5 py-4" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-white/70 text-xs font-medium uppercase tracking-wider">Tonight's Price</p>
+            <p className="text-white/70 text-xs font-medium uppercase tracking-wider">{t['hotel.tonightPrice']}</p>
             {discountPct > 0 && (
               <div className="text-red-300 text-xs line-through leading-none mb-0.5">
-                <CurrencyAmount amount={originalPrice} className="text-red-300" />/night
+                <CurrencyAmount amount={originalPrice} className="text-red-300" />{t['price.perNight']}
               </div>
             )}
             <div className="flex items-baseline gap-1 mt-0.5">
               <span className="text-white font-extrabold text-3xl leading-none"><CurrencyAmount amount={price} className="text-white" /></span>
-              <span className="text-white/60 text-sm">/night</span>
+              <span className="text-white/60 text-sm">{t['price.perNight']}</span>
             </div>
           </div>
           {discountPct > 0 && (
@@ -78,7 +80,8 @@ export default function BookingCTA({ hotel, selectedRoom }: BookingCTAProps) {
           )}
         </div>
         <div className="text-green-300 text-xs font-medium mt-1.5">
-          You save <CurrencyAmount amount={savings} /> tonight
+          {t['hotel.youSaveTonight'].replace('{amount}', '')}
+          <CurrencyAmount amount={savings} />
         </div>
       </div>
 
@@ -90,7 +93,7 @@ export default function BookingCTA({ hotel, selectedRoom }: BookingCTAProps) {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              Check-in
+              {t['booking.checkIn']}
             </span>
             <span className="font-semibold text-gray-900">{today()}</span>
           </div>
@@ -99,7 +102,7 @@ export default function BookingCTA({ hotel, selectedRoom }: BookingCTAProps) {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              Check-out
+              {t['booking.checkOut']}
             </span>
             <span className="font-semibold text-gray-900">{tomorrow()}</span>
           </div>
@@ -108,9 +111,9 @@ export default function BookingCTA({ hotel, selectedRoom }: BookingCTAProps) {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              Guests
+              {t['booking.guests']}
             </span>
-            <span className="font-semibold text-gray-900">2 Adults</span>
+            <span className="font-semibold text-gray-900">2 {t['hotel.adults']}</span>
           </div>
         </div>
 
@@ -139,15 +142,15 @@ export default function BookingCTA({ hotel, selectedRoom }: BookingCTAProps) {
         {/* Price breakdown */}
         <div className="space-y-2 text-sm">
           <div className="flex justify-between text-gray-600">
-            <span>Room rate (1 night)</span>
+            <span>{t['price.nightsRoom']}</span>
             <span><CurrencyAmount amount={price} /></span>
           </div>
           <div className="flex justify-between text-gray-600">
-            <span>Taxes & fees (15%)</span>
-            <span>${taxes.toLocaleString()}</span>
+            <span>{t['hotel.taxesFees']}</span>
+            <span><CurrencyAmount amount={taxes} /></span>
           </div>
           <div className="border-t border-gray-200 pt-2 flex justify-between font-bold text-gray-900">
-            <span>Total</span>
+            <span>{t['price.total']}</span>
             <span><CurrencyAmount amount={total} /></span>
           </div>
         </div>
@@ -156,9 +159,10 @@ export default function BookingCTA({ hotel, selectedRoom }: BookingCTAProps) {
         <button
           onClick={handleBookNow}
           disabled={!bookingOpen}
-          className="block w-full bg-brand-gold hover:bg-yellow-500 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-base transition-all duration-200 shadow-lg shadow-brand-gold/30 hover:shadow-brand-gold/50 active:scale-[0.98] text-center"
+          className="block w-full disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-base transition-all duration-200 active:scale-[0.98] text-center hover:-translate-y-0.5"
+          style={{ background: bookingOpen ? 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' : '#E2E8F0', color: bookingOpen ? '#fff' : '#94A3B8', boxShadow: bookingOpen ? '0 4px 14px rgba(30,58,138,0.3)' : 'none' }}
         >
-          {bookingOpen ? `Book Now — ${formatPrice(total, currency)}` : 'تفتح الساعة 12:00 PM'}
+          {bookingOpen ? `${t['hotel.bookNow']} — ${formatPrice(total, currency)}` : t['hotel.bookingOpensNoon']}
         </button>
 
         {/* Reserve now, pay later */}
@@ -167,13 +171,13 @@ export default function BookingCTA({ hotel, selectedRoom }: BookingCTAProps) {
             <svg className="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
-            Reserve now — pay at check-in
+            {t['hotel.reservePayCheckIn']}
           </p>
           <p className="text-gray-500 text-xs flex items-center justify-center gap-1.5">
             <svg className="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            Non-refundable · No credit card fee
+            {t['hotel.nonRefundableNoCcFee']}
           </p>
         </div>
 
@@ -183,7 +187,7 @@ export default function BookingCTA({ hotel, selectedRoom }: BookingCTAProps) {
             <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Non-refundable · Same-day deal — no cancellations
+            {t['hotel.nonRefundableSameDay']}
           </p>
         </div>
       </div>

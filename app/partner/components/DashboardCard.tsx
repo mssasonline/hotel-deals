@@ -8,19 +8,22 @@ interface DashboardCardProps {
 }
 
 const ACCENT_STYLES = {
-  blue: { icon: 'bg-brand-blue-light text-brand-blue', border: 'border-brand-blue/10' },
-  gold: { icon: 'bg-brand-gold-light text-brand-gold', border: 'border-brand-gold/20' },
-  green: { icon: 'bg-green-50 text-green-600', border: 'border-green-100' },
-  red: { icon: 'bg-red-50 text-red-500', border: 'border-red-100' },
+  blue:  { iconBg: 'linear-gradient(135deg,#1E3A8A 0%,#2563EB 100%)', border: 'rgba(30,58,138,0.10)',  shadow: 'rgba(30,58,138,0.08)'  },
+  gold:  { iconBg: 'linear-gradient(135deg,#B45309 0%,#D97706 100%)', border: 'rgba(180,83,9,0.15)',  shadow: 'rgba(180,83,9,0.06)'   },
+  green: { iconBg: 'linear-gradient(135deg,#059669 0%,#10B981 100%)', border: 'rgba(5,150,105,0.12)', shadow: 'rgba(5,150,105,0.06)'  },
+  red:   { iconBg: 'linear-gradient(135deg,#DC2626 0%,#EF4444 100%)', border: 'rgba(220,38,38,0.12)', shadow: 'rgba(220,38,38,0.06)'  },
 };
 
 export default function DashboardCard({ title, value, subtitle, trend, icon, accent = 'blue' }: DashboardCardProps) {
   const styles = ACCENT_STYLES[accent];
 
   return (
-    <div className={`bg-white rounded-2xl p-5 border ${styles.border} shadow-sm hover:shadow-md transition-shadow duration-200`}>
+    <div
+      className="bg-white rounded-2xl p-5 shadow-sm hover:-translate-y-0.5 transition-all duration-200"
+      style={{ border: `1.5px solid ${styles.border}`, boxShadow: `0 2px 12px ${styles.shadow}` }}
+    >
       <div className="flex items-start justify-between mb-4">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${styles.icon}`}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ background: styles.iconBg }}>
           {icon}
         </div>
         {trend && (

@@ -189,6 +189,14 @@ export default async function HotelPage({ params }: Props) {
   const locationParts = [address || null, city || null, country || null].filter(Boolean);
   const locationDisplay = locationParts.join(', ');
 
+  // ── Map coordinates — set by partner in /partner/hotels ──────
+  const geoLat = row.latitude  != null ? Number(row.latitude)  : null;
+  const geoLon = row.longitude != null ? Number(row.longitude) : null;
+  const geoCoords = geoLat != null && geoLon != null && !isNaN(geoLat) && !isNaN(geoLon)
+    ? { lat: geoLat, lon: geoLon }
+    : null;
+  const googleMapsKey = process.env.GOOGLE_MAPS_API_KEY ?? '';
+
   // ── Cheapest room base_price (for tier banner) ───────────────
   const cheapestRoomBase = (() => {
     const valid = (rooms ?? []).map(r => Number((r as Room).base_price)).filter(p => p > 0);
@@ -337,16 +345,46 @@ export default async function HotelPage({ params }: Props) {
                 <p className="text-gray-600 leading-relaxed text-sm sm:text-base lg:w-3/5">
                   {description}
                 </p>
-                <div className="lg:w-2/5 min-h-[220px] rounded-xl overflow-hidden border border-gray-100 shrink-0">
-                  <iframe
-                    title="Hotel location"
-                    src={`https://maps.google.com/maps?q=${encodeURIComponent(`${name} ${city}`)}&output=embed&z=16`}
-                    width="100%"
-                    height="100%"
-                    style={{ minHeight: '220px', border: 0 }}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
+                <div className="lg:w-2/5 min-h-[220px] rounded-xl overflow-hidden border border-gray-100 shrink-0 relative">
+                  {geoCoords ? (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${geoCoords.lat},${geoCoords.lon}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative block group w-full h-full"
+                      aria-label="Open hotel location in Google Maps"
+                    >
+                      <iframe
+                        title="Hotel location"
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${geoCoords.lon - 0.012},${geoCoords.lat - 0.008},${geoCoords.lon + 0.012},${geoCoords.lat + 0.008}&layer=mapnik&marker=${geoCoords.lat},${geoCoords.lon}`}
+                        width="100%"
+                        height="100%"
+                        style={{ minHeight: '220px', border: 0, pointerEvents: 'none' }}
+                        loading="lazy"
+                        tabIndex={-1}
+                      />
+                      <div className="absolute inset-0 bg-transparent group-hover:bg-black/5 transition-colors" />
+                      <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-white text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-md border border-gray-100 group-hover:shadow-lg transition-shadow">
+                        <svg className="w-3.5 h-3.5 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        Open in Google Maps
+                      </div>
+                    </a>
+                  ) : (
+                    <a
+                      href={`https://www.google.com/maps/search/${encodeURIComponent(`${name} ${city}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-col items-center justify-center w-full h-full min-h-[220px] bg-gray-50 hover:bg-gray-100 transition-colors gap-3"
+                    >
+                      <svg className="w-10 h-10 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="text-sm font-medium text-brand-blue">Open in Google Maps</span>
+                    </a>
+                  )}
                 </div>
               </div>
             )}

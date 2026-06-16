@@ -12,13 +12,19 @@ export default function SuspendedPage() {
 
         <h1 className="text-xl font-bold text-gray-900 mb-2">Account Suspended</h1>
         <p className="text-gray-500 text-sm leading-relaxed mb-6">
-          Your partner account has been suspended. Please contact the platform administrator to resolve this.
+          Your partner account has been suspended. Contact our support team to appeal or get more information.
         </p>
 
         <div className="space-y-3">
+          <a
+            href="mailto:support@selectedroom.com"
+            className="block w-full py-2.5 rounded-xl bg-[#001E5A] text-white text-sm font-semibold hover:bg-[#001E5A]/90 transition-colors"
+          >
+            Contact Support
+          </a>
           <Link
             href="/"
-            className="block w-full py-2.5 rounded-xl bg-[#001E5A] text-white text-sm font-semibold hover:bg-[#001E5A]/90 transition-colors"
+            className="block w-full py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
           >
             Go to Homepage
           </Link>
@@ -29,6 +35,10 @@ export default function SuspendedPage() {
             Sign in with a different account
           </Link>
         </div>
+
+        <p className="text-gray-400 text-xs mt-5">
+          support@selectedroom.com
+        </p>
       </div>
     </div>
   );
