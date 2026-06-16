@@ -179,10 +179,15 @@ export default function BookingPageClient({
     setSubmitting(true);
     setSubmitError('');
 
-    // Verify session is still valid before hitting the DB — token may have
-    // expired while the user was on another tab/site.
-    const { data: { session: freshSession } } = await supabase.auth.getSession();
-    if (!freshSession) {
+    // Force-refresh the session so the access token is guaranteed fresh before
+    // any DB write. getSession() only reads cookies and can return an expired
+    // token that is mid-refresh; refreshSession() exchanges the refresh token
+    // and updates the cookie, eliminating the race that caused TIMEOUT on
+    // return from another site.
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error || !data.session) throw error ?? new Error('no session');
+    } catch {
       saveLoginRedirect(window.location.pathname);
       router.push('/login');
       return;
