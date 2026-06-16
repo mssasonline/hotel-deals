@@ -440,9 +440,22 @@ export async function updateMyRoom(
     return { error: 'Access denied' };
   }
 
+  const update: Record<string, unknown> = {};
+  if (fields.base_price     !== undefined) update.base_price     = fields.base_price;
+  if (fields.min_price      !== undefined) update.min_price      = fields.min_price;
+  if (fields.quantity_total !== undefined) update.quantity_total = fields.quantity_total;
+  if (fields.available      !== undefined) update.available      = fields.available;
+  if ('image_url'   in fields) update.image_url   = fields.image_url   ?? null;
+  if ('image_url_2' in fields) update.image_url_2 = fields.image_url_2 ?? null;
+  if ('image_url_3' in fields) update.image_url_3 = fields.image_url_3 ?? null;
+  if (fields.features  !== undefined) update.features  = fields.features;
+  if (fields.type      !== undefined) update.room_type = fields.type;
+  if (fields.area_sqm  !== undefined) update.area_sqm  = fields.area_sqm;
+  if (fields.bed_type  !== undefined) update.bed_type  = fields.bed_type;
+
   const { error } = await admin
     .from('rooms')
-    .update(fields)
+    .update(update)
     .eq('id', roomId);
 
   return { error: error?.message ?? null };
