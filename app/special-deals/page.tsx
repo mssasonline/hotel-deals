@@ -123,20 +123,20 @@ export default async function SpecialDealsPage({
       <Header />
       <main className="min-h-screen" style={{ background: '#F8FAFC' }}>
         {/* Banner */}
-        <div style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
+        <div style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="flex items-center gap-4 mb-2">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)' }}>
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)' }}>
                 <svg className="w-6 h-6 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
                 </svg>
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-brand-gold text-xs font-bold uppercase tracking-widest">Partner Exclusive</span>
+                  <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D97706' }}>Partner Exclusive</span>
                 </div>
-                <h1 className="text-white font-extrabold text-2xl sm:text-3xl leading-tight">Special Deals</h1>
-                <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>Fixed discounts handpicked by hotels — valid for specific date ranges</p>
+                <h1 className="font-extrabold text-2xl sm:text-3xl leading-tight" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>Special Deals</h1>
+                <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.55)' }}>Fixed discounts handpicked by hotels — valid for specific date ranges</p>
               </div>
             </div>
             <div className="mt-4 h-0.5 w-14 rounded-full" style={{ background: 'linear-gradient(90deg, #B45309, #FCD34D)' }} />

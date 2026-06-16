@@ -46,16 +46,16 @@ export default function PrivacyPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gray-50">
-        <section className="py-14 px-6 text-center" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
-          <p className="text-sm font-semibold tracking-widest uppercase text-brand-gold mb-3">Legal</p>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Privacy Policy</h1>
-          <p className="text-white/60 text-sm">Last updated: June 2025</p>
+      <main className="min-h-screen" style={{ background: '#F8FAFC' }}>
+        <section className="py-14 px-6 text-center" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+          <p className="text-sm font-semibold tracking-widest uppercase mb-3" style={{ color: '#D97706' }}>Legal</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>Privacy Policy</h1>
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>Last updated: June 2025</p>
         </section>
 
         <section className="max-w-3xl mx-auto px-6 py-14 space-y-8">
           {SECTIONS.map(({ title, body }) => (
-            <div key={title} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div key={title} className="bg-white rounded-2xl p-6" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
               <h2 className="text-base font-bold text-gray-900 mb-3">{title}</h2>
               <p className="text-gray-600 text-sm leading-relaxed">{body}</p>
             </div>
