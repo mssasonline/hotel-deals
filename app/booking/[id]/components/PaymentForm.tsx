@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 function formatCardNumber(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 16);
@@ -38,6 +39,7 @@ export default function PaymentForm({ onChange }: PaymentFormProps) {
   const [expiry, setExpiry] = useState('');
   const [cvv, setCvv] = useState('');
   const [cvvFocused, setCvvFocused] = useState(false);
+  const t = useTranslation();
 
   const cardType = getCardType(cardNumber);
 
@@ -57,15 +59,15 @@ export default function PaymentForm({ onChange }: PaymentFormProps) {
               </svg>
             </div>
             <div>
-              <h2 className="font-bold text-gray-900 text-lg leading-tight">Payment Details</h2>
-              <p className="text-gray-400 text-xs">Your info is encrypted and secure</p>
+              <h2 className="font-bold text-gray-900 text-lg leading-tight">{t['payment.paymentDetails']}</h2>
+              <p className="text-gray-400 text-xs">{t['payment.encryptedNote']}</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
             <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
             </svg>
-            <span className="text-green-600 text-xs font-semibold">SSL Secured</span>
+            <span className="text-green-600 text-xs font-semibold">{t['payment.sslSecured']}</span>
           </div>
         </div>
       </div>
@@ -73,7 +75,7 @@ export default function PaymentForm({ onChange }: PaymentFormProps) {
       <div className="px-6 py-5 space-y-4">
         {/* Card type indicators */}
         <div className="flex items-center gap-2">
-          <span className="text-gray-400 text-xs font-medium">Accepted:</span>
+          <span className="text-gray-400 text-xs font-medium">{t['payment.accepted']}</span>
           <CardIcon type="Visa" active={cardType === 'visa'} />
           <CardIcon type="MC" active={cardType === 'mastercard'} />
           <CardIcon type="Amex" active={cardType === 'amex'} />
@@ -82,7 +84,7 @@ export default function PaymentForm({ onChange }: PaymentFormProps) {
         {/* Cardholder name */}
         <div>
           <label htmlFor="cardHolder" className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Cardholder Name
+            {t['payment.cardHolder']}
           </label>
           <div className="relative">
             <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -93,7 +95,7 @@ export default function PaymentForm({ onChange }: PaymentFormProps) {
             <input
               id="cardHolder"
               type="text"
-              placeholder="Name as it appears on card"
+              placeholder={t['payment.cardNamePlaceholder']}
               value={cardHolder}
               onChange={(e) => { setCardHolder(e.target.value); update('cardHolder', e.target.value); }}
               autoComplete="cc-name"
@@ -105,7 +107,7 @@ export default function PaymentForm({ onChange }: PaymentFormProps) {
         {/* Card number */}
         <div>
           <label htmlFor="cardNumber" className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Card Number
+            {t['payment.cardNumber']}
           </label>
           <div className="relative">
             <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -139,7 +141,7 @@ export default function PaymentForm({ onChange }: PaymentFormProps) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="expiry" className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Expiry Date
+              {t['payment.expiry']}
             </label>
             <input
               id="expiry"
@@ -160,7 +162,7 @@ export default function PaymentForm({ onChange }: PaymentFormProps) {
 
           <div>
             <label htmlFor="cvv" className="block text-sm font-semibold text-gray-700 mb-1.5">
-              CVV
+              {t['payment.cvv']}
               <span className="ml-1 inline-flex items-center justify-center w-3.5 h-3.5 bg-gray-200 text-gray-500 text-[9px] rounded-full cursor-help" title="3-digit code on the back of your card">?</span>
             </label>
             <div className="relative">
@@ -189,9 +191,7 @@ export default function PaymentForm({ onChange }: PaymentFormProps) {
           <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
-          <p className="text-gray-400 text-xs">
-            Your card details are protected by 256-bit SSL encryption. We never store your CVV.
-          </p>
+          <p className="text-gray-400 text-xs">{t['payment.securityNote']}</p>
         </div>
       </div>
     </div>

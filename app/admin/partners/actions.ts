@@ -3,8 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase-admin';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { sendPartnerWelcome } from '@/lib/emailService';
 
-type Result = { error?: string; success?: boolean; userId?: string };
+type Result = { error?: string; success?: boolean; userId?: string; emailSent?: boolean };
 
 async function requireAdmin(): Promise<void> {
   const supabase = await createSupabaseServerClient();
@@ -77,8 +78,23 @@ export async function createPartnerAccount(
     await adminClient.from('hotels').update({ email }).eq('id', hotelId);
   }
 
+  // Send welcome email with login credentials (skipped when NOTIFICATIONS_ENABLED != 'true')
+  let hotelName: string | undefined;
+  if (hotelId) {
+    const { data: hotel } = await adminClient.from('hotels').select('name').eq('id', hotelId).single();
+    hotelName = hotel?.name ?? undefined;
+  }
+  const emailSent = process.env.NOTIFICATIONS_ENABLED === 'true';
+  await sendPartnerWelcome({
+    partnerName:  fullName,
+    partnerEmail: email,
+    tempPassword: tempPassword,
+    hotelName,
+    loginUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/login`,
+  });
+
   revalidatePath('/admin/partners');
-  return { success: true, userId };
+  return { success: true, userId, emailSent };
 }
 
 // ── Assign a hotel to an existing partner ───────────────────────────────────

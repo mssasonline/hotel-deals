@@ -20,3 +20,17 @@ export function formatPrice(priceUSD: number, currency: CurrencyCode): string {
   const { symbol } = CURRENCY_MAP[currency];
   return `${symbol}${convertPrice(priceUSD, currency).toLocaleString()}`;
 }
+
+/** Convert an amount in any currency to AED. */
+export function toAED(amount: number, currency: CurrencyCode): number {
+  const aedRate = CURRENCY_MAP['aed'].exchangeRate;
+  const fromRate = CURRENCY_MAP[currency].exchangeRate;
+  return Math.round((amount / fromRate) * aedRate);
+}
+
+/** Convert an amount in AED to any currency. */
+export function fromAEDTo(aed: number, currency: CurrencyCode): number {
+  const aedRate = CURRENCY_MAP['aed'].exchangeRate;
+  const toRate  = CURRENCY_MAP[currency].exchangeRate;
+  return Math.round((aed / aedRate) * toRate);
+}

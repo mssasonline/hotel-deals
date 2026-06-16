@@ -1,5 +1,8 @@
+'use client';
+
 import type { HotelDetail, RoomType } from '@/app/hotel/[id]/lib/hotelDetailData';
 import { getRoomImage } from '@/lib/roomImages';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 interface BookingSummaryProps {
   hotel: HotelDetail;
@@ -22,18 +25,14 @@ function Stars({ count }: { count: number }) {
   );
 }
 
-const ROOM_TYPE_LABEL: Record<string, string> = {
-  standard: 'Standard',
-  deluxe: 'Deluxe',
-  suite: 'Suite',
-};
-
 export default function BookingSummary({ hotel, room, checkIn, checkOut, guests, nights }: BookingSummaryProps) {
+  const t = useTranslation();
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       {/* Header bar */}
-      <div className="bg-brand-blue px-5 py-4">
-        <p className="text-white/70 text-xs font-medium uppercase tracking-wider mb-1">Your Reservation</p>
+      <div className="px-5 py-4" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
+        <p className="text-white/70 text-xs font-medium uppercase tracking-wider mb-1">{t['booking.reservationLabel']}</p>
         <h2 className="text-white font-extrabold text-xl leading-tight">{hotel.name}</h2>
         <div className="flex items-center gap-2 mt-1.5">
           <Stars count={hotel.stars} />
@@ -44,7 +43,7 @@ export default function BookingSummary({ hotel, room, checkIn, checkOut, guests,
       <div className="p-5 space-y-5">
         {/* Selected room */}
         <div>
-          <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Selected Room</p>
+          <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">{t['booking.selectedRoomLabel']}</p>
           <div className="rounded-xl overflow-hidden border border-gray-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -56,11 +55,11 @@ export default function BookingSummary({ hotel, room, checkIn, checkOut, guests,
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="font-bold text-gray-900 text-sm">{room.name}</p>
                 <span className="text-[10px] font-semibold bg-brand-gold-light text-brand-gold px-2 py-0.5 rounded-md">
-                  {ROOM_TYPE_LABEL[room.room_type] ?? room.room_type}
+                  {room.room_type}
                 </span>
               </div>
               <p className="text-gray-500 text-xs mt-0.5">
-                {room.bedType} · {room.sizeM2}m² · Up to {room.maxGuests} guests
+                {room.bedType} · {room.sizeM2}m² · {t['hotel.upToGuests'].replace('{n}', String(room.maxGuests))}
               </p>
               <div className="flex flex-wrap gap-1 mt-1.5">
                 {room.features.slice(0, 3).map((f) => (
@@ -75,17 +74,17 @@ export default function BookingSummary({ hotel, room, checkIn, checkOut, guests,
 
         {/* Stay dates */}
         <div>
-          <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Stay Details</p>
+          <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">{t['booking.stayDetailsLabel']}</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-gray-50 rounded-xl p-3">
-              <p className="text-gray-400 text-[10px] font-medium uppercase tracking-wide mb-0.5">Check-in</p>
+              <p className="text-gray-400 text-[10px] font-medium uppercase tracking-wide mb-0.5">{t['booking.checkIn']}</p>
               <p className="font-bold text-gray-900 text-sm">{checkIn}</p>
-              <p className="text-gray-400 text-xs">From 3:00 PM</p>
+              <p className="text-gray-400 text-xs">{t['booking.checkInTime']}</p>
             </div>
             <div className="bg-gray-50 rounded-xl p-3">
-              <p className="text-gray-400 text-[10px] font-medium uppercase tracking-wide mb-0.5">Check-out</p>
+              <p className="text-gray-400 text-[10px] font-medium uppercase tracking-wide mb-0.5">{t['booking.checkOut']}</p>
               <p className="font-bold text-gray-900 text-sm">{checkOut}</p>
-              <p className="text-gray-400 text-xs">Until 12:00 PM</p>
+              <p className="text-gray-400 text-xs">{t['booking.checkOutTime']}</p>
             </div>
           </div>
         </div>
@@ -96,19 +95,19 @@ export default function BookingSummary({ hotel, room, checkIn, checkOut, guests,
             <svg className="w-4 h-4 text-brand-blue shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span>Guests</span>
+            <span>{t['booking.guests']}</span>
           </div>
           <span className="font-semibold text-gray-900">
-            {guests} {guests === 1 ? 'Guest' : 'Guests'} · {nights} {nights === 1 ? 'Night' : 'Nights'}
+            {guests} {guests === 1 ? t['booking.guest'] : t['booking.guests']} · {nights} {nights === 1 ? t['myBookings.nightSingular'] : t['myBookings.nightsPlural']}
           </span>
         </div>
 
         {/* Trust signals */}
         <div className="border-t border-gray-100 pt-4 space-y-2">
           {[
-            'Non-refundable — all sales final',
-            'No credit card fees',
-            'Instant booking confirmation',
+            t['booking.notChargedYet'],
+            t['booking.noCardFees'],
+            t['booking.instantConfirmation'],
           ].map((item) => (
             <div key={item} className="flex items-center gap-2 text-xs text-gray-500">
               <svg className="w-4 h-4 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">

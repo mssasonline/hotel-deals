@@ -120,11 +120,11 @@ export default function RoomCard({ room, isSelected, onSelect }: RoomCardProps) 
 
             <button
               onClick={onSelect}
-              className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 whitespace-nowrap ${
-                isSelected
-                  ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/30 cursor-default'
-                  : 'bg-brand-gold hover:bg-yellow-500 text-white shadow-sm hover:shadow-md hover:shadow-brand-gold/30'
-              }`}
+              className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 whitespace-nowrap text-white hover:-translate-y-0.5"
+              style={isSelected
+                ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)', cursor: 'default' }
+                : { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }
+              }
             >
               {isSelected ? t['hotel.roomSelected'] : t['hotel.selectRoom']}
             </button>

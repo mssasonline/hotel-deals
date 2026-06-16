@@ -17,9 +17,10 @@ export default async function PaymentsPage() {
       payment_status,
       payment_method,
       total_price,
+      subtotal,
       created_at,
       hotels ( name ),
-      booking_revenue ( partner_amount, admin_amount )
+      booking_revenue ( subtotal_amount, tax_amount, partner_amount, admin_amount )
     `)
     .order('created_at', { ascending: false });
 
@@ -34,11 +35,13 @@ export default async function PaymentsPage() {
   const payments: PaymentRow[] = (data ?? []).map((row: Record<string, unknown>) => {
     const hotel   = (Array.isArray(row.hotels) ? row.hotels[0] : row.hotels) as { name: string } | null;
     const revenue = (Array.isArray(row.booking_revenue) ? row.booking_revenue[0] : row.booking_revenue) as
-      { partner_amount: number; admin_amount: number } | null;
+      { subtotal_amount: number; tax_amount: number; partner_amount: number; admin_amount: number } | null;
 
-    const total   = Number(row.total_price ?? 0);
-    const partner = Number(revenue?.partner_amount ?? (total * (1 - commissionRate / 100)));
-    const admin   = Number(revenue?.admin_amount  ?? (total * (commissionRate / 100)));
+    const total    = Number(row.total_price ?? 0);
+    const subtotal = Number(revenue?.subtotal_amount ?? row.subtotal ?? Math.round(total / 1.15 * 100) / 100);
+    const tax      = Number(revenue?.tax_amount ?? (total - subtotal));
+    const partner  = Number(revenue?.partner_amount ?? (subtotal * (1 - commissionRate / 100)));
+    const admin    = Number(revenue?.admin_amount  ?? (subtotal * (commissionRate / 100)));
 
     return {
       id:             String(row.id),
@@ -49,6 +52,8 @@ export default async function PaymentsPage() {
       created_at:     String(row.created_at),
       payment_status: String(row.payment_status ?? 'pending'),
       total_price:    total,
+      subtotal:       Math.round(subtotal * 100) / 100,
+      tax_amount:     Math.round(tax     * 100) / 100,
       partner_amount: Math.round(partner * 100) / 100,
       admin_amount:   Math.round(admin   * 100) / 100,
     };

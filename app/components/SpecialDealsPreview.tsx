@@ -52,17 +52,16 @@ export default function SpecialDealsPreview({ deals }: Props) {
               <span className="text-xs font-bold text-white/30 uppercase tracking-wide">Track 2 · Fixed Price</span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+            <h2 className="text-2xl sm:text-3xl font-extrabold leading-tight" style={{ color: '#F8FAFC' }}>
               Partner Special Deals
             </h2>
 
-            {/* One-line mechanism explainer — opposite of Track 1 */}
-            <p className="text-white/50 text-sm mt-2 max-w-md leading-relaxed">
-              Hand-picked by hotels — <strong className="text-white/70">fixed price</strong>,
+            <p className="text-sm mt-2 max-w-md leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              Hand-picked by hotels — <strong style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>fixed price</strong>,
               no hourly changes. Available for specific date ranges only.
             </p>
 
-            <div className="mt-3 h-1 w-14 bg-brand-gold rounded-full" />
+            <div className="mt-3 h-0.5 w-14 rounded-full" style={{ background: 'linear-gradient(90deg, #B45309, #FCD34D)' }} />
           </div>
 
           <Link
@@ -93,7 +92,10 @@ export default function SpecialDealsPreview({ deals }: Props) {
                 <Link
                   key={deal.hotelId}
                   href={`/hotel/${deal.hotelId}`}
-                  className="group relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 hover:border-white/25 transition-all"
+                  className="group relative rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: '0 2px 12px rgba(0,0,0,0.2)' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.14)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.28)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.14)'; }}
                 >
                   {/* Image strip */}
                   <div className="relative h-36 overflow-hidden">
@@ -119,28 +121,28 @@ export default function SpecialDealsPreview({ deals }: Props) {
 
                   {/* Body */}
                   <div className="p-4">
-                    <h3 className="font-bold text-white text-base truncate group-hover:text-brand-gold transition-colors">
+                    <h3 className="font-bold text-base truncate transition-colors group-hover:text-brand-gold" style={{ color: '#F1F5F9' }}>
                       {deal.hotelName}
                     </h3>
-                    <p className="text-white/45 text-xs mt-0.5 mb-3">{deal.city}</p>
+                    <p className="text-xs mt-0.5 mb-3" style={{ color: 'rgba(255,255,255,0.55)' }}>{deal.city}</p>
 
                     <div className="flex items-end justify-between">
                       <div>
                         {deal.basePrice > deal.dealPrice && (
-                          <p className="text-white/35 text-xs line-through">
+                          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)', textDecoration: 'line-through', textDecorationColor: 'rgba(255,255,255,0.25)' }}>
                             <AEDAmount amount={deal.basePrice} />
                           </p>
                         )}
                         <div className="flex items-baseline gap-1 mt-0.5">
-                          <span className="text-brand-gold font-extrabold text-xl">
+                          <span className="font-extrabold text-xl" style={{ color: '#FCD34D' }}>
                             <AEDAmount amount={deal.dealPrice} />
                           </span>
-                          <span className="text-white/35 text-xs">/night</span>
+                          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>/night</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-white/25 text-[10px] uppercase tracking-wide">Until</p>
-                        <p className="text-white/55 text-xs font-semibold">{fmtDate(deal.endDate)}</p>
+                        <p className="text-[10px] uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.35)' }}>Until</p>
+                        <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>{fmtDate(deal.endDate)}</p>
                       </div>
                     </div>
                   </div>

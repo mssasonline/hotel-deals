@@ -87,7 +87,7 @@ export default function ReviewsSection({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
       <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
-        <div className="bg-brand-blue text-white font-extrabold text-3xl px-4 py-2 rounded-2xl leading-none">
+        <div className="text-white font-extrabold text-3xl px-4 py-2 rounded-2xl leading-none" style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
           {displayRating.toFixed(1)}
         </div>
         <div>

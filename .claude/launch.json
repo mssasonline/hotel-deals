@@ -1,0 +1,13 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hotel-deals",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "C:\\Users\\Administrator\\hotel-deals",
+      "port": 3000,
+      "autoPort": true
+    }
+  ]
+}

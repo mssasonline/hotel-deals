@@ -68,6 +68,7 @@ function NewPartnerModal({
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState<boolean | null>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -82,8 +83,9 @@ function NewPartnerModal({
     startTransition(async () => {
       const result = await createPartnerAccount(email, fullName, tempPwd, hotelId);
       if (result.error) { setError(result.error); return; }
+      setEmailSent(result.emailSent ?? false);
       onCreated();
-      onClose();
+      setTimeout(onClose, 2200);
     });
   }
 
@@ -160,10 +162,29 @@ function NewPartnerModal({
             </div>
           )}
 
+          {emailSent === true && (
+            <div className="flex items-center gap-2 bg-green-50 border border-green-100 rounded-xl px-4 py-3 text-sm text-green-700">
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Account created &amp; welcome email sent.
+            </div>
+          )}
+
+          {emailSent === false && emailSent !== null && (
+            <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-sm text-amber-700">
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Account created · Email skipped <span className="font-semibold">(test mode)</span> — share credentials manually.
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={isPending}
-            className="w-full py-3 rounded-xl bg-brand-blue text-white text-sm font-semibold hover:bg-brand-blue/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            disabled={isPending || emailSent !== null}
+            className="w-full py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
           >
             {isPending ? 'Creating account…' : 'Create Partner Account'}
           </button>

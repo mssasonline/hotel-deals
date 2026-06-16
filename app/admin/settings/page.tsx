@@ -1,10 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import type { CurrencyCode } from '@/store/appSettingsStore';
 import { getEffectiveTimezone } from '../components/useAdminFormat';
-import { fetchCommissionRate, updateCommissionRate, fetchUserPolicies, updateUserPolicies } from './actions';
+import {
+  fetchCommissionRate, updateCommissionRate,
+  fetchMinCommission,  updateMinCommission,
+  fetchUserPolicies, updateUserPolicies,
+  fetchTaxRates, upsertTaxRate, deleteTaxRate,
+  type TaxRate,
+} from './actions';
 
 type SelectOption = string | { value: string; label: string };
 
@@ -21,6 +27,10 @@ const TIMEZONE_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'Asia/Singapore',      label: 'Singapore (UTC+8)'       },
   { value: 'Asia/Tokyo',          label: 'Tokyo (UTC+9)'           },
 ];
+
+const CURRENCY_SYMBOL: Record<string, string> = {
+  usd: '$', eur: '€', gbp: '£', aed: 'AED',
+};
 
 function SectionHeader({ title, description }: { title: string; description: string }) {
   return (
@@ -131,12 +141,124 @@ function SaveButton() {
   return (
     <button
       onClick={handleSave}
-      className={`px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all ${
-        saved ? 'bg-emerald-600' : 'bg-brand-blue hover:bg-brand-blue-dark'
-      }`}
+      className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
+      style={{ background: saved ? '#059669' : 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: saved ? undefined : '0 2px 10px rgba(30,58,138,0.25)' }}
     >
       {saved ? '✓ Saved' : 'Save Changes'}
     </button>
+  );
+}
+
+// ── Tax Rate Row (inline edit) ───────────────────────────────────────────────
+function TaxRateRow({
+  rate,
+  onSave,
+  onDelete,
+}: {
+  rate: TaxRate;
+  onSave: (r: TaxRate) => Promise<void>;
+  onDelete: (code: string) => Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ ...rate });
+  const [isPending, startTransition] = useTransition();
+  const [confirmDel, setConfirmDel] = useState(false);
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: name === 'vat_pct' || name === 'fixed_fee_per_night' ? Number(value) : value }));
+  }
+
+  return (
+    <tr className="border-b border-gray-50 last:border-0 hover:bg-gray-50/40 transition-colors">
+      {editing ? (
+        <>
+          <td className="px-4 py-2.5">
+            <input name="country_code" value={form.country_code} onChange={handleChange} maxLength={2}
+              className="w-14 px-2 py-1.5 border border-gray-200 rounded-lg text-xs font-mono uppercase focus:outline-none focus:ring-2 focus:ring-brand-blue/30" />
+          </td>
+          <td className="px-4 py-2.5">
+            <input name="country_name" value={form.country_name} onChange={handleChange}
+              className="w-40 px-2 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30" />
+          </td>
+          <td className="px-4 py-2.5">
+            <div className="flex items-center gap-1">
+              <input name="vat_pct" type="number" min={0} max={100} step={0.5} value={form.vat_pct} onChange={handleChange}
+                className="w-16 px-2 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30" />
+              <span className="text-xs text-gray-400">%</span>
+            </div>
+          </td>
+          <td className="px-4 py-2.5">
+            <div className="flex items-center gap-1">
+              <input name="fixed_fee_per_night" type="number" min={0} step={0.5} value={form.fixed_fee_per_night} onChange={handleChange}
+                className="w-16 px-2 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30" />
+              <input name="fixed_fee_currency" value={form.fixed_fee_currency} onChange={handleChange} maxLength={3}
+                className="w-12 px-2 py-1.5 border border-gray-200 rounded-lg text-xs uppercase focus:outline-none focus:ring-2 focus:ring-brand-blue/30" />
+            </div>
+          </td>
+          <td className="px-4 py-2.5">
+            <input name="notes" value={form.notes ?? ''} onChange={handleChange}
+              className="w-48 px-2 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30" />
+          </td>
+          <td className="px-4 py-2.5">
+            <div className="flex gap-1">
+              <button onClick={() => startTransition(async () => { await onSave(form); setEditing(false); })}
+                disabled={isPending}
+                className="px-2.5 py-1.5 text-xs font-semibold text-white rounded-lg transition-all disabled:opacity-50 hover:-translate-y-0.5"
+                style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
+                {isPending ? '…' : 'Save'}
+              </button>
+              <button onClick={() => setEditing(false)}
+                className="px-2.5 py-1.5 text-xs text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                Cancel
+              </button>
+            </div>
+          </td>
+        </>
+      ) : (
+        <>
+          <td className="px-4 py-3 font-mono text-xs font-bold text-gray-700">{rate.country_code}</td>
+          <td className="px-4 py-3 text-sm text-gray-800">{rate.country_name}</td>
+          <td className="px-4 py-3">
+            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+              {rate.vat_pct}%
+            </span>
+          </td>
+          <td className="px-4 py-3 text-sm text-gray-600">
+            {rate.fixed_fee_per_night > 0
+              ? <span>{rate.fixed_fee_per_night} <span className="text-xs text-gray-400">{rate.fixed_fee_currency}</span></span>
+              : <span className="text-gray-300 text-xs">—</span>}
+          </td>
+          <td className="px-4 py-3 text-xs text-gray-400 max-w-[200px] truncate">{rate.notes ?? '—'}</td>
+          <td className="px-4 py-3">
+            {confirmDel ? (
+              <div className="flex gap-1">
+                <button onClick={() => startTransition(async () => { await onDelete(rate.country_code); })}
+                  disabled={isPending}
+                  className="px-2.5 py-1.5 text-xs font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50">
+                  {isPending ? '…' : 'Delete'}
+                </button>
+                <button onClick={() => setConfirmDel(false)}
+                  className="px-2.5 py-1.5 text-xs text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-1">
+                <button onClick={() => setEditing(true)}
+                  className="px-2.5 py-1.5 text-xs font-medium text-brand-blue bg-brand-blue-light hover:bg-blue-100 rounded-lg transition-colors">
+                  Edit
+                </button>
+                <button onClick={() => setConfirmDel(true)}
+                  className="px-2.5 py-1.5 text-xs text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                  Delete
+                </button>
+              </div>
+            )}
+          </td>
+        </>
+      )}
+    </tr>
   );
 }
 
@@ -150,13 +272,66 @@ export default function SettingsPage() {
 
   // ── Commission rate state ─────────────────────────────────────────────────
   const [commissionInput, setCommissionInput] = useState('10');
+  const [minCommissionInput, setMinCommissionInput] = useState('5.00');
   const [commissionSaving, setCommissionSaving] = useState(false);
   const [commissionSaved, setCommissionSaved] = useState(false);
   const [commissionError, setCommissionError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchCommissionRate().then(r => setCommissionInput(String(r)));
+    Promise.all([fetchCommissionRate(), fetchMinCommission()]).then(([rate, min]) => {
+      setCommissionInput(String(rate));
+      setMinCommissionInput(String(min));
+    });
   }, []);
+
+  // ── Tax rates state ───────────────────────────────────────────────────────
+  const [taxRates, setTaxRates] = useState<TaxRate[]>([]);
+  const [taxLoading, setTaxLoading] = useState(true);
+  const [showAddTax, setShowAddTax] = useState(false);
+  const [addTaxForm, setAddTaxForm] = useState<TaxRate>({
+    country_code: '', country_name: '', vat_pct: 0,
+    fixed_fee_per_night: 0, fixed_fee_currency: 'AED', notes: '',
+  });
+  const [addTaxError, setAddTaxError] = useState<string | null>(null);
+  const [, startAddTransition] = useTransition();
+
+  useEffect(() => {
+    fetchTaxRates().then(rates => { setTaxRates(rates); setTaxLoading(false); });
+  }, []);
+
+  async function handleSaveTaxRate(rate: TaxRate) {
+    const result = await upsertTaxRate(rate);
+    if (result.error) { alert(result.error); return; }
+    setTaxRates(prev => {
+      const idx = prev.findIndex(r => r.country_code === rate.country_code);
+      return idx >= 0 ? prev.map((r, i) => i === idx ? rate : r) : [...prev, rate];
+    });
+  }
+
+  async function handleDeleteTaxRate(code: string) {
+    const result = await deleteTaxRate(code);
+    if (result.error) { alert(result.error); return; }
+    setTaxRates(prev => prev.filter(r => r.country_code !== code));
+  }
+
+  async function handleAddTaxRate() {
+    setAddTaxError(null);
+    if (!addTaxForm.country_code.trim() || addTaxForm.country_code.length !== 2)
+      return setAddTaxError('Country code must be exactly 2 letters (e.g. AE).');
+    if (!addTaxForm.country_name.trim())
+      return setAddTaxError('Country name is required.');
+    startAddTransition(async () => {
+      const result = await upsertTaxRate(addTaxForm);
+      if (result.error) { setAddTaxError(result.error); return; }
+      setTaxRates(prev => {
+        const idx = prev.findIndex(r => r.country_code === addTaxForm.country_code.toUpperCase());
+        const newRate = { ...addTaxForm, country_code: addTaxForm.country_code.toUpperCase() };
+        return idx >= 0 ? prev.map((r, i) => i === idx ? newRate : r) : [...prev, newRate];
+      });
+      setShowAddTax(false);
+      setAddTaxForm({ country_code: '', country_name: '', vat_pct: 0, fixed_fee_per_night: 0, fixed_fee_currency: 'AED', notes: '' });
+    });
+  }
 
   // ── User policies state ───────────────────────────────────────────────────
   const [bookingLimitInput,      setBookingLimitInput]      = useState('5');
@@ -189,16 +364,24 @@ export default function SettingsPage() {
 
   async function handleSaveCommission() {
     const rate = parseFloat(commissionInput);
+    const minAmt = parseFloat(minCommissionInput);
     setCommissionError(null);
     if (isNaN(rate) || rate < 0 || rate > 100) {
-      setCommissionError('يجب أن تكون النسبة بين 0 و 100.');
+      setCommissionError('Rate must be between 0 and 100.');
+      return;
+    }
+    if (isNaN(minAmt) || minAmt < 0) {
+      setCommissionError('Minimum commission must be 0 or greater.');
       return;
     }
     setCommissionSaving(true);
-    const result = await updateCommissionRate(rate);
+    const [r1, r2] = await Promise.all([
+      updateCommissionRate(rate),
+      updateMinCommission(minAmt),
+    ]);
     setCommissionSaving(false);
-    if (result.error) {
-      setCommissionError(result.error);
+    if (r1.error || r2.error) {
+      setCommissionError(r1.error ?? r2.error ?? 'Save failed.');
     } else {
       setCommissionSaved(true);
       setTimeout(() => setCommissionSaved(false), 2500);
@@ -242,9 +425,6 @@ export default function SettingsPage() {
                 </p>
               )}
             </div>
-          </FieldRow>
-          <FieldRow label="Maintenance Mode" description="Takes the platform offline for all users.">
-            <Toggle defaultChecked={false} label="Enable maintenance mode" />
           </FieldRow>
         </div>
         <div className="mt-5 flex justify-end">
@@ -315,10 +495,19 @@ export default function SettingsPage() {
               )}
             </div>
           </FieldRow>
-          <FieldRow label="Minimum Commission" description="Minimum fee per booking.">
+          <FieldRow label="Minimum Commission" description="Minimum platform fee per booking, applied when the percentage-based commission is lower.">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500 font-medium">$</span>
-              <Input defaultValue="5.00" />
+              <span className="text-sm text-gray-500 font-medium w-8 shrink-0">
+                {CURRENCY_SYMBOL[currency] ?? currency.toUpperCase()}
+              </span>
+              <input
+                type="number"
+                min={0}
+                step={0.5}
+                value={minCommissionInput}
+                onChange={e => setMinCommissionInput(e.target.value)}
+                className="w-28 px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition-colors"
+              />
             </div>
           </FieldRow>
           <FieldRow label="Auto-Payout" description="Automatically pay partners at month-end.">
@@ -329,9 +518,8 @@ export default function SettingsPage() {
           <button
             onClick={handleSaveCommission}
             disabled={commissionSaving}
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 ${
-              commissionSaved ? 'bg-emerald-600' : 'bg-brand-blue hover:bg-brand-blue-dark'
-            }`}
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 hover:-translate-y-0.5"
+            style={{ background: commissionSaved ? '#059669' : 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: commissionSaved ? undefined : '0 2px 10px rgba(30,58,138,0.25)' }}
           >
             {commissionSaving ? 'Saving…' : commissionSaved ? '✓ Saved' : 'Save Changes'}
           </button>
@@ -367,6 +555,121 @@ export default function SettingsPage() {
         <div className="mt-5 flex justify-end">
           <SaveButton />
         </div>
+      </SettingsCard>
+
+      {/* Tax Rates */}
+      <SettingsCard>
+        <div className="flex items-start justify-between mb-5">
+          <SectionHeader
+            title="Tax Rates by Country"
+            description="VAT % and fixed fees applied per country. Partner/admin share is calculated on subtotal before tax."
+          />
+          <button
+            onClick={() => setShowAddTax(v => !v)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white text-sm font-semibold transition-all shrink-0 ml-4 hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Country
+          </button>
+        </div>
+
+        {/* Add form */}
+        {showAddTax && (
+          <div className="mb-5 p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">New Country Tax Rate</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Country Code</label>
+                <input value={addTaxForm.country_code} maxLength={2} placeholder="AE"
+                  onChange={e => setAddTaxForm(f => ({ ...f, country_code: e.target.value.toUpperCase() }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-brand-blue/30" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Country Name</label>
+                <input value={addTaxForm.country_name} placeholder="United Arab Emirates"
+                  onChange={e => setAddTaxForm(f => ({ ...f, country_name: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">VAT %</label>
+                <input type="number" min={0} max={100} step={0.5} value={addTaxForm.vat_pct}
+                  onChange={e => setAddTaxForm(f => ({ ...f, vat_pct: Number(e.target.value) }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Fixed Fee / Night</label>
+                <input type="number" min={0} step={0.5} value={addTaxForm.fixed_fee_per_night}
+                  onChange={e => setAddTaxForm(f => ({ ...f, fixed_fee_per_night: Number(e.target.value) }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Fee Currency</label>
+                <input value={addTaxForm.fixed_fee_currency} maxLength={3} placeholder="AED"
+                  onChange={e => setAddTaxForm(f => ({ ...f, fixed_fee_currency: e.target.value.toUpperCase() }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-brand-blue/30" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Notes</label>
+                <input value={addTaxForm.notes ?? ''} placeholder="Optional"
+                  onChange={e => setAddTaxForm(f => ({ ...f, notes: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30" />
+              </div>
+            </div>
+            {addTaxError && <p className="text-xs text-red-500">{addTaxError}</p>}
+            <div className="flex gap-2">
+              <button onClick={handleAddTaxRate}
+                className="px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
+                Add
+              </button>
+              <button onClick={() => { setShowAddTax(false); setAddTaxError(null); }}
+                className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {taxLoading ? (
+          <div className="flex items-center justify-center py-10">
+            <div className="w-6 h-6 border-2 border-brand-blue/20 border-t-brand-blue rounded-full animate-spin" />
+          </div>
+        ) : taxRates.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-8">No tax rates configured. Add one above.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-gray-100">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                  <th className="px-4 py-3">Code</th>
+                  <th className="px-4 py-3">Country</th>
+                  <th className="px-4 py-3">VAT</th>
+                  <th className="px-4 py-3">Fixed Fee/Night</th>
+                  <th className="px-4 py-3">Notes</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody>
+                {taxRates.map(rate => (
+                  <TaxRateRow
+                    key={rate.country_code}
+                    rate={rate}
+                    onSave={handleSaveTaxRate}
+                    onDelete={handleDeleteTaxRate}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <p className="text-xs text-gray-400 mt-3">
+          Tax is applied at checkout based on the hotel&apos;s country. Fixed fees are added per night.
+          Partner and platform shares are calculated on room price before tax.
+        </p>
       </SettingsCard>
 
       {/* User Policies */}
@@ -427,9 +730,8 @@ export default function SettingsPage() {
           <button
             onClick={handleSavePolicies}
             disabled={policySaving}
-            className={`px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 ${
-              policySaved ? 'bg-emerald-600' : 'bg-brand-blue hover:bg-brand-blue-dark'
-            }`}
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 hover:-translate-y-0.5"
+            style={{ background: policySaved ? '#059669' : 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: policySaved ? undefined : '0 2px 10px rgba(30,58,138,0.25)' }}
           >
             {policySaving ? 'Saving…' : policySaved ? '✓ Saved' : 'Save Changes'}
           </button>

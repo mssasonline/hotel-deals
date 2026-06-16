@@ -5,13 +5,16 @@ export interface LanguageInfo {
   nativeName: string;
   englishName: string;
   rtl?: boolean;
+  supported?: boolean; // true = fully translated; false = falls back to English
 }
 
 export const LANGUAGES: LanguageInfo[] = [
-  { code: 'en',    nativeName: 'English (US)',     englishName: 'English (US)' },
-  { code: 'ar',    nativeName: 'العربية',           englishName: 'Arabic',                 rtl: true },
-  { code: 'fr',    nativeName: 'Français',         englishName: 'French' },
-  { code: 'ru',    nativeName: 'Русский',          englishName: 'Russian' },
+  { code: 'en',    nativeName: 'English (US)',     englishName: 'English (US)',          supported: true },
+  { code: 'ar',    nativeName: 'العربية',           englishName: 'Arabic',   rtl: true,  supported: true },
+  { code: 'fr',    nativeName: 'Français',         englishName: 'French',               supported: true },
+  { code: 'ru',    nativeName: 'Русский',          englishName: 'Russian',              supported: true },
+  { code: 'hi',    nativeName: 'हिन्दी',           englishName: 'Hindi',                supported: true },
+  { code: 'ur',    nativeName: 'اردو',             englishName: 'Urdu',     rtl: true,  supported: true },
   { code: 'es',    nativeName: 'Español',          englishName: 'Spanish' },
   { code: 'en-gb', nativeName: 'English (UK)',     englishName: 'English (UK)' },
   { code: 'de',    nativeName: 'Deutsch',          englishName: 'German' },
@@ -40,7 +43,6 @@ export const LANGUAGES: LanguageInfo[] = [
   { code: 'he',    nativeName: 'עברית',            englishName: 'Hebrew',                 rtl: true },
   { code: 'lv',    nativeName: 'Latviski',         englishName: 'Latvian' },
   { code: 'uk',    nativeName: 'Українська',       englishName: 'Ukrainian' },
-  { code: 'hi',    nativeName: 'हिन्दी',           englishName: 'Hindi' },
   { code: 'id',    nativeName: 'Bahasa Indonesia', englishName: 'Indonesian' },
   { code: 'ms',    nativeName: 'Bahasa Malaysia',  englishName: 'Malay' },
   { code: 'th',    nativeName: 'ภาษาไทย',         englishName: 'Thai' },

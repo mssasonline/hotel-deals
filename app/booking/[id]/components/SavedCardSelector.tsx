@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslation } from '@/lib/i18n/useTranslation';
+
 export interface SavedCard {
   id: number;
   card_holder: string;
@@ -27,13 +29,14 @@ function networkBadge(network: string) {
 }
 
 export default function SavedCardSelector({ cards, selectedId, onSelect }: Props) {
+  const t = useTranslation();
   if (cards.length === 0) return null;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100">
-        <h3 className="font-bold text-gray-900 text-base">Saved Cards</h3>
-        <p className="text-xs text-gray-400 mt-0.5">Select a saved card or enter a new one below</p>
+        <h3 className="font-bold text-gray-900 text-base">{t['payment.savedCards']}</h3>
+        <p className="text-xs text-gray-400 mt-0.5">{t['payment.savedCardsDesc']}</p>
       </div>
 
       <div className="divide-y divide-gray-50">
@@ -69,7 +72,7 @@ export default function SavedCardSelector({ cards, selectedId, onSelect }: Props
 
               {card.is_default && (
                 <span className="shrink-0 text-xs font-semibold text-brand-blue bg-brand-blue-light px-2 py-0.5 rounded-full border border-blue-100">
-                  Default
+                  {t['payment.defaultCard']}
                 </span>
               )}
             </button>
@@ -92,7 +95,7 @@ export default function SavedCardSelector({ cards, selectedId, onSelect }: Props
           <svg className="shrink-0 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <p className="text-sm font-semibold text-gray-700">Use a different card</p>
+          <p className="text-sm font-semibold text-gray-700">{t['payment.useDifferentCard']}</p>
         </button>
       </div>
     </div>

@@ -41,7 +41,7 @@ export default function BookingSummaryCard({ hotel, room, checkIn, checkOut, gue
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 
       {/* Header */}
-      <div className="bg-brand-blue px-6 py-5">
+      <div className="px-6 py-5" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-white/55 text-[11px] font-medium uppercase tracking-widest mb-1">

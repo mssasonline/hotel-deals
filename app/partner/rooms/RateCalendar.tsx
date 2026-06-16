@@ -207,7 +207,8 @@ function CsvImportModal({ rows, fmt, t, onApply, onClose }: CsvImportModalProps)
             {t['partner.cancel']}
           </button>
           <button type="button" onClick={apply} disabled={valid.length === 0}
-            className="bg-brand-blue text-white font-semibold px-5 py-2 rounded-xl text-sm hover:bg-brand-blue-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            className="text-white font-semibold px-5 py-2 rounded-xl text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
             {t['partner.cal.apply']} {valid.length > 0 && `(${valid.length})`}
           </button>
         </div>
@@ -306,7 +307,8 @@ function BulkModal({ type, year, month, basePrice, fmt, t, onApply, onClose }: B
             {t['partner.cancel']}
           </button>
           <button type="button" onClick={() => { const r = build(); if (r.length) onApply(r); onClose(); }}
-            className="flex-1 bg-brand-blue text-white font-semibold py-2.5 rounded-xl text-sm hover:bg-brand-blue-dark transition-colors">
+            className="flex-1 text-white font-semibold py-2.5 rounded-xl text-sm transition-all hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
             {t['partner.cal.apply']}
           </button>
         </div>
@@ -670,7 +672,8 @@ export default function RateCalendar({ roomId, roomName, basePrice, onClose }: P
               {t['partner.cal.close']}
             </button>
             <button type="button" onClick={save} disabled={!dirty || saving}
-              className="bg-brand-blue text-white font-semibold px-5 py-2 rounded-xl text-sm hover:bg-brand-blue-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
+              className="text-white font-semibold px-5 py-2 rounded-xl text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:-translate-y-0.5 flex items-center gap-2"
+              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
               {saving && <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
               {t['partner.cal.saveRates']}
             </button>

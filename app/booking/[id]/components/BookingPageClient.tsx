@@ -6,20 +6,18 @@ import { saveLoginRedirect } from '@/lib/auth';
 import { useAuth } from '@/lib/authContext';
 import { supabase } from '@/lib/supabase';
 import { fetchMyAccountData } from '@/app/user-actions';
-import { createNotification } from '@/lib/notifications';
 import { sendBookingEmailAction } from '@/lib/actions/sendBookingEmail';
+import { createBooking } from '../actions';
 import type { HotelDetail } from '@/app/hotel/[id]/lib/hotelDetailData';
 import { useBookingStore } from '@/store/bookingStore';
 import { calcRoomPrice } from '@/lib/pricingEngine';
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import { useAppSettingsStore } from '@/store/appSettingsStore';
 import BookingSummary from './BookingSummary';
 import PriceBreakdownCard from './PriceBreakdownCard';
 import UserDetailsForm, { type UserDetailsValues } from './UserDetailsForm';
 import PaymentForm from './PaymentForm';
 import CurrencyAmount from '@/app/components/CurrencyAmount';
 import SavedCardSelector, { type SavedCard } from './SavedCardSelector';
-import { processPayment } from '@/app/payment/lib/paymentService';
 
 function parseToISO(dateStr: string): string {
   const months: Record<string, string> = {
@@ -33,11 +31,20 @@ function parseToISO(dateStr: string): string {
   return `${year}-${mm}-${day.padStart(2, '0')}`;
 }
 
-export default function BookingPageClient({ hotel }: { hotel: HotelDetail }) {
+export default function BookingPageClient({
+  hotel,
+  taxVatPct = 15,
+  fixedFeePerNight = 0,
+  taxCountryCode = 'AE',
+}: {
+  hotel: HotelDetail;
+  taxVatPct?: number;
+  fixedFeePerNight?: number;
+  taxCountryCode?: string;
+}) {
   const router = useRouter();
   const { user, loading } = useAuth();
   const t = useTranslation();
-  const { currency } = useAppSettingsStore();
   const [authChecked, setAuthChecked] = useState(false);
   const [guestDetails, setGuestDetails] = useState<UserDetailsValues>({
     fullName: '', phoneCountryCode: '+971', phoneCountryIso: 'AE', phoneNumber: '', countryIso: '',
@@ -72,7 +79,9 @@ export default function BookingPageClient({ hotel }: { hotel: HotelDetail }) {
   const pricePerNight = roomPricing.currentPrice;
   const roomsCount = Math.max(1, room.quantity ?? 1);
   const subtotal = nights * pricePerNight * roomsCount;
-  const taxes = Math.round(subtotal * 0.15);
+  const vatAmount = Math.round(subtotal * (taxVatPct / 100));
+  const fixedFees = Math.round(fixedFeePerNight * nights * roomsCount);
+  const taxes = vatAmount + fixedFees;
   const total = subtotal + taxes;
 
   useEffect(() => {
@@ -167,145 +176,65 @@ export default function BookingPageClient({ hotel }: { hotel: HotelDetail }) {
     setSubmitting(true);
     setSubmitError('');
 
-    // Timeout helper — rejects after ms milliseconds
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function withTimeout(p: Promise<any>, ms: number): Promise<any> {
-      let timerId: ReturnType<typeof setTimeout>;
-      const timeout = new Promise<never>((_, reject) => {
-        timerId = setTimeout(() => reject(new Error('TIMEOUT')), ms);
-      });
-      return Promise.race([p, timeout]).finally(() => clearTimeout(timerId));
-    }
-
     try {
-      // PAYMENT DISABLED FOR TESTING — remove the next line and uncomment the block to enable
-      let transactionId: string | undefined;
-      // const paymentResult = await processPayment({
-      //   method: 'credit-card',
-      //   amount: Math.round(total * 100), // convert to smallest unit (e.g. halalas / cents)
-      //   currency,                        // from useAppSettingsStore — matches user's display currency
-      //   cardDetails: {
-      //     cardholderName: paymentData.cardHolder,
-      //     cardNumber:     paymentData.cardNumber.replace(/\s/g, ''),
-      //     expiryDate:     paymentData.expiry,
-      //     cvv:            paymentData.cvv,
-      //   },
-      // });
-      // if (!paymentResult.success) {
-      //   setSubmitError(paymentResult.error ?? t['booking.bookingFailed']); return;
-      // }
-      // transactionId = paymentResult.transactionId;
+      // The entire write runs in a Server Action (see ../actions). The browser
+      // Supabase client serializes every query behind GoTrue's auth lock, which
+      // deadlocks after the tab has been backgrounded — that was the TIMEOUT on
+      // return from another app. Running server-side reads the session from
+      // cookies and sidesteps that lock, the same reason "My Trips" always
+      // loads on return.
+      const result = await createBooking({
+        hotelId:       hotel.id,
+        roomId:        storeRoom?.id ? String(storeRoom.id) : supabaseRoomId,
+        roomName:      room.name,
+        guest: {
+          fullName:         guestDetails.fullName,
+          phoneCountryCode: guestDetails.phoneCountryCode,
+          phoneCountryIso:  guestDetails.phoneCountryIso,
+          phoneNumber:      guestDetails.phoneNumber,
+          countryIso:       guestDetails.countryIso,
+        },
+        checkInISO,
+        checkOutISO,
+        total,
+        subtotal,
+        taxCountryCode,
+        taxVatPct,
+        fixedFeePerNight,
+        taxes,
+        pricePerNight,
+        roomsCount,
+        guests,
+        hotelName:     hotel.name,
+        checkInLabel:  checkIn,
+        checkOutLabel: checkOut,
+      });
 
-      // Check active booking limit — best-effort, non-blocking if table or network is slow
-      let bookingLimit = 50;
-      let activeCount  = 0;
-      try {
-        const [limitRes, activeRes] = await withTimeout(
-          Promise.all([
-            supabase.from('platform_settings').select('value').eq('key', 'guest_booking_limit').maybeSingle(),
-            supabase.from('bookings').select('id', { count: 'exact', head: true })
-              .eq('user_id', user.id)
-              .not('status', 'in', '("completed","cancelled")'),
-          ]),
-          8000
-        );
-        bookingLimit = limitRes.data ? Number(limitRes.data.value) : 5;
-        activeCount  = activeRes.count ?? 0;
-      } catch { /* network slow or table missing — proceed with defaults */ }
-
-      if (activeCount >= bookingLimit) {
+      if (!result.ok) {
+        if (result.code === 'AUTH') {
+          saveLoginRedirect(`/booking/${hotel.id}`);
+          router.push('/login');
+          return;
+        }
         setSubmitError(
-          `You have reached the maximum of ${bookingLimit} active booking${bookingLimit !== 1 ? 's' : ''}. Complete or cancel an existing booking first.`
-        );
-        setSubmitting(false);
-        return;
-      }
-
-      // Prefer the ID already stored in the booking store (set by our modals),
-      // fall back to name-based lookup only when missing.
-      const storeRoomId = storeRoom?.id ?? null;
-      let roomId: string | null = storeRoomId || supabaseRoomId;
-      if (!roomId) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { data: roomData } = await withTimeout(
-            supabase.from('rooms').select('id')
-              .eq('hotel_id', hotel.id).eq('name', room.name).maybeSingle() as unknown as Promise<any>,
-            5000
-          );
-          roomId = roomData ? String(roomData.id) : null;
-        } catch { /* proceed without room ID */ }
-      }
-
-      const insertResult = await withTimeout(
-        supabase
-          .from('bookings').insert({
-            hotel_id:       hotel.id,
-            room_id:        roomId,
-            user_id:        user.id,
-            guest_name:     guestDetails.fullName || user.email,
-            guest_email:    user.email!,
-            check_in:       checkInISO,
-            check_out:      checkOutISO,
-            total_price:    total,
-            locked_price:   pricePerNight,
-            room_count:     roomsCount,
-            status:         'upcoming',
-            payment_status: 'paid',     // change to: transactionId ? 'paid' : 'unpaid'  when payment is enabled
-            ...(transactionId ? { transaction_id: transactionId } : {}),
-            guests_count:   guests,
-          }).select('id').single() as unknown as Promise<{ data: { id: unknown } | null; error: { message: string; code?: string; hint?: string } | null }>,
-        12000
-      );
-
-      const newBooking  = insertResult?.data ?? null;
-      const insertError = insertResult?.error ?? null;
-
-      if (insertError || !newBooking) {
-        const msg  = insertError?.message ?? '';
-        const code = insertError?.code    ?? '';
-        const hint = insertError?.hint    ?? '';
-        console.error('Booking insert error:', insertError);
-        setSubmitError(
-          msg.includes('ROOM_UNAVAILABLE')
+          result.code === 'ROOM_UNAVAILABLE'
             ? t['booking.roomJustBooked']
-            : msg.includes('No API key')
-            ? 'Session expired — please refresh the page and try again.'
-            : `${t['booking.bookingFailed']} — ${msg}${hint ? ` (${hint})` : ''}${code ? ` [${code}]` : ''}`
+            : result.code === 'LIMIT'
+            ? result.message
+            : `${t['booking.bookingFailed']}${result.message ? ` — ${result.message}` : ''}`
         );
         return;
       }
 
       confirmBooking();
 
-      // Fire-and-forget — booking already confirmed, profile save must not block navigation
-      void supabase.from('profiles').update({
-        full_name:          guestDetails.fullName          || null,
-        phone_country_code: guestDetails.phoneCountryCode  || null,
-        phone_country_iso:  guestDetails.phoneCountryIso   || null,
-        phone_number:       guestDetails.phoneNumber       || null,
-        addr_country:       guestDetails.countryIso        || null,
-      }).eq('id', user.id);
+      // Email notification — fire-and-forget, gated by NOTIFICATIONS_ENABLED.
+      sendBookingEmailAction(result.bookingId).catch(() => {});
 
-      // Notifications are fire-and-forget — never block the booking flow
-      createNotification(
-        user.id,
-        'Booking Confirmed',
-        `Your reservation at ${hotel.name} (${room.name}) from ${checkIn} to ${checkOut} is confirmed. Booking ref: SR-${String(newBooking.id).slice(0, 8).toUpperCase()}.`
-      ).catch(() => {});
-
-      // Email notifications (gated by NOTIFICATIONS_ENABLED env var)
-      sendBookingEmailAction(String(newBooking.id)).catch(() => {});
-
-      router.push(`/booking/success/${newBooking.id}`);
+      router.push(`/booking/success/${result.bookingId}`);
     } catch (err: unknown) {
-      const isTimeout = err instanceof Error && err.message === 'TIMEOUT';
       console.error('handleConfirm error:', err);
-      setSubmitError(
-        isTimeout
-          ? 'Connection timeout — please check your internet and try again.'
-          : t['booking.bookingFailed']
-      );
+      setSubmitError(t['booking.bookingFailed']);
     } finally {
       setSubmitting(false);
     }
@@ -343,7 +272,7 @@ export default function BookingPageClient({ hotel }: { hotel: HotelDetail }) {
 
         {/* Mobile price breakdown between forms */}
         <div className="lg:hidden">
-          <PriceBreakdownCard hotel={hotel} room={room} />
+          <PriceBreakdownCard hotel={hotel} room={room} taxVatPct={taxVatPct} fixedFeePerNight={fixedFeePerNight} taxCountryCode={taxCountryCode} />
         </div>
 
         {/* Saved cards — shown when user has at least one */}
@@ -403,7 +332,8 @@ export default function BookingPageClient({ hotel }: { hotel: HotelDetail }) {
             type="button"
             onClick={handleConfirm}
             disabled={submitting || availability === 0}
-            className="w-full bg-brand-blue hover:bg-brand-blue-dark disabled:opacity-60 text-white font-extrabold py-4 rounded-2xl text-lg transition-all duration-200 shadow-lg shadow-brand-blue/25 hover:shadow-brand-blue/40 active:scale-[0.99]"
+            className="w-full disabled:opacity-60 text-white font-extrabold py-4 rounded-2xl text-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99]"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
           >
             {submitting
               ? t['booking.confirming']
@@ -480,7 +410,7 @@ export default function BookingPageClient({ hotel }: { hotel: HotelDetail }) {
       <div className="hidden lg:block">
         <div className="sticky top-24 space-y-4">
           <BookingSummary hotel={hotel} room={room} checkIn={checkIn} checkOut={checkOut} guests={guests} nights={nights} />
-          <PriceBreakdownCard hotel={hotel} room={room} />
+          <PriceBreakdownCard hotel={hotel} room={room} taxVatPct={taxVatPct} fixedFeePerNight={fixedFeePerNight} taxCountryCode={taxCountryCode} />
         </div>
       </div>
 

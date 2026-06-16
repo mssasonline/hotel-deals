@@ -16,7 +16,7 @@ export default async function UsersPage() {
   const [profilesRes, statsRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, full_name, email, status, created_at')
+      .select('id, full_name, email, addr_country, status, created_at')
       .or('role.eq.user,role.is.null')
       .order('created_at', { ascending: false }),
     supabase.rpc('get_user_stats'),
@@ -39,7 +39,7 @@ export default async function UsersPage() {
       id: p.id,
       name: p.full_name || p.email?.split('@')[0] || 'Unknown',
       email: p.email ?? '',
-      country: '',
+      country: p.addr_country ?? '',
       totalBookings: Number(stats?.booking_count ?? 0),
       totalSpent: Number(stats?.total_spent ?? 0),
       lastBooking: stats?.last_booking ?? null,

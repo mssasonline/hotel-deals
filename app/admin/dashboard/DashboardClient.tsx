@@ -279,9 +279,9 @@ export default function DashboardClient({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="sm:col-span-2 bg-[#001E5A] rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div>
-            <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-1">Total Revenue</p>
+            <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-1">Room Revenue</p>
             <p className="text-4xl font-bold text-white">{fmt(stats.total_revenue)}</p>
-            <p className="text-white/40 text-xs mt-1">All-time platform earnings</p>
+            <p className="text-white/40 text-xs mt-1">All-time · excl. taxes</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="bg-white/8 rounded-xl px-5 py-4 text-center">

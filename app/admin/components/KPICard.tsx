@@ -9,10 +9,10 @@ interface KPICardProps {
 }
 
 const ACCENT_STYLES = {
-  blue: { icon: 'bg-blue-50 text-brand-blue', border: 'border-blue-100' },
-  gold: { icon: 'bg-amber-50 text-amber-600', border: 'border-amber-100' },
-  green: { icon: 'bg-emerald-50 text-emerald-600', border: 'border-emerald-100' },
-  purple: { icon: 'bg-purple-50 text-purple-600', border: 'border-purple-100' },
+  blue:   { icon: 'text-white',        iconBg: 'linear-gradient(135deg,#1E3A8A 0%,#2563EB 100%)', border: 'rgba(30,58,138,0.1)',  shadow: 'rgba(30,58,138,0.08)'  },
+  gold:   { icon: 'text-white',        iconBg: 'linear-gradient(135deg,#B45309 0%,#D97706 100%)', border: 'rgba(180,83,9,0.15)',  shadow: 'rgba(180,83,9,0.06)'   },
+  green:  { icon: 'text-white',        iconBg: 'linear-gradient(135deg,#059669 0%,#10B981 100%)', border: 'rgba(5,150,105,0.12)', shadow: 'rgba(5,150,105,0.06)'  },
+  purple: { icon: 'text-white',        iconBg: 'linear-gradient(135deg,#6D28D9 0%,#8B5CF6 100%)', border: 'rgba(109,40,217,0.12)',shadow: 'rgba(109,40,217,0.06)' },
 };
 
 function Sparkline({ data, positive }: { data: number[]; positive: boolean }) {
@@ -53,9 +53,9 @@ export default function KPICard({
   const styles = ACCENT_STYLES[accent];
 
   return (
-    <div className={`bg-white rounded-2xl border ${styles.border} shadow-sm p-5 flex flex-col gap-3`}>
+    <div className="bg-white rounded-2xl p-5 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5" style={{ border: `1px solid ${styles.border}`, boxShadow: `0 2px 12px ${styles.shadow}` }}>
       <div className="flex items-start justify-between">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${styles.icon}`}>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${styles.icon}`} style={{ background: styles.iconBg }}>
           {icon}
         </div>
         {sparkline && trend && (

@@ -35,15 +35,38 @@ export default function StatsBar() {
   ];
 
   return (
-    <div className="bg-white border-b border-gray-100 shadow-sm">
+    <div
+      className="border-b"
+      style={{
+        background: 'linear-gradient(135deg, #FEFCE8 0%, #FFFFFF 40%, #FFFFFF 60%, #EEF4FF 100%)',
+        borderColor: 'rgba(180,83,9,0.08)',
+      }}
+    >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-gray-100">
+        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-blue-900/[0.06]">
           {STAT_VALUES.map((value, i) => (
-            <div key={labels[i]} className="flex items-center justify-center gap-3 py-4 px-2">
-              <div className="text-brand-gold shrink-0">{STAT_ICONS[i]}</div>
+            <div key={labels[i]} className="flex items-center justify-center gap-4 py-6 px-4">
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-white transition-transform duration-300 hover:scale-110"
+                style={{
+                  background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
+                  boxShadow: '0 3px 12px rgba(30,58,138,0.24)',
+                }}
+              >
+                {STAT_ICONS[i]}
+              </div>
               <div>
-                <div className="text-xl font-extrabold text-gray-900 leading-none">{value}</div>
-                <div className="text-xs text-gray-400 mt-0.5 font-medium">{labels[i]}</div>
+                <div
+                  className="text-2xl font-extrabold leading-none"
+                  style={{
+                    color: '#B45309',
+                    letterSpacing: '-0.03em',
+                    fontFamily: 'var(--font-playfair), Georgia, serif',
+                  }}
+                >
+                  {value}
+                </div>
+                <div className="text-xs mt-1 font-medium" style={{ color: '#64748B' }}>{labels[i]}</div>
               </div>
             </div>
           ))}

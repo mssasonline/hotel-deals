@@ -1,18 +1,10 @@
 export default function AEDIcon({ className }: { className?: string }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src="/assets/dirham-logo.png"
-      alt="AED"
-      aria-label="AED"
+    <span
       className={className}
-      style={{
-        height: '1.1em',
-        width: 'auto',
-        display: 'inline-block',
-        verticalAlign: 'text-bottom',
-        mixBlendMode: 'multiply',
-      }}
-    />
+      style={{ fontWeight: 700, letterSpacing: '0.01em', fontSize: '0.85em' }}
+    >
+      AED
+    </span>
   );
 }

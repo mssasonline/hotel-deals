@@ -38,7 +38,7 @@ export default async function BookingSuccessPage({ params }: Props) {
     <>
       <Header />
 
-      <main className="bg-gray-50 min-h-screen py-8 sm:py-12">
+      <main className="min-h-screen py-8 sm:py-12" style={{ background: '#F8FAFC' }}>
         <BookingSuccessContent
           data={{
             shortId: String(id).slice(0, 8).toUpperCase(),

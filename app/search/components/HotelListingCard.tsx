@@ -125,7 +125,10 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
 
   return (
     <article
-      className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-100 group cursor-pointer"
+      className="bg-white rounded-2xl overflow-hidden border group cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
+      style={{ borderColor: 'rgba(30,58,138,0.10)', boxShadow: '0 2px 12px rgba(30,58,138,0.07)' }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 40px rgba(30,58,138,0.14)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(30,58,138,0.2)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 12px rgba(30,58,138,0.07)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(30,58,138,0.10)'; }}
       onClick={goToHotel}
       role="link"
       tabIndex={0}
@@ -167,7 +170,7 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
 
           {/* Dynamic discount badge */}
           {displayDiscount > 0 && (
-            <div className="absolute top-3 right-3 bg-red-500 text-white font-extrabold text-sm px-2.5 py-1 rounded-lg shadow-sm leading-none">
+            <div className="absolute top-3 right-3 text-white font-extrabold text-sm px-2.5 py-1 rounded-lg shadow-md leading-none" style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
               -{displayDiscount}%
             </div>
           )}
@@ -283,7 +286,7 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
             <div className="sm:text-right shrink-0">
               {displayDiscount > 0 ? (
                 <>
-                  <div className="line-through text-red-500 text-sm leading-none">
+                  <div className="text-xs font-medium leading-none" style={{ color: '#94A3B8', textDecoration: 'line-through', textDecorationColor: '#CBD5E1', textDecorationThickness: '1.5px' }}>
                     <CurrencyAmount amount={displayOriginal} />{t['price.perNight']}
                   </div>
                   <div className="flex sm:justify-end items-baseline gap-1 mt-1">
@@ -307,7 +310,10 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
                 </div>
               )}
               <button
-                className="w-full sm:w-auto bg-brand-blue hover:bg-brand-blue-dark text-white font-semibold px-7 py-2.5 rounded-xl transition-colors text-sm whitespace-nowrap shadow-sm"
+                className="w-full sm:w-auto text-white font-semibold px-7 py-2.5 rounded-xl text-sm whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5"
+                style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.28)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 20px rgba(30,58,138,0.38)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 10px rgba(30,58,138,0.28)'; }}
                 onClick={(e) => { e.stopPropagation(); goToHotel(); }}
               >
                 {t['hotel.seeAvailability']}

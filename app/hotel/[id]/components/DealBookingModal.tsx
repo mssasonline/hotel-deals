@@ -162,25 +162,28 @@ export default function DealBookingModal({
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[92vh] overflow-y-auto">
 
         {/* ── Header ── */}
-        <div className="flex items-start justify-between px-6 py-5 border-b border-gray-100">
+        <div
+          className="flex items-start justify-between px-6 py-5 rounded-t-2xl"
+          style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}
+        >
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="bg-brand-gold text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-700 text-white">
                 -{disc}% FIXED
               </span>
-              <span className="text-xs text-gray-400">Partner Deal</span>
+              <span className="text-xs text-white/55">Partner Deal</span>
             </div>
-            <h2 className="font-bold text-gray-900 text-lg leading-tight">
+            <h2 className="font-bold text-white text-lg leading-tight">
               {deal.title ?? deal.room_name}
             </h2>
             {deal.title && (
-              <p className="text-sm text-gray-400 mt-0.5">{deal.room_name}</p>
+              <p className="text-sm text-white/55 mt-0.5">{deal.room_name}</p>
             )}
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 shrink-0 ml-3 mt-0.5"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-white/55 hover:text-white hover:bg-white/10 shrink-0 ml-3 mt-0.5 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -350,7 +353,8 @@ export default function DealBookingModal({
             type="button"
             onClick={handleContinue}
             disabled={!canContinue}
-            className="w-full bg-brand-gold hover:bg-yellow-500 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-brand-gold/25 text-base"
+            className="w-full disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-all hover:-translate-y-0.5 text-base"
+            style={{ background: canContinue ? 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' : '#E2E8F0', color: canContinue ? '#fff' : '#94A3B8', boxShadow: canContinue ? '0 4px 14px rgba(30,58,138,0.3)' : 'none' }}
           >
             {nights <= 0
               ? 'Select dates to continue'

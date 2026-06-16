@@ -12,7 +12,7 @@ import type { DealStatus } from '@/lib/dealsEngine';
 import { countNightsBetween, getCurrentTier, calcLivePrice, calcActualDiscount, calcNightlyRates, calcNightlyStayPrice, isBookingOpen, minutesUntilOpen, type PriceTier, type NightlyStayResult } from '@/lib/pricingEngine';
 import { localDateISO as todayISO } from '@/lib/dateUtils';
 import CountdownTimer from '@/app/components/CountdownTimer';
-import DateRangePicker from './DateRangePicker';
+import DateRangePicker from '@/app/components/DateRangePicker';
 
 interface Room {
   id: string;
@@ -259,17 +259,9 @@ export default function HotelBookingPanel({
       : t['urgency.low'];
 
   // ── Handlers ─────────────────────────────────────────────────
-  const handleCheckInChange = useCallback((val: string) => {
-    setCheckIn(val);
-    if (val > checkOut) {
-      const next = new Date(val + 'T12:00:00');
-      next.setDate(next.getDate() + 1);
-      setCheckOut(next.toISOString().slice(0, 10));
-    }
-  }, [checkOut]);
-
-  const handleCheckOutChange = useCallback((val: string) => {
-    setCheckOut(val);
+  const handleDatesChange = useCallback((newCheckIn: string, newCheckOut: string) => {
+    setCheckIn(newCheckIn);
+    setCheckOut(newCheckOut);
   }, []);
 
   const handleBookNow = useCallback(() => {
@@ -460,12 +452,12 @@ export default function HotelBookingPanel({
 
         {/* Dates — professional date range picker */}
         <DateRangePicker
+          mode="inline"
           checkIn={checkIn}
           checkOut={checkOut}
-          onCheckInChange={handleCheckInChange}
-          onCheckOutChange={handleCheckOutChange}
-          labelCheckIn={t['booking.checkIn']}
-          labelCheckOut={t['booking.checkOut']}
+          onChange={handleDatesChange}
+          checkInLabel={t['booking.checkIn']}
+          checkOutLabel={t['booking.checkOut']}
         />
 
         {/* Nights summary */}
@@ -533,7 +525,8 @@ export default function HotelBookingPanel({
               <button
                 type="button"
                 onClick={() => setGuestOpen(false)}
-                className="mt-3 w-full bg-brand-blue text-white font-semibold text-sm py-2 rounded-xl hover:bg-brand-blue-dark transition-colors"
+                className="mt-3 w-full text-white font-semibold text-sm py-2 rounded-xl transition-all hover:-translate-y-0.5"
+                style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
               >
                 {t['hotel.guestsDone']}
               </button>
@@ -671,7 +664,8 @@ export default function HotelBookingPanel({
           type="button"
           onClick={handleBookNow}
           disabled={!bookingOpen || rooms.length === 0 || (quantityAvailable !== null && quantityAvailable <= 0)}
-          className="w-full bg-brand-gold hover:bg-yellow-500 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl transition-colors shadow-lg shadow-brand-gold/25 text-lg flex items-center justify-between px-5"
+          className="w-full disabled:cursor-not-allowed text-white font-bold py-4 rounded-2xl transition-all text-lg flex items-center justify-between px-5 hover:-translate-y-0.5 disabled:opacity-50"
+          style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
         >
           <span>
             {!bookingOpen

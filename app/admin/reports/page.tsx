@@ -83,6 +83,8 @@ export default async function ReportsPage() {
     hotel_count:      Number(r.hotel_count),
     booking_count:    Number(r.booking_count),
     gross_revenue:    Number(r.gross_revenue),
+    subtotal:         Number(r.subtotal      ?? 0),
+    tax_collected:    Number(r.tax_collected ?? 0),
     partner_payout:   Number(r.partner_payout),
     admin_commission: Number(r.admin_commission),
   }));
