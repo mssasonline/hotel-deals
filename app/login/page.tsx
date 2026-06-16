@@ -76,10 +76,10 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
 
           {/* Card */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
 
             {/* Header bar */}
-            <div className="px-8 py-7" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
+            <div className="px-8 py-7" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)' }}>
               <Link href="/" className="flex items-center gap-2.5 mb-5">
                 <div className="w-8 h-8 bg-brand-gold rounded-lg flex items-center justify-center shadow-sm">
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -89,8 +89,13 @@ export default function LoginPage() {
                 </div>
                 <span className="text-white font-bold text-base leading-none">SelectedRoom.com</span>
               </Link>
-              <h1 className="!text-white font-extrabold text-2xl leading-tight">{t['login.welcomeBack']}</h1>
-              <p className="text-white/60 text-sm mt-1">{t['login.subtitle']}</p>
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-6 rounded-full shrink-0" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+                <div>
+                  <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>{t['login.welcomeBack']}</h1>
+                  <p className="text-white/45 text-xs mt-0.5">{t['login.subtitle']}</p>
+                </div>
+              </div>
             </div>
 
             {/* Form */}

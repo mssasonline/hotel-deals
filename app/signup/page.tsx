@@ -76,7 +76,7 @@ export default function SignupPage() {
         <Header />
         <main className="min-h-screen flex items-center justify-center py-12 px-4" style={{ background: '#F8FAFC' }}>
           <div className="w-full max-w-md">
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden p-10 text-center">
+            <div className="bg-white rounded-2xl overflow-hidden p-10 text-center" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
                 <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -108,10 +108,10 @@ export default function SignupPage() {
         <div className="w-full max-w-md">
 
           {/* Card */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
 
             {/* Header bar */}
-            <div className="px-8 py-7" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
+            <div className="px-8 py-7" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)' }}>
               <Link href="/" className="flex items-center gap-2.5 mb-5">
                 <div className="w-8 h-8 bg-brand-gold rounded-lg flex items-center justify-center shadow-sm">
                   <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -121,8 +121,13 @@ export default function SignupPage() {
                 </div>
                 <span className="text-white font-bold text-base leading-none">SelectedRoom.com</span>
               </Link>
-              <h1 className="!text-white font-extrabold text-2xl leading-tight">Create your account</h1>
-              <p className="text-white/60 text-sm mt-1">Join thousands of smart travelers</p>
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-6 rounded-full shrink-0" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+                <div>
+                  <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>Create your account</h1>
+                  <p className="text-white/45 text-xs mt-0.5">Join thousands of smart travelers</p>
+                </div>
+              </div>
             </div>
 
             {/* Perks row */}
