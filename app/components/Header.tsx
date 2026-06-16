@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import NotificationBell from '@/app/components/NotificationBell';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
@@ -31,17 +30,8 @@ function getDisplayName(user: { user_metadata?: Record<string, string>; email?: 
 }
 
 export default function Header() {
-  const router = useRouter();
-  const pathname = usePathname();
   const { user, role, loading } = useAuth();
 
-  function handleNavClick(hash: string) {
-    if (pathname === '/') {
-      document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      router.push(`/#${hash}`);
-    }
-  }
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

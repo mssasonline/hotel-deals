@@ -6,7 +6,6 @@ import { submitReview } from '@/app/actions/submitReview';
 interface Props {
   bookingId: string;
   hotelId: number;
-  userId: string;
   hotelName: string;
 }
 
@@ -48,7 +47,7 @@ function Spinner() {
   );
 }
 
-export default function ReviewForm({ bookingId, hotelId, userId, hotelName }: Props) {
+export default function ReviewForm({ bookingId, hotelId, hotelName }: Props) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);

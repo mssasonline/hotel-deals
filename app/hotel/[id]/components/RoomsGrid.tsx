@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { getCurrentTier, calcLivePrice, calcActualDiscount, isBookingOpen, type PriceTier } from '@/lib/pricingEngine';
 import { getRoomImage } from '@/lib/roomImages';
 import CurrencyAmount from '@/app/components/CurrencyAmount';
@@ -107,10 +108,11 @@ export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, a
               <div className="flex flex-col sm:flex-row">
                 {/* Room image */}
                 <div className="relative h-40 sm:h-auto sm:w-44 shrink-0 overflow-hidden">
-                  <img
+                  <Image
                     src={getRoomImage(room.room_type, room.image_url)}
                     alt={room.name}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                   {discountPercent > 0 && (
                     <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg">

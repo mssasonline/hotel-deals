@@ -73,7 +73,6 @@ export default function TierTimeline({ compact = false }: Props) {
         {TIERS.map((ti, i) => {
           const isActive  = ti.peIdx === tier.tierIndex;
           const isPast    = i < currentDisplayIdx;
-          const isFuture  = i > currentDisplayIdx;
 
           return (
             <div key={i} className="relative flex-1 flex flex-col items-center z-10">

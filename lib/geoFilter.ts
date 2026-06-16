@@ -37,6 +37,7 @@ export function sortHotelsByPriority<
 export type GeoCoords = { lat: number; lng: number };
 export function sortHotelsByDistance<T extends { lat?: number; lng?: number }>(
   hotels: T[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _userCoords: GeoCoords,
 ): T[] {
   return hotels;

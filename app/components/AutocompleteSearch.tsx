@@ -214,12 +214,14 @@ export default function AutocompleteSearch({
         spellCheck={false}
         aria-autocomplete="list"
         aria-expanded={isOpen}
+        aria-controls="autocomplete-listbox"
         role="combobox"
         className={inputClassName}
       />
 
       {isOpen && results.length > 0 && (
         <ul
+          id="autocomplete-listbox"
           role="listbox"
           className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 overflow-hidden"
           style={{ minWidth: '280px' }}

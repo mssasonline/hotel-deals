@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import AEDAmount from '@/app/partner/components/AEDAmount';
 
 export interface SpecialDealPreviewItem {
@@ -100,10 +101,11 @@ export default function SpecialDealsPreview({ deals }: Props) {
                   {/* Image strip */}
                   <div className="relative h-36 overflow-hidden">
                     <div className="absolute inset-0" style={{ background: DEFAULT_GRADIENTS[i % 3] }} />
-                    <img
+                    <Image
                       src={deal.imageUrl ?? FALLBACK_IMAGE}
                       alt={deal.hotelName}
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-70"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500 opacity-70"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                     />
                     {/* Fixed price badge — contrasts with the "live" badge in Track 1 */}

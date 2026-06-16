@@ -143,6 +143,7 @@ export default function MyFavoritesPage() {
     }
     window.addEventListener('pageshow', handlePageShow);
     return () => window.removeEventListener('pageshow', handlePageShow);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const handleUnfavorite = useCallback((hotelId: number) => {

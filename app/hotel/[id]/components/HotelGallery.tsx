@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import type { GalleryImage } from '../lib/hotelDetailData';
 
-export default function HotelGallery({ images, hotelName }: { images: GalleryImage[]; hotelName: string }) {
+export default function HotelGallery({ images }: { images: GalleryImage[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const main = images[activeIndex];
-  const thumbs = images.filter((_, i) => i !== activeIndex);
 
   return (
     <section className="mb-8">

@@ -26,10 +26,6 @@ type AnalyticsBooking = {
   partner_amount: number | null;
 };
 
-type RawAnalyticsBookingRow = Omit<AnalyticsBooking, 'rooms'> & {
-  rooms: { name: string }[] | { name: string } | null;
-};
-
 type AnalyticsRoom = { id: string; name: string; type: string; available: number };
 
 type Review = { id: string; rating: number; created_at: string };

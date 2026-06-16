@@ -113,17 +113,6 @@ function ConciergeIcon({ className }: IconProps) {
   );
 }
 
-function JacuzziIcon({ className }: IconProps) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h16a2 2 0 012 2v3" />
-      <rect x="11" y="11" width="10" height="10" rx="2" />
-      <path d="M14 15v2" />
-      <path d="M17 13v4" />
-    </svg>
-  );
-}
-
 function BarIcon({ className }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden>

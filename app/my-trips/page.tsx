@@ -7,7 +7,6 @@ import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { saveLoginRedirect } from '@/lib/auth';
 import { useAuth } from '@/lib/authContext';
-import { supabase } from '@/lib/supabase';
 import { fetchMyTrips } from '@/app/user-actions';
 import CurrencyAmount from '@/app/components/CurrencyAmount';
 import { submitReview } from '@/app/actions/submitReview';
@@ -50,11 +49,6 @@ interface SupabaseBooking {
   guests_count?: number | null;
   hotels: { name: string; city: string; image_url: string | null } | null;
   rooms: { name: string } | null;
-}
-
-interface SupabaseReview {
-  id: string;
-  booking_id: string | null;
 }
 
 function formatDate(dateStr: string): string {
@@ -236,10 +230,9 @@ interface ReviewModalProps {
   booking: Booking;
   onClose: () => void;
   onSubmitted: (bookingId: string) => void;
-  userId: string;
 }
 
-function ReviewModal({ booking, onClose, onSubmitted, userId }: ReviewModalProps) {
+function ReviewModal({ booking, onClose, onSubmitted }: ReviewModalProps) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -384,12 +377,10 @@ function ReviewModal({ booking, onClose, onSubmitted, userId }: ReviewModalProps
 
 function BookingCard({
   booking,
-  onManage,
   hasReview,
   onLeaveReview,
 }: {
   booking: Booking;
-  onManage?: () => void;
   hasReview?: boolean;
   onLeaveReview?: () => void;
 }) {
@@ -635,6 +626,7 @@ export default function MyTripsPage() {
       window.removeEventListener('pageshow', handlePageShow);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   function handleBookingUpdated(updated: Partial<Booking>) {
@@ -759,11 +751,6 @@ export default function MyTripsPage() {
                 <BookingCard
                   key={booking.id}
                   booking={booking}
-                  onManage={
-                    (booking.status === 'upcoming' || booking.status === 'active')
-                      ? () => setManagingBooking(booking)
-                      : undefined
-                  }
                   hasReview={reviewedBookingIds.has(booking.id)}
                   onLeaveReview={
                     booking.status === 'completed' && booking.paymentStatus === 'paid'
@@ -824,7 +811,6 @@ export default function MyTripsPage() {
           booking={reviewingBooking}
           onClose={() => setReviewingBooking(null)}
           onSubmitted={handleReviewSubmitted}
-          userId={user.id}
         />
       )}
     </>

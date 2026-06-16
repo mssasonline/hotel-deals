@@ -45,14 +45,6 @@ function calcDiscount(base: number, deal: number): number {
   return Math.max(0, Math.round((1 - deal / base) * 100));
 }
 
-function isoToStored(iso: string): string {
-  return new Date(iso + 'T12:00:00').toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
 
 export default function PartnerDealsSection({
   hotelId,

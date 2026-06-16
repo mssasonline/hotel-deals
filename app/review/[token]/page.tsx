@@ -162,7 +162,6 @@ export default async function ReviewPage({ params }: PageProps) {
             <ReviewForm
               bookingId={String(booking.id)}
               hotelId={Number(booking.hotel_id)}
-              userId={user.id}
               hotelName={hotelName}
             />
           </div>

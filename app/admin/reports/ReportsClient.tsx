@@ -150,7 +150,6 @@ function BookingBarChart({ data }: { data: TrendPoint[] }) {
 // ── Panels ────────────────────────────────────────────────────
 
 function TopHotelsPanel({ hotels }: { hotels: TopHotel[] }) {
-  const fmt = useAEDFormat();
   const max = hotels[0]?.revenue || 1;
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -275,7 +274,6 @@ function PartnerRevenueTable({ partners, commissionRate }: { partners: PartnerRe
   const partnerRate    = 100 - commissionRate;
   const totalGross     = partners.reduce((s, p) => s + p.gross_revenue,    0);
   const totalTax       = partners.reduce((s, p) => s + p.tax_collected,    0);
-  const totalSubtotal  = partners.reduce((s, p) => s + p.subtotal,         0);
   const totalAdmin     = partners.reduce((s, p) => s + p.admin_commission, 0);
   const totalPayout    = partners.reduce((s, p) => s + p.partner_payout,   0);
 
@@ -366,8 +364,6 @@ export default function ReportsClient({
   partnerRevenue: PartnerRevenueSummary[];
   commissionRate: number;
 }) {
-  const fmt = useAEDFormat();
-  const partnerRate     = 100 - commissionRate;
   const adminCommission = Math.round(partnerRevenue.reduce((s, p) => s + p.admin_commission, 0) * 100) / 100;
 
   return (

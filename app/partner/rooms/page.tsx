@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/authContext';
 import { getCurrentTier, calcLivePrice, calcActualDiscount, type PriceTier } from '@/lib/pricingEngine';
 import CountdownTimer from '@/app/components/CountdownTimer';
@@ -687,7 +686,6 @@ export default function RoomsPage() {
   const { user, loading: authLoading } = useAuth();
   const language = useAppSettingsStore(s => s.language);
   const t        = getTranslations(language);
-  const fmt      = useAEDFormat();
 
   const [loading, setLoading]         = useState(true);
   const [rooms, setRooms]             = useState<Room[]>([]);

@@ -65,7 +65,7 @@ export function calcLastMinutePrice(
   checkinDate: string,
 ): LastMinutePriceResult {
   const days = getDaysUntilCheckin(checkinDate);
-  const { factor, urgencyLabel, isLastMinute } = getCheckinUrgency(days);
+  const { factor, urgencyLabel } = getCheckinUrgency(days);
 
   // Floor = 40% of rack rate, never below $30
   const floorPrice = Math.max(Math.round(basePrice * 0.4), 30);

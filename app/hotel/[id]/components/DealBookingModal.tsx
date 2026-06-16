@@ -92,9 +92,6 @@ export default function DealBookingModal({
 
   // Check-in bounds: [max(today, start_date) … end_date - 1]
   const checkInMin = deal.start_date > today ? deal.start_date : today;
-  const checkInMax = nextDay(deal.end_date) > deal.end_date
-    ? deal.end_date                         // end_date itself is last possible checkout
-    : deal.end_date;
 
   function handleCheckInChange(val: string) {
     setCheckIn(val);

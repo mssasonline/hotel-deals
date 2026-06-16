@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import type { SearchHotel } from '@/app/lib/searchData';
 import { filterHotelsByCity, sortHotelsByPriority } from '@/lib/geoFilter';
 import { calcLivePrice, calcActualDiscount, getCurrentTier } from '@/lib/pricingEngine';
-import { distanceKm, formatDistance } from '@/lib/geo';
+import { distanceKm } from '@/lib/geo';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { useBookingStore } from '@/store/bookingStore';
 import FilterSidebar, { type FilterState, DEFAULT_FILTERS } from './FilterSidebar';

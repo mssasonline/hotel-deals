@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/authContext';
 import { getTranslations } from '@/lib/i18n/translations';
 import { useAppSettingsStore } from '@/store/appSettingsStore';

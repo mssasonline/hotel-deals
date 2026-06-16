@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { supabase } from '@/lib/supabase';
-import { consumeLoginRedirect, saveLoginRedirect } from '@/lib/auth';
+import { consumeLoginRedirect } from '@/lib/auth';
 import { useAuth } from '@/lib/authContext';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 

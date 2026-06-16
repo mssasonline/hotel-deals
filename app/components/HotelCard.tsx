@@ -9,7 +9,6 @@ import CurrencyAmount from './CurrencyAmount';
 import CountdownTimer from './CountdownTimer';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
-import { formatPrice } from '@/lib/currency';
 
 const FALLBACK_HOTEL_IMAGE =
   'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80';
@@ -73,7 +72,6 @@ export default function HotelCard({ hotel, initialFavorited, onUnfavorite }: Hot
   const urgency = getUrgencyConfig(hotel.countdownHours);
 
   const language = useAppSettingsStore((s) => s.language);
-  const currency = useAppSettingsStore((s) => s.currency);
   const t = getTranslations(language);
 
   const bookNowLabel = t['hotel.seeAvailability'];

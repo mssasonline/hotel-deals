@@ -69,6 +69,7 @@ export default function HotelBookingSection({ hotel }: { hotel: HotelDetail }) {
       stars: hotel.stars,
       rating: hotel.rating,
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hotel.id]);
 
   function handleRoomSelect(room: RoomType) {

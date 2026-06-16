@@ -147,7 +147,6 @@ export default function HotelBookingPanel({
   const currency = useAppSettingsStore((s) => s.currency);
   const {
     checkInDate,
-    checkOutDate,
     guests,
     setDates,
     setGuests,
@@ -224,6 +223,7 @@ export default function HotelBookingPanel({
       .then(data => { if (!cancelled) { setRatesMap(data); setRatesLoading(false); } })
       .catch(() => { if (!cancelled) setRatesLoading(false); });
     return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRoom?.id, checkIn, checkOut]);
 
   // ── Per-night pricing (tonight discounted, future nights at calendar rate) ──
@@ -321,6 +321,7 @@ export default function HotelBookingPanel({
     setSelectedHotel,
     setRoom,
     router,
+    avgPerNight,
   ]);
 
   const nightRates     = pricing?.nights ?? [];

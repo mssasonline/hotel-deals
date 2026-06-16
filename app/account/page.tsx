@@ -13,7 +13,6 @@ import { getTranslations } from '@/lib/i18n/translations';
 import { saveLoginRedirect } from '@/lib/auth';
 import type { EditValues, ProfileRow, SavedCard, FieldSharedProps } from './types';
 import {
-  getDisplayName,
   getInitials,
   detectNetwork,
   buildEditValuesFromProfile,
@@ -83,6 +82,7 @@ export default function AccountPage() {
       setEditValues(buildEditValuesFromProfile(row, user.email ?? '', fallback));
       setSavedCards(cards as SavedCard[]);
     }).catch(err => console.error('[account] fetch error:', err));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   async function handleAddCard() {

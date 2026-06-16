@@ -215,7 +215,6 @@ export default function DateRangePicker({
       window.removeEventListener('scroll', updateDropPos);
       window.removeEventListener('resize', updateDropPos);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, mode]);
 
   // Outside-click

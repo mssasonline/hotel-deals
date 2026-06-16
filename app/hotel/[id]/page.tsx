@@ -4,9 +4,8 @@ import Link from 'next/link';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
-import { getDealStatus, getUrgencyConfig } from '@/lib/dealsEngine';
+import { getDealStatus } from '@/lib/dealsEngine';
 import RoomsGrid from './components/RoomsGrid';
-import ReviewsSection from './components/ReviewsSection';
 import { HotelClientLabel, HotelRatingLabel } from './components/HotelClientLabel';
 import HotelGalleryLightbox from './components/HotelGalleryLightbox';
 import HotelAmenities from './components/HotelAmenities';
@@ -71,16 +70,6 @@ interface Room {
   features?: string[] | null;
 }
 
-interface Review {
-  id: string;
-  booking_id: string | null;
-  hotel_id: number;
-  user_id: string;
-  rating: number;
-  comment: string | null;
-  created_at: string;
-}
-
 function parseAmenities(raw: unknown): string[] {
   if (!raw) return [];
   if (Array.isArray(raw)) return raw.filter((x) => typeof x === 'string');
@@ -127,7 +116,7 @@ export default async function HotelPage({ params }: Props) {
   const [
     { data: row, error },
     { data: rooms, error: roomsError },
-    { data: reviews, error: reviewsError },
+    ,
     { data: hotelImages },
     { data: rawDeals },
   ] = await Promise.all([
@@ -157,7 +146,6 @@ export default async function HotelPage({ params }: Props) {
   ]);
 
   if (roomsError) console.error('[rooms] Supabase error:', roomsError.message);
-  if (reviewsError) console.error('[reviews] Supabase error:', reviewsError.message);
   if (error || !row) notFound();
 
   // ── Hotel data ──────────────────────────────────────────────
@@ -173,7 +161,6 @@ export default async function HotelPage({ params }: Props) {
   const reviewCount = Number(row.review_count ?? 0);
   const countdownHours = Number(row.countdown_hours ?? 8);
   const status = getDealStatus(countdownHours);
-  const urgency = getUrgencyConfig(countdownHours);
   const tonightOnly = status === 'HIGH_DEMAND' || status === 'CRITICAL';
   const amenities = parseAmenities(row.amenities).map(a => AMENITY_DISPLAY[a] ?? a);
 
@@ -196,7 +183,6 @@ export default async function HotelPage({ params }: Props) {
   const geoCoords = geoLat != null && geoLon != null && !isNaN(geoLat) && !isNaN(geoLon)
     ? { lat: geoLat, lon: geoLon }
     : null;
-  const googleMapsKey = process.env.GOOGLE_MAPS_API_KEY ?? '';
 
   // ── Cheapest room base_price (for tier banner) ───────────────
   const cheapestRoomBase = (() => {

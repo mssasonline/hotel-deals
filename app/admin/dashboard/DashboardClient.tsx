@@ -60,11 +60,9 @@ function PageHeader() {
 
 function RecentBookingsPanel({
   bookings,
-  fmt,
   fmtDate,
 }: {
   bookings: RecentBookingRow[];
-  fmt: (n: number) => string;
   fmtDate: (iso: string | null) => string;
 }) {
   return (
@@ -114,10 +112,8 @@ function RecentBookingsPanel({
 
 function TopCitiesPanel({
   cities,
-  fmt,
 }: {
   cities: TopCity[];
-  fmt: (n: number) => string;
 }) {
   const max = Math.max(...cities.map((c) => c.booking_count), 1);
   return (
@@ -311,10 +307,10 @@ export default function DashboardClient({
       {/* Bottom Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2">
-          <RecentBookingsPanel bookings={recentBookings} fmt={fmt} fmtDate={fmtDate} />
+          <RecentBookingsPanel bookings={recentBookings} fmtDate={fmtDate} />
         </div>
         <div>
-          <TopCitiesPanel cities={topCities} fmt={fmt} />
+          <TopCitiesPanel cities={topCities} />
         </div>
       </div>
     </div>

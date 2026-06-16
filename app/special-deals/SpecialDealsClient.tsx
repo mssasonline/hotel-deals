@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { SpecialDealHotel } from './page';
 import AEDAmount from '@/app/partner/components/AEDAmount';
 
@@ -53,10 +54,11 @@ function HotelDealCard({ hotel, index }: { hotel: SpecialDealHotel; index: numbe
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
         <div className="absolute inset-0" style={{ background: gradient }} />
-        <img
+        <Image
           src={image}
           alt={hotel.name}
-          className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${upcoming ? 'opacity-50' : ''}`}
+          fill
+          className={`object-cover transition-transform duration-500 group-hover:scale-105 ${upcoming ? 'opacity-50' : ''}`}
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
         />
 
@@ -160,6 +162,7 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
     if (query) { params.set('q', query); }
     else { params.delete('q'); }
     router.replace(`/special-deals?${params.toString()}`, { scroll: false });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
 
   const filtered = query.trim()
