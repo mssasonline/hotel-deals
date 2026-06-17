@@ -70,13 +70,15 @@ export default function DualTrackNav() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="font-extrabold text-gray-900 text-sm">{t['nav.partnerDeals']}</span>
+                <span className="font-extrabold text-gray-900 text-sm">Exclusive Hotel Offers</span>
                 <span className="bg-brand-gold text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
                   {t['nav.fixedBadge']}
                 </span>
               </div>
               <p className="text-xs text-gray-500 leading-snug">
-                {t['nav.partnerDescription']}
+                Special rates set directly by our partner hotels — fixed price, available for{' '}
+                <span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#111827' }}>Selected</span>{' '}
+                dates only.
               </p>
             </div>
             <svg className="w-4 h-4 text-gray-300 group-hover:text-brand-gold transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

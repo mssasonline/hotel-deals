@@ -135,7 +135,7 @@ export default async function SpecialDealsPage({
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D97706' }}>Partner Exclusive</span>
                 </div>
-                <h1 className="font-extrabold text-2xl sm:text-3xl leading-tight" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>Special Deals</h1>
+                <h1 className="font-extrabold text-2xl sm:text-3xl leading-tight" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>Exclusive Hotel Offers</h1>
                 <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.55)' }}>Fixed discounts handpicked by hotels — valid for specific date ranges</p>
               </div>
             </div>

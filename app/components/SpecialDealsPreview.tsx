@@ -50,16 +50,17 @@ export default function SpecialDealsPreview({ deals }: Props) {
                 </svg>
                 PARTNER OFFER
               </div>
-              <span className="text-xs font-bold text-white/30 uppercase tracking-wide">Track 2 · Fixed Price</span>
+              <span className="text-xs font-bold text-white/30 uppercase tracking-wide">Fixed Price</span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-extrabold leading-tight" style={{ color: '#F8FAFC' }}>
-              Partner Special Deals
+              Exclusive Hotel Offers
             </h2>
 
             <p className="text-sm mt-2 max-w-md leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              Hand-picked by hotels — <strong style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>fixed price</strong>,
-              no hourly changes. Available for specific date ranges only.
+              Special rates set directly by our partner hotels — <strong style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>fixed price</strong>, available for{' '}
+              <span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#fff' }}>Selected</span>{' '}
+              dates only.
             </p>
 
             <div className="mt-3 h-0.5 w-14 rounded-full" style={{ background: 'linear-gradient(90deg, #B45309, #FCD34D)' }} />
