@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
 
@@ -44,7 +44,7 @@ export default function Footer() {
             <p className="font-bold text-base text-white" style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
               Get exclusive flash deals in your inbox
             </p>
-            <p className="text-white/45 text-sm mt-0.5">Up to 70% off tonight — delivered before 6 PM.</p>
+            <p className="text-white/45 text-sm mt-0.5">Up to 50% off tonight — delivered before 6 PM.</p>
           </div>
           <form className="flex gap-2 w-full sm:w-auto" onSubmit={e => e.preventDefault()}>
             <input

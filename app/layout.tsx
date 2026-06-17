@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Cormorant_Garamond, Plus_Jakarta_Sans, Cairo, Montserrat } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/authContext";
@@ -35,7 +35,7 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "SelectedRoom — Tonight's Best Hotel Prices",
   description:
-    "Flash deals on luxury hotel rooms — up to 70% off, tonight only. SelectedRoom connects travelers with premium unsold rooms at end-of-day prices.",
+    "Flash deals on luxury hotel rooms — up to 50% off, tonight only. SelectedRoom connects travelers with premium unsold rooms at end-of-day prices.",
 };
 
 export default function RootLayout({

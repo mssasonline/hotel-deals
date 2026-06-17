@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import SearchBar from './components/SearchBar';
@@ -10,7 +10,7 @@ import type { SearchHotel } from '@/app/lib/searchData';
 export const metadata: Metadata = {
   title: 'Search For Deals — SelectedRoom',
   description:
-    'Find last-minute luxury hotel deals with up to 70% off. Filter by price, stars, and discount.',
+    'Find last-minute luxury hotel deals with up to 50% off. Filter by price, stars, and discount.',
 };
 
 async function fetchSearchHotels(): Promise<SearchHotel[]> {

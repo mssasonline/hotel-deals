@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
@@ -772,7 +772,7 @@ export default function MyTripsPage() {
                 Exclusive last-minute hotel deals
               </p>
               <p className="text-white/60 text-sm mb-5">
-                Up to 70% off premium hotels — available tonight only
+                Up to 50% off premium hotels — available tonight only
               </p>
               <Link
                 href="/search?city=Dubai"
