@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import ScrollReveal from './ScrollReveal';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
@@ -59,7 +59,15 @@ export default function HowItWorks() {
 
         <ScrollReveal className="text-center mb-12">
           <span className="inline-block bg-brand-blue-light text-brand-blue text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-3">
-            {t['how.badge']}
+            {t['how.badge'].split('SelectedRoom').reduce<React.ReactNode[]>((acc, part, i, arr) => {
+              acc.push(part);
+              if (i < arr.length - 1) acc.push(
+                <span key={i} style={{ fontFamily: 'var(--font-montserrat, sans-serif)', letterSpacing: '0.08em' }}>
+                  <span style={{ color: '#1E3A8A' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
+                </span>
+              );
+              return acc;
+            }, [])}
           </span>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
             {t['how.heading']}
