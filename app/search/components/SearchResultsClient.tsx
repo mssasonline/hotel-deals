@@ -14,6 +14,7 @@ type SortOption = 'recommended' | 'discount' | 'price' | 'distance';
 
 const GPS_INITIAL_COUNT = 10;
 const GPS_LOAD_MORE_STEP = 5;
+const GPS_MAX_RADIUS_KM = 60;
 
 interface SearchResultsClientProps {
   city: string;
@@ -94,14 +95,19 @@ export default function SearchResultsClient({
     { value: 'price', label: t['search.sortPrice'] },
   ];
 
-  // ── Step 1: Base pool (GPS = all hotels; normal = city-filtered) ───────
+  // ── Step 1: Base pool (GPS = within 60km radius; normal = city-filtered) ─
   const baseHotels = useMemo(() => {
-    if (isGpsMode) return hotels;
+    if (isGpsMode) {
+      return hotels.filter(h => {
+        const dist = gpsDistances.get(h.id);
+        return dist !== undefined && dist <= GPS_MAX_RADIUS_KM;
+      });
+    }
     if (filters.selectedCities.length > 0) {
       return hotels.filter(h => filters.selectedCities.includes(h.city));
     }
     return filterHotelsByCity(hotels, city);
-  }, [hotels, city, filters.selectedCities, isGpsMode]);
+  }, [hotels, city, filters.selectedCities, isGpsMode, gpsDistances]);
 
   // ── Step 2: Inline name search ─────────────────────────────────────────
   const nameFilteredHotels = useMemo(() => {
