@@ -327,18 +327,26 @@ export default async function HotelPage({ params }: Props) {
           <div className="mt-2">
 
             {/* Description + Map */}
-            {description && (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6 flex flex-col lg:flex-row gap-6">
-                <p className="text-gray-600 leading-relaxed text-sm sm:text-base lg:w-3/5">
-                  {description}
-                </p>
-                <div className="lg:w-2/5 min-h-[220px] rounded-xl overflow-hidden border border-gray-100 shrink-0 relative">
+            {(description || true) && (
+              <div className="flex flex-col lg:flex-row gap-4 mb-6 items-stretch">
+
+                {/* Description box */}
+                {description && (
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex-1">
+                    <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+                      {description}
+                    </p>
+                  </div>
+                )}
+
+                {/* Map box — small, fixed width */}
+                <div className="lg:w-72 shrink-0 min-h-[200px] bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden relative">
                   {geoCoords ? (
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${geoCoords.lat},${geoCoords.lon}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="relative block group w-full h-full"
+                      className="relative block group w-full h-full min-h-[200px]"
                       aria-label="Open hotel location in Google Maps"
                     >
                       <iframe
@@ -346,16 +354,16 @@ export default async function HotelPage({ params }: Props) {
                         src={`https://www.openstreetmap.org/export/embed.html?bbox=${geoCoords.lon - 0.012},${geoCoords.lat - 0.008},${geoCoords.lon + 0.012},${geoCoords.lat + 0.008}&layer=mapnik&marker=${geoCoords.lat},${geoCoords.lon}`}
                         width="100%"
                         height="100%"
-                        style={{ minHeight: '220px', border: 0, pointerEvents: 'none' }}
+                        style={{ minHeight: '200px', border: 0, pointerEvents: 'none' }}
                         loading="lazy"
                         tabIndex={-1}
                       />
                       <div className="absolute inset-0 bg-transparent group-hover:bg-black/5 transition-colors" />
-                      <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-white text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-md border border-gray-100 group-hover:shadow-lg transition-shadow">
+                      <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-white text-gray-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg shadow-md border border-gray-100 group-hover:shadow-lg transition-shadow">
                         <svg className="w-3.5 h-3.5 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                         </svg>
-                        Open in Google Maps
+                        Maps
                       </div>
                     </a>
                   ) : (
@@ -363,16 +371,17 @@ export default async function HotelPage({ params }: Props) {
                       href={`https://www.google.com/maps/search/${encodeURIComponent(`${name} ${city}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-col items-center justify-center w-full h-full min-h-[220px] bg-gray-50 hover:bg-gray-100 transition-colors gap-3"
+                      className="flex flex-col items-center justify-center w-full h-full min-h-[200px] bg-gray-50 hover:bg-gray-100 transition-colors gap-3"
                     >
-                      <svg className="w-10 h-10 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-9 h-9 text-brand-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      <span className="text-sm font-medium text-brand-blue">Open in Google Maps</span>
+                      <span className="text-xs font-medium text-brand-blue">Open in Google Maps</span>
                     </a>
                   )}
                 </div>
+
               </div>
             )}
 
