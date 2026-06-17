@@ -8,6 +8,27 @@ import { getUrgencyConfig } from '@/lib/dealsEngine';
 import { getCurrentTier, calcLivePrice, calcActualDiscount, type PriceTier } from '@/lib/pricingEngine';
 import { formatDistance } from '@/lib/geo';
 
+const AMENITY_LABELS: Record<string, string> = {
+  pool:            'Pool',
+  gym:             'Gym',
+  spa:             'Spa',
+  restaurant:      'Restaurant',
+  free_parking:    'Parking',
+  airport_shuttle: 'Airport Shuttle',
+  business_center: 'Business Center',
+  conference:      'Conference Room',
+  free_wifi:       'Free Wi-Fi',
+  room_service:    'Room Service',
+  pet_friendly:    'Pet Friendly',
+  kids_club:       'Kids Club',
+  beach_access:    'Beach Access',
+  golf:            'Golf',
+  bar_lounge:      'Bar & Lounge',
+  rooftop:         'Rooftop',
+  valet_parking:   'Valet Parking',
+  casino:          'Casino',
+};
+
 /** Updates at each tier boundary (every ~4 hours). Zero re-renders between boundaries. */
 function useLiveTier(): PriceTier {
   const [tier, setTier] = useState<PriceTier>(() => getCurrentTier());
@@ -242,7 +263,7 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
                 key={amenity}
                 className="bg-gray-50 border border-gray-200 text-gray-600 text-xs px-2.5 py-1 rounded-full"
               >
-                {amenity}
+                {AMENITY_LABELS[amenity] ?? amenity}
               </span>
             ))}
           </div>

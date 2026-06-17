@@ -10,7 +10,7 @@ import { useBookingStore } from '@/store/bookingStore';
 import FilterSidebar, { type FilterState, DEFAULT_FILTERS } from './FilterSidebar';
 import HotelListingCard from './HotelListingCard';
 
-type SortOption = 'recommended' | 'discount' | 'price' | 'expiry' | 'distance';
+type SortOption = 'recommended' | 'discount' | 'price' | 'distance';
 
 const GPS_INITIAL_COUNT = 10;
 const GPS_LOAD_MORE_STEP = 5;
@@ -88,10 +88,10 @@ export default function SearchResultsClient({
   const sortOptions: { value: SortOption; label: string }[] = [
     ...(isGpsMode
       ? [{ value: 'distance' as SortOption, label: t['search.sortDistance'] }]
-      : [{ value: 'recommended' as SortOption, label: t['search.sortRecommended'] }]),
+      : []),
+    { value: 'recommended', label: t['search.sortRecommended'] },
     { value: 'discount', label: t['search.sortDiscount'] },
     { value: 'price', label: t['search.sortPrice'] },
-    { value: 'expiry', label: t['search.sortExpiry'] },
   ];
 
   // ── Step 1: Base pool (GPS = all hotels; normal = city-filtered) ───────
@@ -151,11 +151,6 @@ export default function SearchResultsClient({
           const aPrice = calcLivePrice(a.basePrice, a.minPrice, tier);
           const bPrice = calcLivePrice(b.basePrice, b.minPrice, tier);
           return aPrice - bPrice;
-        }
-        case 'expiry': {
-          const aMin = a.countdownHours * 60 + a.countdownMinutes;
-          const bMin = b.countdownHours * 60 + b.countdownMinutes;
-          return aMin - bMin;
         }
         default:
           return b.rating - a.rating;
