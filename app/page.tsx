@@ -5,14 +5,12 @@ import DualTrackNav from "./components/DualTrackNav";
 import LiveDealsSection from "./components/LiveDealsSection";
 import SpecialDealsPreview, { type SpecialDealPreviewItem } from "./components/SpecialDealsPreview";
 import HowItWorks from "./components/HowItWorks";
-import PopularCities from "./components/PopularCities";
 import WhyChooseUs from "./components/WhyChooseUs";
 import Footer from "./components/Footer";
 import HashScroller from "./components/HashScroller";
 import type { Hotel } from "./components/HotelCard";
 import { supabase } from "@/lib/supabase";
 import { getDealStatus } from "@/lib/dealsEngine";
-import type { DestinationCity } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -87,16 +85,6 @@ async function fetchHotels(): Promise<Hotel[]> {
   return data.map((row: SupabaseHotel, i: number) => mapToHotel(row, i));
 }
 
-async function fetchDestinationCities(): Promise<DestinationCity[]> {
-  const { data, error } = await supabase
-    .from("destination_cities")
-    .select("*")
-    .eq("active", true)
-    .order("sort_order");
-  if (error || !data) return [];
-  return data as DestinationCity[];
-}
-
 async function fetchSpecialDealsPreview(): Promise<SpecialDealPreviewItem[]> {
   const today = new Date().toISOString().split("T")[0];
 
@@ -156,10 +144,9 @@ async function fetchSpecialDealsPreview(): Promise<SpecialDealPreviewItem[]> {
 }
 
 export default async function Home() {
-  const [hotels, specialDeals, cities] = await Promise.all([
+  const [hotels, specialDeals] = await Promise.all([
     fetchHotels(),
     fetchSpecialDealsPreview(),
-    fetchDestinationCities(),
   ]);
 
   return (
@@ -184,9 +171,6 @@ export default async function Home() {
 
         {/* 6. How it works (moved after deals so users see value first) */}
         <HowItWorks />
-
-        {/* 6. Popular cities (links now work) */}
-        <PopularCities cities={cities} />
 
         {/* 7. Why choose us */}
         <WhyChooseUs />
