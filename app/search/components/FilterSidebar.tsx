@@ -7,9 +7,10 @@ import { CURRENCY_MAP } from '@/lib/currencyData';
 
 const NO_PRICE_LIMIT = 99999;
 const SLIDER_MAX = 10000; // in selected currency
+const AED_RATE = CURRENCY_MAP['aed'].exchangeRate; // 1 USD = 3.67 AED
 
 export interface FilterState {
-  maxPrice: number; // stored in USD
+  maxPrice: number; // stored in AED (DB native currency)
   minStars: number;
   minGuestRating: number; // 0 = any, 4 = 4.0+, 4.5 = 4.5+
   selectedAmenities: string[];
@@ -55,9 +56,10 @@ export default function FilterSidebar({ filters, onFiltersChange, availableCitie
   const currency = useAppSettingsStore((s) => s.currency);
   const { exchangeRate: rate, symbol } = CURRENCY_MAP[currency];
 
-  // Convert stored USD maxPrice → display currency for slider
-  const toDisplay = (usd: number) =>
-    usd >= NO_PRICE_LIMIT ? SLIDER_MAX : Math.min(SLIDER_MAX, Math.round(usd * rate));
+  // Convert stored AED maxPrice → display currency for slider
+  // AED → USD → display currency
+  const toDisplay = (aed: number) =>
+    aed >= NO_PRICE_LIMIT ? SLIDER_MAX : Math.min(SLIDER_MAX, Math.round((aed / AED_RATE) * rate));
 
   const sliderMin = 0;
   const sliderStep = Math.max(10, Math.round((SLIDER_MAX - sliderMin) / 200 / 10) * 10);
@@ -74,8 +76,9 @@ export default function FilterSidebar({ filters, onFiltersChange, availableCitie
     onFiltersChange({ ...filters, ...partial });
 
   const commitPrice = (displayVal: number) => {
-    const usd = displayVal >= SLIDER_MAX ? NO_PRICE_LIMIT : Math.round(displayVal / rate);
-    update({ maxPrice: usd });
+    // display currency → USD → AED (DB native currency)
+    const aed = displayVal >= SLIDER_MAX ? NO_PRICE_LIMIT : Math.round((displayVal / rate) * AED_RATE);
+    update({ maxPrice: aed });
   };
 
   const hasActiveFilters =
