@@ -58,12 +58,12 @@ export default function HowItWorks() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <ScrollReveal className="text-center mb-12">
-          <span className="inline-block bg-brand-blue-light text-brand-blue text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-3">
+          <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-3" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #1E3A8A 100%)', color: '#fff' }}>
             {t['how.badge'].split('SelectedRoom').reduce<React.ReactNode[]>((acc, part, i, arr) => {
               acc.push(part);
               if (i < arr.length - 1) acc.push(
                 <span key={i} style={{ fontFamily: 'var(--font-montserrat, sans-serif)', letterSpacing: '0.08em' }}>
-                  <span style={{ color: '#1E3A8A' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
+                  <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
                 </span>
               );
               return acc;
