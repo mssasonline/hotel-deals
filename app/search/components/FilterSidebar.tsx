@@ -11,14 +11,16 @@ const SLIDER_MAX = 10000; // in selected currency
 export interface FilterState {
   maxPrice: number; // stored in USD
   minStars: number;
-  dealsOnly: boolean;
+  minGuestRating: number; // 0 = any, 4 = 4.0+, 4.5 = 4.5+
+  selectedAmenities: string[];
   selectedCities: string[];
 }
 
 export const DEFAULT_FILTERS: FilterState = {
   maxPrice: NO_PRICE_LIMIT,
   minStars: 0,
-  dealsOnly: false,
+  minGuestRating: 0,
+  selectedAmenities: [],
   selectedCities: [],
 };
 
@@ -79,7 +81,8 @@ export default function FilterSidebar({ filters, onFiltersChange, availableCitie
   const hasActiveFilters =
     filters.maxPrice < NO_PRICE_LIMIT ||
     filters.minStars > 0 ||
-    filters.dealsOnly ||
+    filters.minGuestRating > 0 ||
+    filters.selectedAmenities.length > 0 ||
     filters.selectedCities.length > 0;
 
   const filledPct = Math.max(0, Math.min(100, ((sliderPrice - sliderMin) / (SLIDER_MAX - sliderMin)) * 100));
@@ -122,20 +125,6 @@ export default function FilterSidebar({ filters, onFiltersChange, availableCitie
       </div>
 
       <div className="space-y-6">
-
-        {/* ── Deals Only toggle ─────────────────────────────── */}
-        <div className="flex items-center justify-between gap-3 bg-blue-50 rounded-xl px-4 py-3 border border-blue-100">
-          <div>
-            <h4 className="font-semibold text-brand-blue text-sm">{t['filter.dealsOnly']}</h4>
-            <p className="text-gray-500 text-xs mt-0.5">{t['filter.dealsOnlyDesc']}</p>
-          </div>
-          <Toggle
-            enabled={filters.dealsOnly}
-            onChange={v => update({ dealsOnly: v })}
-          />
-        </div>
-
-        <hr className="border-gray-100" />
 
         {/* ── Price per night ────────────────────────────────── */}
         <div>
@@ -207,6 +196,87 @@ export default function FilterSidebar({ filters, onFiltersChange, availableCitie
                 : `Showing ${filters.minStars}+ star hotels`}
             </p>
           )}
+        </div>
+
+        <hr className="border-gray-100" />
+
+        {/* ── Guest Rating ──────────────────────────────────── */}
+        <div>
+          <h4 className="font-semibold text-gray-800 text-sm mb-3">Guest Rating</h4>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: 0,   label: 'Any' },
+              { value: 4,   label: '4.0+' },
+              { value: 4.5, label: '4.5+' },
+            ].map(opt => {
+              const selected = filters.minGuestRating === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => update({ minGuestRating: selected && opt.value !== 0 ? 0 : opt.value })}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1 ${
+                    selected
+                      ? 'text-white border-transparent'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-brand-blue hover:text-brand-blue'
+                  }`}
+                  style={selected ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
+                >
+                  {opt.value > 0 && <span className={selected ? 'text-yellow-300' : 'text-brand-gold'}>★</span>}
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+          {filters.minGuestRating > 0 && (
+            <p className="text-xs text-gray-400 mt-2">
+              Showing hotels rated {filters.minGuestRating}+
+            </p>
+          )}
+        </div>
+
+        <hr className="border-gray-100" />
+
+        {/* ── Amenities ─────────────────────────────────────── */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-semibold text-gray-800 text-sm">Amenities</h4>
+            {filters.selectedAmenities.length > 0 && (
+              <button
+                type="button"
+                onClick={() => update({ selectedAmenities: [] })}
+                className="text-xs text-brand-blue hover:underline"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-y-2 gap-x-3">
+            {['WiFi', 'Pool', 'Parking', 'Restaurant', 'Gym', 'Spa'].map(amenity => {
+              const checked = filters.selectedAmenities.includes(amenity);
+              return (
+                <label key={amenity} className="flex items-center gap-2 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => {
+                      const next = checked
+                        ? filters.selectedAmenities.filter(a => a !== amenity)
+                        : [...filters.selectedAmenities, amenity];
+                      update({ selectedAmenities: next });
+                    }}
+                    className="w-4 h-4 rounded cursor-pointer shrink-0"
+                    style={{ accentColor: '#003B95' }}
+                  />
+                  <span className={`text-sm transition-colors ${
+                    checked ? 'text-brand-blue font-semibold' : 'text-gray-600 group-hover:text-gray-900'
+                  }`}>
+                    {amenity}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
         </div>
 
         {/* ── City filter ───────────────────────────────────── */}

@@ -123,7 +123,8 @@ export default function SearchResultsClient({
       const livePrice = h.basePrice > 0 ? calcLivePrice(h.basePrice, h.minPrice, tier) : 0;
       if (livePrice > filters.maxPrice) return false;
       if (Math.floor(h.stars) < filters.minStars) return false;
-      if (filters.dealsOnly && calcActualDiscount(h.basePrice, livePrice) === 0) return false;
+      if (filters.minGuestRating > 0 && h.rating < filters.minGuestRating) return false;
+      if (filters.selectedAmenities.length > 0 && !filters.selectedAmenities.every(a => h.amenities.includes(a))) return false;
       return true;
     });
   }, [nameFilteredHotels, filters]);
@@ -181,7 +182,8 @@ export default function SearchResultsClient({
   const activeFilterCount = [
     filters.maxPrice < 99999,
     filters.minStars > 0,
-    filters.dealsOnly,
+    filters.minGuestRating > 0,
+    filters.selectedAmenities.length > 0,
     filters.selectedCities.length > 0,
   ].filter(Boolean).length;
 
