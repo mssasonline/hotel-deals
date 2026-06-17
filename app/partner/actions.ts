@@ -57,6 +57,7 @@ export type HotelBooking = {
   payment_status: string;
   total_price: number;
   subtotal: number | null;
+  room_count: number | null;
   created_at: string;
   rooms: { id: string; name: string } | null;
   partner_amount: number | null;
@@ -120,7 +121,7 @@ export async function getHotelData(hotelId: string): Promise<HotelData> {
   const [bookingsRes, roomsRes, reviewsRes, imagesRes] = await Promise.all([
     admin
       .from('bookings')
-      .select('id, hotel_id, room_id, guest_name, guest_email, check_in, check_out, status, payment_status, total_price, subtotal, created_at, rooms(id, name), booking_revenue(partner_amount, admin_amount)')
+      .select('id, hotel_id, room_id, guest_name, guest_email, check_in, check_out, status, payment_status, total_price, subtotal, room_count, created_at, rooms(id, name), booking_revenue(partner_amount, admin_amount)')
       .eq('hotel_id', hotelId)
       .order('created_at', { ascending: false }),
     admin

@@ -21,6 +21,8 @@ type AnalyticsBooking = {
   status: string;
   payment_status: string;
   total_price: number;
+  subtotal: number | null;
+  room_count: number | null;
   created_at: string;
   rooms: { name: string } | null;
   partner_amount: number | null;
@@ -45,6 +47,17 @@ function monthLabel(ym: string): string {
   return new Date(y, m - 1).toLocaleString('default', { month: 'short' });
 }
 
+/** Whole nights between two ISO dates (minimum 1). */
+function nightsBetween(checkIn: string, checkOut: string): number {
+  const diff = Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86_400_000);
+  return diff > 0 ? diff : 1;
+}
+
+/** Signed day delta between two ISO dates (to - from). */
+function daysBetween(from: string, to: string): number {
+  return Math.round((new Date(to).getTime() - new Date(from).getTime()) / 86_400_000);
+}
+
 // ── Shared UI ─────────────────────────────────────────────────────────────────
 
 function Spinner() {
@@ -63,6 +76,8 @@ interface KPIProps {
   subtitle: string;
   icon: React.ReactNode;
   accent: 'blue' | 'gold' | 'green' | 'red' | 'purple';
+  /** Period-over-period change. `pct` null = not enough data to compare. */
+  trend?: { pct: number | null; goodWhenUp?: boolean };
 }
 
 const ACCENT: Record<string, { icon: string; border: string }> = {
@@ -73,16 +88,51 @@ const ACCENT: Record<string, { icon: string; border: string }> = {
   purple: { icon: 'bg-purple-50 text-purple-600',        border: 'border-purple-100'  },
 };
 
-function KPICard({ title, value, subtitle, icon, accent }: KPIProps) {
+function TrendChip({ pct, goodWhenUp = true }: { pct: number; goodWhenUp?: boolean }) {
+  const up = pct >= 0;
+  const positive = up === goodWhenUp;
+  return (
+    <span
+      title="vs. last month"
+      className={`inline-flex items-center gap-0.5 text-xs font-bold px-2 py-1 rounded-lg shrink-0 ${
+        positive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'
+      }`}
+    >
+      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
+          d={up ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'} />
+      </svg>
+      {Math.abs(pct).toFixed(0)}%
+    </span>
+  );
+}
+
+function KPICard({ title, value, subtitle, icon, accent, trend }: KPIProps) {
   const s = ACCENT[accent];
+  const showTrend = trend && trend.pct !== null && isFinite(trend.pct);
   return (
     <div className={`bg-white rounded-2xl border ${s.border} shadow-sm p-5`}>
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.icon} mb-4`}>
-        {icon}
+      <div className="flex items-start justify-between mb-4">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${s.icon}`}>
+          {icon}
+        </div>
+        {showTrend && <TrendChip pct={trend!.pct as number} goodWhenUp={trend!.goodWhenUp} />}
       </div>
       <p className="text-2xl font-bold text-gray-900 leading-none">{value}</p>
       <p className="text-sm font-medium text-gray-600 mt-1">{title}</p>
       <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
+    </div>
+  );
+}
+
+// ── Mini Stat (secondary operational metrics) ───────────────────────────────────
+
+function MiniStat({ label, value, hint }: { label: string; value: string; hint: string }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4">
+      <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{label}</p>
+      <p className="text-xl font-bold text-gray-900 mt-1.5 leading-none">{value}</p>
+      <p className="text-xs text-gray-400 mt-1.5">{hint}</p>
     </div>
   );
 }
@@ -358,42 +408,6 @@ function ReviewsAnalytics({ reviews }: { reviews: Review[] }) {
   );
 }
 
-// ── Occupancy Gauge ───────────────────────────────────────────────────────────
-
-function OccupancyGauge({ rate }: { rate: number }) {
-  const clamped = Math.min(Math.max(rate, 0), 100);
-  const R = 40;
-  const cx = 60, cy = 56;
-  const circumference = Math.PI * R;
-  const offset = circumference * (1 - clamped / 100);
-  const color = clamped >= 70 ? '#10b981' : clamped >= 40 ? '#D4A017' : '#ef4444';
-
-  return (
-    <svg viewBox="0 0 120 64" className="w-32 h-16">
-      <path
-        d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`}
-        fill="none"
-        stroke="#f1f5f9"
-        strokeWidth="10"
-        strokeLinecap="round"
-      />
-      <path
-        d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`}
-        fill="none"
-        stroke={color}
-        strokeWidth="10"
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        style={{ transition: 'stroke-dashoffset 0.6s ease' }}
-      />
-      <text x={cx} y={cy - 10} textAnchor="middle" fontSize="16" fontWeight="700" fill={color}>
-        {clamped.toFixed(0)}%
-      </text>
-    </svg>
-  );
-}
-
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function AnalyticsPage() {
@@ -486,18 +500,54 @@ export default function AnalyticsPage() {
   );
   const occupancyRate = rooms.length > 0 ? (occupiedRoomIds.size / rooms.length) * 100 : 0;
 
+  // ── Operational hotel metrics ──────────────────────────────────────────────
+  const paidBookings = bookings.filter(b => b.payment_status === 'paid');
+  const realizedBookings = paidBookings.filter(b => b.status !== 'cancelled');
+
+  // Pre-tax room revenue (falls back to total when subtotal is missing on old rows)
+  const roomRevenueOf = (b: AnalyticsBooking) => b.subtotal ?? b.total_price ?? 0;
+  const roomNightsOf  = (b: AnalyticsBooking) => nightsBetween(b.check_in, b.check_out) * (b.room_count ?? 1);
+
+  const soldRoomNights = realizedBookings.reduce((s, b) => s + roomNightsOf(b), 0);
+  const adr = soldRoomNights > 0
+    ? realizedBookings.reduce((s, b) => s + roomRevenueOf(b), 0) / soldRoomNights
+    : 0;
+
+  // Average booking value = partner share per paid booking
+  const avgBookingValue = paidBookings.length > 0 ? totalRevenue / paidBookings.length : 0;
+
+  const nonCancelled = bookings.filter(b => b.status !== 'cancelled');
+  const avgLengthOfStay = nonCancelled.length > 0
+    ? nonCancelled.reduce((s, b) => s + nightsBetween(b.check_in, b.check_out), 0) / nonCancelled.length
+    : 0;
+
+  const leadTimes = nonCancelled
+    .map(b => daysBetween(b.created_at.slice(0, 10), b.check_in))
+    .filter(d => d >= 0);
+  const avgLeadTime = leadTimes.length > 0
+    ? leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length
+    : 0;
+
   // ── Chart data (last 6 months) ─────────────────────────────────────────────
   const months = getLastNMonths(6);
 
+  // Net partner share per month — matches the headline Partner Share KPI
   const revenueByMonth = months.map(ym =>
     bookings
       .filter(b => b.payment_status === 'paid' && b.created_at?.startsWith(ym))
-      .reduce((s, b) => s + (b.total_price ?? 0), 0)
+      .reduce((s, b) => s + (b.partner_amount ?? 0), 0)
   );
 
   const bookingsByMonth = months.map(ym =>
     bookings.filter(b => b.created_at?.startsWith(ym)).length
   );
+
+  // Month-over-month change for headline KPIs (last full vs previous month)
+  const pctChange = (cur: number, prev: number): number | null =>
+    prev > 0 ? ((cur - prev) / prev) * 100 : null;
+  const last = revenueByMonth.length - 1;
+  const revenueTrend  = pctChange(revenueByMonth[last],  revenueByMonth[last - 1] ?? 0);
+  const bookingsTrend = pctChange(bookingsByMonth[last], bookingsByMonth[last - 1] ?? 0);
 
   const selectedHotel = hotels.find(h => h.id === selectedId);
 
@@ -588,6 +638,7 @@ export default function AnalyticsPage() {
               value={fmt(totalRevenue)}
               subtitle={`${t['partner.dash.totalRevBox']}: ${fmt(grossRevenue)}`}
               accent="green"
+              trend={{ pct: revenueTrend }}
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -599,6 +650,7 @@ export default function AnalyticsPage() {
               value={totalBookings.toLocaleString()}
               subtitle="All-time reservations"
               accent="blue"
+              trend={{ pct: bookingsTrend }}
               icon={
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -640,13 +692,37 @@ export default function AnalyticsPage() {
             />
           </div>
 
+          {/* ── Operational metrics strip ────────────────────────────────────── */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <MiniStat
+              label="Avg Daily Rate"
+              value={fmt(adr)}
+              hint="Room revenue per night sold"
+            />
+            <MiniStat
+              label="Avg Booking Value"
+              value={fmt(avgBookingValue)}
+              hint="Your share per paid booking"
+            />
+            <MiniStat
+              label="Avg Length of Stay"
+              value={`${avgLengthOfStay.toFixed(1)} ${avgLengthOfStay === 1 ? 'night' : 'nights'}`}
+              hint="Nights per reservation"
+            />
+            <MiniStat
+              label="Booking Lead Time"
+              value={`${avgLeadTime.toFixed(0)} ${avgLeadTime === 1 ? 'day' : 'days'}`}
+              hint="Booked ahead of arrival"
+            />
+          </div>
+
           {/* ── Charts Row ───────────────────────────────────────────────────── */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
             {/* Revenue over time */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
                 <h2 className="font-semibold text-gray-900">Revenue Over Time</h2>
-                <p className="text-xs text-gray-400 mt-0.5">Monthly paid booking revenue · last 6 months</p>
+                <p className="text-xs text-gray-400 mt-0.5">Monthly partner share · last 6 months</p>
               </div>
               <div className="px-4 py-4">
                 <RevenueLineChart data={revenueByMonth} months={months} fmt={fmt} />
@@ -706,15 +782,6 @@ export default function AnalyticsPage() {
               </div>
               <div className="px-6 py-5">
                 <ReviewsAnalytics reviews={reviews} />
-                {reviews.length > 0 && (
-                  <div className="mt-4 flex items-center justify-center">
-                    <OccupancyGauge rate={occupancyRate} />
-                    <div className="ml-3">
-                      <p className="text-xs font-semibold text-gray-500">Occupancy Today</p>
-                      <p className="text-xs text-gray-400">{occupiedRoomIds.size} active · {rooms.length} total rooms</p>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
