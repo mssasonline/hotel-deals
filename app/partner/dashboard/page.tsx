@@ -147,8 +147,17 @@ export default function DashboardPage() {
   }, [selectedId, fetchHotelData]);
 
   // ── Metrics ───────────────────────────────────────────────────────────────
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
   const totalBookings  = bookings.length;
-  const activeBookings = bookings.filter(b => !['completed', 'cancelled'].includes(b.status)).length;
+  // Active = non-cancelled, non-completed, AND check_out is today or future
+  const activeBookings = bookings.filter(b =>
+    !['completed', 'cancelled'].includes(b.status) && b.check_out >= today
+  ).length;
+  // Upcoming bookings shown in dashboard table: active ones sorted soonest first
+  const upcomingBookings = bookings
+    .filter(b => !['completed', 'cancelled'].includes(b.status) && b.check_out >= today)
+    .sort((a, b) => a.check_in.localeCompare(b.check_in))
+    .slice(0, 8);
   const paidBookings   = bookings.filter(b => b.payment_status === 'paid');
   // grossRevenue = total guest paid (room + taxes)
   const grossRevenue   = paidBookings.reduce((sum, b) => sum + (b.total_price ?? 0), 0);
@@ -396,7 +405,7 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {bookings.slice(0, 8).map(b => (
+                  {upcomingBookings.map(b => (
                     <tr key={b.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-3.5 font-mono text-xs text-gray-500 font-semibold">
                         {String(b.id).slice(0, 8)}&hellip;
