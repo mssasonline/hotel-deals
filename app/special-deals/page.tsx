@@ -13,6 +13,7 @@ export type SpecialDealHotel = {
   imageUrl: string | null;
   rating: number;
   stars: number;
+  amenities: string[];
   bestDealPrice: number;
   bestBasePrice: number;
   discountPct: number;
@@ -35,7 +36,7 @@ async function fetchSpecialDeals(): Promise<SpecialDealHotel[]> {
 
   const { data, error } = await supabase
     .from('partner_deals')
-    .select('id, deal_price, title, start_date, end_date, rooms(name, base_price), hotels(id, name, city, country, rating, star_rating, hotel_images(image_url, sort_order))')
+    .select('id, deal_price, title, start_date, end_date, rooms(name, base_price), hotels(id, name, city, country, rating, star_rating, amenities, hotel_images(image_url, sort_order))')
     .eq('status', 'active')
     .gte('end_date', today)
     .order('start_date', { ascending: true });
@@ -92,6 +93,7 @@ async function fetchSpecialDeals(): Promise<SpecialDealHotel[]> {
         imageUrl,
         rating:        Number(hotel.rating ?? 0),
         stars:         Number(hotel.star_rating ?? 0),
+        amenities:     Array.isArray(hotel.amenities) ? (hotel.amenities as unknown[]).map(String) : [],
         bestDealPrice: dealPrice,
         bestBasePrice: basePrice,
         discountPct:   basePrice > 0 ? Math.round((1 - dealPrice / basePrice) * 100) : 0,
