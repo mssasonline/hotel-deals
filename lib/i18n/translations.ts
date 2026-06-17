@@ -7,7 +7,7 @@ const en = {
   'nav.search': 'Search',
   'nav.hotels': 'Hotels',
   'nav.lastMinute': "Tonight's Deals",
-  'nav.specialDeals': 'Partner Deals',
+  'nav.specialDeals': 'Exclusive Hotel Offers',
   'nav.myTrips': 'My Trips',
   'nav.favorites': 'Favorites',
   'nav.myBookings': 'My Bookings',
