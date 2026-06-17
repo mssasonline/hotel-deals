@@ -5,6 +5,7 @@ interface DashboardCardProps {
   trend?: { value: string; positive: boolean };
   icon: React.ReactNode;
   accent?: 'blue' | 'gold' | 'green' | 'red';
+  onClick?: () => void;
 }
 
 const ACCENT_STYLES = {
@@ -42,12 +43,13 @@ const ACCENT_STYLES = {
   },
 };
 
-export default function DashboardCard({ title, value, subtitle, trend, icon, accent = 'blue' }: DashboardCardProps) {
+export default function DashboardCard({ title, value, subtitle, trend, icon, accent = 'blue', onClick }: DashboardCardProps) {
   const styles = ACCENT_STYLES[accent];
 
   return (
     <div
-      className="relative bg-white rounded-2xl p-5 overflow-hidden cursor-default group transition-all duration-300 hover:-translate-y-1"
+      onClick={onClick}
+      className={`relative bg-white rounded-2xl p-5 overflow-hidden group transition-all duration-300 hover:-translate-y-1 ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
       style={{
         border: `1px solid ${styles.border}`,
         boxShadow: `0 2px 8px ${styles.glow}, 0 1px 3px rgba(0,0,0,0.04)`,
