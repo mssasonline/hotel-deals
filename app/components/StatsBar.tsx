@@ -21,7 +21,7 @@ const STAT_ICONS = [
   </svg>,
 ];
 
-const STAT_VALUES = ['200+', '50', '4.9★', '50K+'];
+const STAT_VALUES = ['200+', '10', '4.9★', '50K+'];
 
 export default function StatsBar() {
   const language = useAppSettingsStore((s) => s.language);
