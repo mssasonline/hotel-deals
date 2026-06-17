@@ -215,13 +215,15 @@ export default function HeroSection() {
             <span className="text-white/45 text-xs font-medium mr-1">Popular:</span>
             {(
               [
-                { query: 'Dubai',    labelKey: 'hero.cityDubai'    },
-                { query: 'Paris',    labelKey: 'hero.cityParis'    },
-                { query: 'London',   labelKey: 'hero.cityLondon'   },
-                { query: 'New York', labelKey: 'hero.cityNewYork'  },
-                { query: 'Maldives', labelKey: 'hero.cityMaldives' },
+                { query: 'Dubai',          label: 'Dubai'          },
+                { query: 'Abu Dhabi',      label: 'Abu Dhabi'      },
+                { query: 'Sharjah',        label: 'Sharjah'        },
+                { query: 'Ajman',          label: 'Ajman'          },
+                { query: 'Umm Al Quwain',  label: 'Umm Al Quwain'  },
+                { query: 'Ras Al Khaimah', label: 'Ras Al Khaimah' },
+                { query: 'Fujairah',       label: 'Fujairah'       },
               ] as const
-            ).map(({ query, labelKey }) => (
+            ).map(({ query, label }) => (
               <a
                 key={query}
                 href={`/search?city=${encodeURIComponent(query)}&checkin=${localDateISO()}&checkout=${localTomorrowISO()}&guests=2`}
@@ -230,7 +232,7 @@ export default function HeroSection() {
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.18)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.35)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.18)'; }}
               >
-                {t[labelKey]}
+                {label}
               </a>
             ))}
           </div>
