@@ -73,7 +73,7 @@ export default function WhyChooseUs() {
         {/* Header */}
         <ScrollReveal className="text-center mb-14">
           <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] mb-3 px-4 py-1.5 rounded-full" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #1E3A8A 100%)', color: '#fff' }}>
-            Why{' '}
+            <span className="normal-case">Why</span>{' '}
             <span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', letterSpacing: '0.08em' }}>
               <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
             </span>
