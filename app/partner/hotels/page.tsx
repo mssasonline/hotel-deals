@@ -18,25 +18,27 @@ import {
 // ── Hotel amenity options ─────────────────────────────────────────────────────
 
 const HOTEL_AMENITIES = [
-  { key: 'pool',           label: 'Swimming Pool',    icon: '🏊' },
-  { key: 'gym',            label: 'Gym / Fitness',    icon: '🏋️' },
-  { key: 'spa',            label: 'Spa & Wellness',   icon: '💆' },
-  { key: 'restaurant',     label: 'Restaurant',       icon: '🍽️' },
-  { key: 'free_parking',   label: 'Free Parking',     icon: '🅿️' },
-  { key: 'paid_parking',   label: 'Paid Parking',     icon: '🏷️' },
-  { key: 'airport_shuttle',label: 'Airport Shuttle',  icon: '🚌' },
-  { key: 'business_center',label: 'Business Center',  icon: '💼' },
-  { key: 'conference',     label: 'Conference Room',  icon: '🏛️' },
-  { key: 'free_wifi',      label: 'Free Wi-Fi',       icon: '📶' },
-  { key: 'room_service',   label: 'Room Service',     icon: '🛎️' },
-  { key: 'pet_friendly',   label: 'Pet Friendly',     icon: '🐾' },
-  { key: 'kids_club',      label: 'Kids Club',        icon: '🧒' },
-  { key: 'beach_access',   label: 'Beach Access',     icon: '🏖️' },
-  { key: 'golf',           label: 'Golf Course',      icon: '⛳' },
-  { key: 'bar_lounge',     label: 'Bar & Lounge',     icon: '🍸' },
-  { key: 'rooftop',        label: 'Rooftop',          icon: '🌆' },
-  { key: 'valet_parking',  label: 'Valet Parking',    icon: '🚗' },
-  { key: 'casino',         label: 'Casino',           icon: '🎰' },
+  // ── Facilities ──────────────────────────────────────
+  { key: 'pool',           label: 'Swimming Pool',    icon: '🏊', group: 'facilities' },
+  { key: 'gym',            label: 'Gym / Fitness',    icon: '🏋️', group: 'facilities' },
+  { key: 'spa',            label: 'Spa & Wellness',   icon: '💆', group: 'facilities' },
+  { key: 'beach_access',   label: 'Beach Access',     icon: '🏖️', group: 'facilities' },
+  { key: 'golf',           label: 'Golf Course',      icon: '⛳', group: 'facilities' },
+  { key: 'rooftop',        label: 'Rooftop',          icon: '🌆', group: 'facilities' },
+  { key: 'bar_lounge',     label: 'Bar & Lounge',     icon: '🍸', group: 'facilities' },
+  { key: 'casino',         label: 'Casino',           icon: '🎰', group: 'facilities' },
+  { key: 'conference',     label: 'Conference Room',  icon: '🏛️', group: 'facilities' },
+  { key: 'business_center',label: 'Business Center',  icon: '💼', group: 'facilities' },
+  { key: 'kids_club',      label: 'Kids Club',        icon: '🧒', group: 'facilities' },
+  // ── Services ─────────────────────────────────────────
+  { key: 'restaurant',     label: 'Restaurant',       icon: '🍽️', group: 'services' },
+  { key: 'room_service',   label: 'Room Service',     icon: '🛎️', group: 'services' },
+  { key: 'free_wifi',      label: 'Free Wi-Fi',       icon: '📶', group: 'services' },
+  { key: 'free_parking',   label: 'Free Parking',     icon: '🅿️', group: 'services' },
+  { key: 'paid_parking',   label: 'Paid Parking',     icon: '🏷️', group: 'services' },
+  { key: 'valet_parking',  label: 'Valet Parking',    icon: '🚗', group: 'services' },
+  { key: 'airport_shuttle',label: 'Airport Shuttle',  icon: '🚌', group: 'services' },
+  { key: 'pet_friendly',   label: 'Pet Friendly',     icon: '🐾', group: 'services' },
 ] as const;
 
 type Tab = 'details' | 'images' | 'amenities' | 'location';
@@ -143,29 +145,43 @@ function AmenityPicker({
     onChange(selected.filter(k => k !== key));
   }
 
+  const facilities = HOTEL_AMENITIES.filter(a => a.group === 'facilities');
+  const services   = HOTEL_AMENITIES.filter(a => a.group === 'services');
+
+  function renderChips(list: typeof facilities | typeof services) {
+    return list.map(a => {
+      const on = selected.includes(a.key);
+      return (
+        <button
+          key={a.key}
+          type="button"
+          onClick={() => toggle(a.key)}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+            on
+              ? 'text-white border-transparent shadow-sm'
+              : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-brand-blue hover:text-brand-blue'
+          }`}
+          style={on ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
+        >
+          <span>{a.icon}</span>
+          <span>{a.label}</span>
+        </button>
+      );
+    });
+  }
+
   return (
     <div className="space-y-4">
-      {/* Predefined amenity chips */}
-      <div className="flex flex-wrap gap-2">
-        {HOTEL_AMENITIES.map(a => {
-          const on = selected.includes(a.key);
-          return (
-            <button
-              key={a.key}
-              type="button"
-              onClick={() => toggle(a.key)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                on
-                  ? 'text-white border-transparent shadow-sm'
-                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-brand-blue hover:text-brand-blue'
-              }`}
-              style={on ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
-            >
-              <span>{a.icon}</span>
-              <span>{a.label}</span>
-            </button>
-          );
-        })}
+      {/* Facilities */}
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Facilities</p>
+        <div className="flex flex-wrap gap-2">{renderChips(facilities)}</div>
+      </div>
+
+      {/* Services */}
+      <div>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Services</p>
+        <div className="flex flex-wrap gap-2">{renderChips(services)}</div>
       </div>
 
       {/* Custom amenities */}
