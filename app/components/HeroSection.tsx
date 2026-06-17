@@ -140,9 +140,15 @@ export default function HeroSection() {
 
           <p
             className={`text-base sm:text-lg lg:text-xl mb-9 max-w-2xl mx-auto leading-relaxed transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
-            style={{ color: 'rgba(255,255,255,0.78)', transitionDelay: mounted ? '180ms' : '0ms', fontWeight: 400, letterSpacing: '0.01em' }}
+            style={{ color: 'rgba(255,255,255,0.78)', transitionDelay: mounted ? '180ms' : '0ms', fontWeight: 400, letterSpacing: '0.01em', fontFamily: 'var(--font-montserrat, sans-serif)' }}
           >
-            {t['hero.heroSubtitle']}
+            {t['hero.heroSubtitle'].split('SelectedRoom').reduce<React.ReactNode[]>((acc, part, i, arr) => {
+              acc.push(part);
+              if (i < arr.length - 1) acc.push(
+                <span key={i} className="font-semibold" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}><span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span></span>
+              );
+              return acc;
+            }, [])}
           </p>
 
           {/* ── Premium search bar ── */}
