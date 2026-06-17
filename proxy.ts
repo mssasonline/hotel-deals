@@ -35,11 +35,10 @@ export async function proxy(request: NextRequest) {
 
   const isAdminRoute   = pathname.startsWith('/admin');
   const isPartnerRoute = pathname.startsWith('/partner');
-  const isRootPage     = pathname === '/';
 
   // Role is cached in a short-lived cookie to avoid a DB query on every request.
   let role: string | null = null;
-  if (user && (isAdminRoute || isPartnerRoute || isRootPage)) {
+  if (user && (isAdminRoute || isPartnerRoute)) {
     const cachedRole = request.cookies.get('x-role-cache')?.value ?? null;
     if (cachedRole) {
       role = cachedRole;
@@ -60,12 +59,6 @@ export async function proxy(request: NextRequest) {
   // Clear stale role cache when there is no session
   if (!user) {
     response.cookies.delete('x-role-cache');
-  }
-
-  // Partners and admins visiting the homepage → send straight to their portal
-  if (isRootPage && user && (role === 'partner' || role === 'admin')) {
-    const dest = role === 'admin' ? '/admin' : '/partner/dashboard';
-    return NextResponse.redirect(new URL(dest, request.url));
   }
 
   // Server Actions are POST requests with a Next-Action header.
