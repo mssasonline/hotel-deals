@@ -223,8 +223,10 @@ export default function SharedSidebar({ variant }: Props) {
               {cfg.logo}
             </div>
             <div className="leading-none min-w-0">
-              <span className="text-white font-bold text-sm tracking-tight block truncate" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)' }}>SelectedRoom</span>
-              <span className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: '#D97706' }}>{cfg.subtitle}</span>
+              <span className="font-bold block truncate" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '14px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
+              </span>
+              <span className="text-[10px] font-semibold tracking-widest uppercase block mt-0.5" style={{ color: '#D97706' }}>{cfg.subtitle}</span>
             </div>
           </Link>
         ) : (

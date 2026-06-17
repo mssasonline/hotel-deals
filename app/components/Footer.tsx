@@ -84,11 +84,11 @@ export default function Footer() {
                   <polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <div>
-                <span className="text-white font-bold text-lg tracking-tight block" style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
-                  SelectedRoom
+              <div className="leading-none">
+                <span className="font-bold block" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '18px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
                 </span>
-                <span className="text-[10px] font-semibold tracking-[0.18em] uppercase" style={{ color: '#FCD34D' }}>Premium Hotels</span>
+                <span className="text-[10px] font-semibold uppercase block mt-0.5" style={{ color: '#FCD34D', letterSpacing: '0.22em' }}>Premium Hotels</span>
               </div>
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-4 max-w-[220px]">
