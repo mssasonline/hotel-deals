@@ -252,17 +252,24 @@ export default function FilterSidebar({ filters, onFiltersChange, availableCitie
             )}
           </div>
           <div className="grid grid-cols-2 gap-y-2 gap-x-3">
-            {['WiFi', 'Pool', 'Parking', 'Restaurant', 'Gym', 'Spa'].map(amenity => {
-              const checked = filters.selectedAmenities.includes(amenity);
+            {[
+              { key: 'free_wifi',    label: 'Free Wi-Fi'  },
+              { key: 'pool',         label: 'Pool'         },
+              { key: 'free_parking', label: 'Parking'      },
+              { key: 'restaurant',   label: 'Restaurant'   },
+              { key: 'gym',          label: 'Gym'          },
+              { key: 'spa',          label: 'Spa'          },
+            ].map(({ key, label }) => {
+              const checked = filters.selectedAmenities.includes(key);
               return (
-                <label key={amenity} className="flex items-center gap-2 cursor-pointer group">
+                <label key={key} className="flex items-center gap-2 cursor-pointer group">
                   <input
                     type="checkbox"
                     checked={checked}
                     onChange={() => {
                       const next = checked
-                        ? filters.selectedAmenities.filter(a => a !== amenity)
-                        : [...filters.selectedAmenities, amenity];
+                        ? filters.selectedAmenities.filter(a => a !== key)
+                        : [...filters.selectedAmenities, key];
                       update({ selectedAmenities: next });
                     }}
                     className="w-4 h-4 rounded cursor-pointer shrink-0"
@@ -271,7 +278,7 @@ export default function FilterSidebar({ filters, onFiltersChange, availableCitie
                   <span className={`text-sm transition-colors ${
                     checked ? 'text-brand-blue font-semibold' : 'text-gray-600 group-hover:text-gray-900'
                   }`}>
-                    {amenity}
+                    {label}
                   </span>
                 </label>
               );
