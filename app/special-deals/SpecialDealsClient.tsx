@@ -152,7 +152,6 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
   const [query,    setQuery]    = useState(initialQuery);
   const [checkIn,  setCheckIn]  = useState('');
   const [checkOut, setCheckOut] = useState('');
-  const [guests,   setGuests]   = useState(1);
   const [filters, setFilters]   = useState<FilterState>(DEFAULT_FILTERS);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
@@ -272,29 +271,6 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
                 />
               </div>
             </label>
-
-            {/* Guests */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b sm:border-b-0 sm:border-r border-gray-100">
-              <svg className="w-4 h-4 text-brand-blue shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] text-gray-400 uppercase tracking-wide leading-none mb-1">Guests</span>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setGuests(g => Math.max(1, g - 1))}
-                    className="w-5 h-5 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:border-brand-blue hover:text-brand-blue transition-colors text-xs font-bold leading-none"
-                  >−</button>
-                  <span className="text-sm font-semibold text-gray-800 w-4 text-center">{guests}</span>
-                  <button
-                    type="button"
-                    onClick={() => setGuests(g => Math.min(8, g + 1))}
-                    className="w-5 h-5 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:border-brand-blue hover:text-brand-blue transition-colors text-xs font-bold leading-none"
-                  >+</button>
-                </div>
-              </div>
-            </div>
 
             {/* Clear dates */}
             {hasDateFilter && (
