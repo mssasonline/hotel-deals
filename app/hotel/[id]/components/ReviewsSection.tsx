@@ -1,132 +1,200 @@
 'use client';
 
-import { useTranslation } from '@/lib/i18n/useTranslation';
+import { useState, useEffect, useCallback } from 'react';
 
-interface Review {
+export interface ReviewItem {
   id: string;
-  booking_id: string | null;
-  hotel_id: number;
-  user_id: string;
   rating: number;
   comment: string | null;
   created_at: string;
+  guest_name: string;
 }
 
-function ReviewStars({ count }: { count: number }) {
-  const clamped = Math.min(Math.max(Math.round(count), 0), 5);
+function StarRow({ rating }: { rating: number }) {
   return (
     <div className="flex items-center gap-0.5">
       {Array.from({ length: 5 }).map((_, i) => (
-        <svg
-          key={i}
-          className={`w-4 h-4 fill-current ${i < clamped ? 'text-brand-gold' : 'text-gray-200'}`}
-          viewBox="0 0 24 24"
-        >
+        <svg key={i} className={`w-4 h-4 fill-current ${i < rating ? 'text-brand-gold' : 'text-gray-200'}`} viewBox="0 0 24 24">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
         </svg>
       ))}
+      <span className="ml-1.5 text-xs font-semibold text-gray-700">{rating}.0</span>
     </div>
   );
 }
 
-function ReviewerAvatar({ userId }: { userId: string }) {
-  const initials = userId.replace(/-/g, '').slice(0, 2).toUpperCase();
-  const hue = userId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
+function ReviewCard({ review }: { review: ReviewItem }) {
   return (
-    <div
-      className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-      style={{ backgroundColor: `hsl(${hue}, 50%, 45%)` }}
-      aria-hidden="true"
-    >
-      {initials}
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-2">
+        <StarRow rating={review.rating} />
+        <span className="text-xs text-gray-400 shrink-0">
+          {new Date(review.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+        </span>
+      </div>
+      {review.comment && (
+        <p className="text-gray-600 text-sm leading-relaxed">{review.comment}</p>
+      )}
+      <div className="flex items-center gap-2 mt-auto pt-2 border-t border-gray-50">
+        <div className="w-7 h-7 rounded-full bg-brand-blue/10 flex items-center justify-center shrink-0">
+          <span className="text-xs font-bold text-brand-blue">
+            {review.guest_name.charAt(0).toUpperCase()}
+          </span>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-gray-700">{review.guest_name}</p>
+          <p className="text-xs text-gray-400">Verified Stay</p>
+        </div>
+      </div>
     </div>
   );
 }
 
-function getRatingLabel(r: number, t: Record<string, string>): string {
-  if (r >= 4.8) return t['hotel.ratingExceptional'];
-  if (r >= 4.5) return t['hotel.ratingSuperb'];
-  if (r >= 4.0) return t['hotel.ratingVeryGood'];
-  return t['hotel.ratingGood'];
+function ReviewListItem({ review }: { review: ReviewItem }) {
+  return (
+    <div className="pb-5 mb-5 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <StarRow rating={review.rating} />
+        <span className="text-xs text-gray-400 shrink-0">
+          {new Date(review.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+        </span>
+      </div>
+      {review.comment && (
+        <p className="text-gray-600 text-sm leading-relaxed mb-3">{review.comment}</p>
+      )}
+      <div className="flex items-center gap-2">
+        <div className="w-7 h-7 rounded-full bg-brand-blue/10 flex items-center justify-center shrink-0">
+          <span className="text-xs font-bold text-brand-blue">
+            {review.guest_name.charAt(0).toUpperCase()}
+          </span>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-gray-700">{review.guest_name}</p>
+          <p className="text-xs text-gray-400">Verified Stay</p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 interface ReviewsSectionProps {
-  reviews: Review[];
-  error: string | null;
-  hotelRating: number;
-  hotelReviewCount: number;
+  reviews: ReviewItem[];
+  avgRating: number | null;
 }
 
-export default function ReviewsSection({
-  reviews,
-  error,
-  hotelRating,
-  hotelReviewCount,
-}: ReviewsSectionProps) {
-  const t = useTranslation();
+export default function ReviewsSection({ reviews, avgRating }: ReviewsSectionProps) {
+  const [open, setOpen] = useState(false);
 
-  if (error) {
-    return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <p className="text-gray-500 text-sm">{t['hotel.unableToLoadReviews']}</p>
-      </div>
-    );
-  }
+  const close = useCallback(() => setOpen(false), []);
 
-  if (hotelReviewCount === 0 && reviews.length === 0) {
-    return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <p className="text-gray-500 text-sm">{t['hotel.noReviewsYet']}</p>
-      </div>
-    );
-  }
+  // Close on Escape key
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [open, close]);
 
-  const displayRating = hotelRating > 0 ? hotelRating : reviews.reduce((s, r) => s + r.rating, 0) / (reviews.length || 1);
-  const displayCount = hotelReviewCount > 0 ? hotelReviewCount : reviews.length;
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  const preview = reviews.slice(0, 3);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-      <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
-        <div className="text-white font-extrabold text-3xl px-4 py-2 rounded-2xl leading-none" style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
-          {displayRating.toFixed(1)}
+    <section className="mt-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <h2 className="font-bold text-gray-900 text-xl sm:text-2xl">Guest Reviews</h2>
+          {avgRating !== null && (
+            <div className="flex items-center gap-1.5 bg-brand-gold/10 border border-brand-gold/20 px-3 py-1 rounded-full">
+              <svg className="w-4 h-4 text-brand-gold fill-current" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              <span className="font-bold text-sm text-gray-800">{avgRating.toFixed(1)}</span>
+              <span className="text-xs text-gray-500">({reviews.length})</span>
+            </div>
+          )}
         </div>
-        <div>
-          <div className="font-bold text-gray-900 text-lg">{getRatingLabel(displayRating, t)}</div>
-          <div className="text-gray-500 text-sm">
-            {displayCount.toLocaleString()} {displayCount === 1 ? t['hotel.review'] : t['hotel.reviews']}
-          </div>
-        </div>
+        {reviews.length > 3 && (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="flex items-center gap-1.5 text-sm font-semibold text-brand-blue hover:underline cursor-pointer"
+          >
+            More Reviews
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
       </div>
 
-      {reviews.length > 0 ? (
-        <div className="space-y-6">
-          {reviews.map((review) => (
-            <div key={review.id} className="border-b border-gray-50 last:border-0 pb-6 last:pb-0">
-              <div className="flex items-start gap-3 mb-3">
-                <ReviewerAvatar userId={review.user_id} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="text-sm font-semibold text-gray-800">{t['hotel.verifiedGuest']}</span>
-                    <time className="text-gray-400 text-xs shrink-0">
-                      {new Date(review.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </time>
-                  </div>
-                  <ReviewStars count={review.rating} />
-                </div>
-              </div>
-              {review.comment && (
-                <p className="text-gray-600 text-sm leading-relaxed pl-12">{review.comment}</p>
-              )}
-            </div>
-          ))}
+      {/* Preview: 3 cards */}
+      {reviews.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+          <svg className="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          <p className="text-gray-400 text-sm">No reviews yet — be the first to stay and share your experience.</p>
         </div>
       ) : (
-        <p className="text-gray-400 text-sm">{t['hotel.reviewDetailsUnavailable']}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {preview.map(review => (
+            <ReviewCard key={review.id} review={review} />
+          ))}
+        </div>
       )}
-    </div>
+
+      {/* Modal — all reviews */}
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.55)' }}
+          onClick={close}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[80vh] flex flex-col overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+              <div className="flex items-center gap-3">
+                <h3 className="font-bold text-gray-900 text-lg">All Reviews</h3>
+                {avgRating !== null && (
+                  <div className="flex items-center gap-1 bg-brand-gold/10 px-2.5 py-0.5 rounded-full">
+                    <svg className="w-3.5 h-3.5 text-brand-gold fill-current" viewBox="0 0 24 24">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                    <span className="font-bold text-sm text-gray-800">{avgRating.toFixed(1)}</span>
+                    <span className="text-xs text-gray-500">· {reviews.length} reviews</span>
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={close}
+                aria-label="Close reviews"
+                className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Scrollable list */}
+            <div className="overflow-y-auto p-6">
+              {reviews.map(review => (
+                <ReviewListItem key={review.id} review={review} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

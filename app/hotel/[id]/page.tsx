@@ -12,6 +12,7 @@ import HotelAmenities from './components/HotelAmenities';
 import HotelTierBanner from './components/HotelTierBanner';
 import FavoriteButton from '@/app/components/FavoriteButton';
 import PartnerDealsSection, { type PartnerDeal } from './components/PartnerDealsSection';
+import ReviewsSection from './components/ReviewsSection';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -432,71 +433,7 @@ export default async function HotelPage({ params }: Props) {
             )}
 
             {/* Guest Reviews */}
-            <section className="mt-8">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <h2 className="font-bold text-gray-900 text-xl sm:text-2xl">Guest Reviews</h2>
-                  {avgReviewRating !== null && (
-                    <div className="flex items-center gap-1.5 bg-brand-gold/10 border border-brand-gold/20 px-3 py-1 rounded-full">
-                      <svg className="w-4 h-4 text-brand-gold fill-current" viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                      </svg>
-                      <span className="font-bold text-sm text-gray-800">{avgReviewRating.toFixed(1)}</span>
-                      <span className="text-xs text-gray-500">({reviews.length})</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {reviews.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
-                  <svg className="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                  <p className="text-gray-400 text-sm">No reviews yet — be the first to stay and share your experience.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {reviews.map(review => (
-                    <div key={review.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
-                      {/* Top: stars + date */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <svg key={i} className={`w-4 h-4 fill-current ${i < review.rating ? 'text-brand-gold' : 'text-gray-200'}`} viewBox="0 0 24 24">
-                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                            </svg>
-                          ))}
-                          <span className="ml-1.5 text-xs font-semibold text-gray-700">{review.rating}.0</span>
-                        </div>
-                        <span className="text-xs text-gray-400 shrink-0">
-                          {new Date(review.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                        </span>
-                      </div>
-
-                      {/* Comment */}
-                      {review.comment && (
-                        <p className="text-gray-600 text-sm leading-relaxed">{review.comment}</p>
-                      )}
-
-                      {/* Footer: guest name */}
-                      <div className="flex items-center gap-2 mt-auto pt-2 border-t border-gray-50">
-                        <div className="w-7 h-7 rounded-full bg-brand-blue/10 flex items-center justify-center shrink-0">
-                          <span className="text-xs font-bold text-brand-blue">
-                            {review.guest_name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-gray-700">{review.guest_name}</p>
-                          <p className="text-xs text-gray-400">Verified Stay</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
+            <ReviewsSection reviews={reviews} avgRating={avgReviewRating} />
 
           </div>
 
