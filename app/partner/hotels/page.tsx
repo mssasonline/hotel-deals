@@ -23,6 +23,7 @@ const HOTEL_AMENITIES = [
   { key: 'spa',            label: 'Spa & Wellness',   icon: '💆' },
   { key: 'restaurant',     label: 'Restaurant',       icon: '🍽️' },
   { key: 'free_parking',   label: 'Free Parking',     icon: '🅿️' },
+  { key: 'paid_parking',   label: 'Paid Parking',     icon: '🏷️' },
   { key: 'airport_shuttle',label: 'Airport Shuttle',  icon: '🚌' },
   { key: 'business_center',label: 'Business Center',  icon: '💼' },
   { key: 'conference',     label: 'Conference Room',  icon: '🏛️' },

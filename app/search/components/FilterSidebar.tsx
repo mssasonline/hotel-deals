@@ -258,7 +258,7 @@ export default function FilterSidebar({ filters, onFiltersChange, availableCitie
             {[
               { key: 'free_wifi',    label: 'Free Wi-Fi'  },
               { key: 'pool',         label: 'Pool'         },
-              { key: 'free_parking', label: 'Parking'      },
+              { key: 'free_parking', label: 'Free Parking'  },
               { key: 'restaurant',   label: 'Restaurant'   },
               { key: 'gym',          label: 'Gym'          },
               { key: 'spa',          label: 'Spa'          },
