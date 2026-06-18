@@ -247,7 +247,7 @@ export default function BookingPageClient({
       // Email notification — fire-and-forget, gated by NOTIFICATIONS_ENABLED.
       sendBookingEmailAction(result.bookingId).catch(() => {});
 
-      router.push(`/booking/success/${result.bookingId}`);
+      window.location.href = `/booking/success/${result.bookingId}`;
     } catch (err: unknown) {
       console.error('handleConfirm error:', err);
       setSubmitError(t['booking.bookingFailed']);
