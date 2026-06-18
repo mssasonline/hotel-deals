@@ -221,7 +221,7 @@ export default function BookingSuccessContent({ data }: { data: BookingSuccessDa
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-amber-800 text-sm leading-none">Breakfast included</p>
                 <p className="text-amber-600 text-xs mt-0.5">
-                  {breakfastCount} {breakfastCount === 1 ? 'serving' : 'servings'} · {guestsCount} {guestsCount === 1 ? 'guest' : 'guests'} × {nights} {nights === 1 ? 'night' : 'nights'}
+                  {guestsCount} {guestsCount === 1 ? 'guest' : 'guests'} × {nights} {nights === 1 ? 'night' : 'nights'}
                 </p>
               </div>
               <span className="shrink-0 font-bold text-amber-700 text-sm bg-amber-100 px-2.5 py-1 rounded-lg">
