@@ -170,11 +170,11 @@ export default function DealBookingModal({
               </span>
               <span className="text-xs text-white/55">Partner Deal</span>
             </div>
-            <h2 className="font-bold text-white text-lg leading-tight">
+            <h2 className="font-bold !text-white text-lg leading-tight">
               {deal.title ?? deal.room_name}
             </h2>
             {deal.title && (
-              <p className="text-sm text-white/55 mt-0.5">{deal.room_name}</p>
+              <p className="text-sm text-white mt-0.5">{deal.room_name}</p>
             )}
           </div>
           <button
