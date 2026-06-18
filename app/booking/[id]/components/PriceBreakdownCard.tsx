@@ -34,7 +34,7 @@ export default function PriceBreakdownCard({
   fixedFeePerNight = 0,
   taxCountryCode = 'AE',
 }: PriceBreakdownCardProps) {
-  const { checkInDate, checkOutDate } = useBookingStore();
+  const { checkInDate, checkOutDate, guests, breakfastIncluded, breakfastPricePerPerson } = useBookingStore();
   const language = useAppSettingsStore((s) => s.language);
   const t = getTranslations(language);
 
@@ -50,7 +50,7 @@ export default function PriceBreakdownCard({
   );
 
   const roomsCount = Math.max(1, room.quantity ?? 1);
-  const { currentPrice, basePrice, discountPercent, subtotal, taxes, total } =
+  const { currentPrice, basePrice, discountPercent, subtotal, taxes: roomTaxes, total: roomTotal } =
     calcRoomStayPrice({
       basePrice: room.basePrice,
       pricePerNight: room.pricePerNight,
@@ -60,11 +60,17 @@ export default function PriceBreakdownCard({
       fixedFeePerNight,
     });
 
+  const hasBreakfast = breakfastIncluded && breakfastPricePerPerson > 0;
+  const breakfastTotal = hasBreakfast ? breakfastPricePerPerson * Math.max(1, guests) * nights : 0;
+  const breakfastTax = hasBreakfast ? Math.round(breakfastTotal * (taxVatPct / 100)) : 0;
+  const taxes = roomTaxes + breakfastTax;
+  const total = roomTotal + breakfastTotal + breakfastTax;
+
   const totalBasePrice = basePrice * nights * roomsCount;
   const savings = totalBasePrice - subtotal;
 
   // Tax breakdown for tooltip/display
-  const vatAmount = Math.round(subtotal * (taxVatPct / 100));
+  const vatAmount = Math.round((subtotal + breakfastTotal) * (taxVatPct / 100));
   const fixedFees = taxes - vatAmount;
   const showFixedFee = fixedFees > 0;
 
@@ -94,6 +100,19 @@ export default function PriceBreakdownCard({
                 {t['hotel.breakdown.rooms'].replace('{n}', String(roomsCount))}
               </span>
               <span className="font-medium text-gray-900"><CurrencyAmount amount={subtotal} /></span>
+            </div>
+          )}
+
+          {/* Breakfast */}
+          {hasBreakfast && (
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500 flex items-center gap-1.5">
+                🍳 Breakfast
+                <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full font-medium">
+                  ×{Math.max(1, guests)} guest{guests !== 1 ? 's' : ''}{nights > 1 ? ` · ${nights}n` : ''}
+                </span>
+              </span>
+              <span className="font-medium text-gray-900"><CurrencyAmount amount={breakfastTotal} /></span>
             </div>
           )}
 

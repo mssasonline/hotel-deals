@@ -11,6 +11,8 @@ interface BookingSummaryProps {
   checkOut: string;
   guests: number;
   nights: number;
+  breakfastIncluded?: boolean;
+  breakfastPricePerPerson?: number;
 }
 
 function Stars({ count }: { count: number }) {
@@ -25,7 +27,7 @@ function Stars({ count }: { count: number }) {
   );
 }
 
-export default function BookingSummary({ hotel, room, checkIn, checkOut, guests, nights }: BookingSummaryProps) {
+export default function BookingSummary({ hotel, room, checkIn, checkOut, guests, nights, breakfastIncluded, breakfastPricePerPerson }: BookingSummaryProps) {
   const t = useTranslation();
 
   return (
@@ -101,6 +103,24 @@ export default function BookingSummary({ hotel, room, checkIn, checkOut, guests,
             {guests} {guests === 1 ? t['booking.guest'] : t['booking.guests']} · {nights} {nights === 1 ? t['myBookings.nightSingular'] : t['myBookings.nightsPlural']}
           </span>
         </div>
+
+        {/* Breakfast */}
+        {breakfastIncluded && breakfastPricePerPerson != null && breakfastPricePerPerson > 0 && (
+          <div className="flex items-center justify-between text-sm bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
+            <div className="flex items-center gap-2 text-amber-700">
+              <span className="text-base">🍳</span>
+              <div>
+                <p className="font-semibold leading-none">Breakfast included</p>
+                <p className="text-xs text-amber-600 mt-0.5">
+                  {guests} {guests === 1 ? 'guest' : 'guests'} · {nights} {nights === 1 ? 'night' : 'nights'}
+                </p>
+              </div>
+            </div>
+            <span className="font-semibold text-amber-700 text-xs">
+              {breakfastPricePerPerson} × {guests}{nights > 1 ? ` × ${nights}n` : ''}
+            </span>
+          </div>
+        )}
 
         {/* Trust signals */}
         <div className="border-t border-gray-100 pt-4 space-y-2">

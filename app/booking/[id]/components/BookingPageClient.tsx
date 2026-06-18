@@ -58,7 +58,7 @@ export default function BookingPageClient({
   const [submitError, setSubmitError] = useState('');
   const [availability, setAvailability] = useState<number | null>(null);
   const [supabaseRoomId, setSupabaseRoomId] = useState<string | null>(null);
-  const { selectedRoom: storeRoom, checkInDate, checkOutDate, guests, confirmBooking } =
+  const { selectedRoom: storeRoom, checkInDate, checkOutDate, guests, confirmBooking, breakfastIncluded, breakfastPricePerPerson } =
     useBookingStore();
 
   // Prefer the store room (has real Supabase prices set by HotelBookingPanel).
@@ -79,10 +79,12 @@ export default function BookingPageClient({
   const pricePerNight = roomPricing.currentPrice;
   const roomsCount = Math.max(1, room.quantity ?? 1);
   const subtotal = nights * pricePerNight * roomsCount;
-  const vatAmount = Math.round(subtotal * (taxVatPct / 100));
+  const hasBreakfast = breakfastIncluded && breakfastPricePerPerson > 0;
+  const breakfastTotal = hasBreakfast ? breakfastPricePerPerson * Math.max(1, guests) * nights : 0;
+  const vatAmount = Math.round((subtotal + breakfastTotal) * (taxVatPct / 100));
   const fixedFees = Math.round(fixedFeePerNight * nights * roomsCount);
   const taxes = vatAmount + fixedFees;
-  const total = subtotal + taxes;
+  const total = subtotal + breakfastTotal + taxes;
 
   useEffect(() => {
     if (loading) return;
@@ -260,7 +262,7 @@ export default function BookingPageClient({
 
         {/* Booking summary shown on mobile at top */}
         <div className="lg:hidden">
-          <BookingSummary hotel={hotel} room={room} checkIn={checkIn} checkOut={checkOut} guests={guests} nights={nights} />
+          <BookingSummary hotel={hotel} room={room} checkIn={checkIn} checkOut={checkOut} guests={guests} nights={nights} breakfastIncluded={breakfastIncluded} breakfastPricePerPerson={breakfastPricePerPerson} />
         </div>
 
         {/* User details */}
@@ -409,7 +411,7 @@ export default function BookingPageClient({
       {/* ── Sticky sidebar (desktop right) ─────────── */}
       <div className="hidden lg:block">
         <div className="sticky top-24 space-y-4">
-          <BookingSummary hotel={hotel} room={room} checkIn={checkIn} checkOut={checkOut} guests={guests} nights={nights} />
+          <BookingSummary hotel={hotel} room={room} checkIn={checkIn} checkOut={checkOut} guests={guests} nights={nights} breakfastIncluded={breakfastIncluded} breakfastPricePerPerson={breakfastPricePerPerson} />
           <PriceBreakdownCard hotel={hotel} room={room} taxVatPct={taxVatPct} fixedFeePerNight={fixedFeePerNight} taxCountryCode={taxCountryCode} />
         </div>
       </div>
