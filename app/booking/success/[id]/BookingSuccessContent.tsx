@@ -18,6 +18,8 @@ export interface BookingSuccessData {
   totalPrice: number;
   guestName: string;
   status: string;
+  breakfastIncluded: boolean;
+  breakfastPricePerPerson: number;
 }
 
 function formatDate(dateStr: string): string {
@@ -37,10 +39,11 @@ const STATUS_UI: Record<string, { label: string; badgeBg: string; badgeText: str
 
 export default function BookingSuccessContent({ data }: { data: BookingSuccessData }) {
   const t = useTranslation();
-  const { shortId, hotelName, hotelCity, roomName, roomType, checkIn, checkOut, nights, guestsCount, roomCount, totalPrice, guestName, status } = data;
+  const { shortId, hotelName, hotelCity, roomName, roomType, checkIn, checkOut, nights, guestsCount, roomCount, totalPrice, guestName, status, breakfastIncluded, breakfastPricePerPerson } = data;
 
   const isFresh = status === 'confirmed' || status === 'pending';
   const statusUi = STATUS_UI[status] ?? STATUS_UI['confirmed'];
+  const breakfastCount = breakfastIncluded && breakfastPricePerPerson > 0 ? guestsCount * nights : 0;
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6">
@@ -209,6 +212,24 @@ export default function BookingSuccessContent({ data }: { data: BookingSuccessDa
             <p className="font-bold text-gray-900 text-sm truncate">{guestName || '—'}</p>
           </div>
         </div>
+
+        {/* Breakfast */}
+        {breakfastCount > 0 && (
+          <div className="px-6 py-4 border-b border-gray-50">
+            <div className="flex items-center gap-3 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+              <span className="text-2xl shrink-0">🍳</span>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-amber-800 text-sm leading-none">Breakfast included</p>
+                <p className="text-amber-600 text-xs mt-0.5">
+                  {breakfastCount} {breakfastCount === 1 ? 'serving' : 'servings'} · {guestsCount} {guestsCount === 1 ? 'guest' : 'guests'} × {nights} {nights === 1 ? 'night' : 'nights'}
+                </p>
+              </div>
+              <span className="shrink-0 font-bold text-amber-700 text-sm bg-amber-100 px-2.5 py-1 rounded-lg">
+                ×{breakfastCount}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Price */}
         <div className="px-6 py-5">

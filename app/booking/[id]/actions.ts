@@ -28,6 +28,8 @@ export interface CreateBookingInput {
   hotelName: string;       // for the confirmation notification
   checkInLabel: string;
   checkOutLabel: string;
+  breakfastIncluded: boolean;
+  breakfastPricePerPerson: number;
 }
 
 export type CreateBookingResult =
@@ -99,10 +101,12 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         tax_fixed_fee:    input.fixedFeePerNight,
         tax_amount:       input.taxes,
         locked_price:     input.pricePerNight,
-        room_count:       input.roomsCount,
-        status:           'upcoming',
-        payment_status:   'paid',
-        guests_count:     input.guests,
+        room_count:                input.roomsCount,
+        status:                    'upcoming',
+        payment_status:            'paid',
+        guests_count:              input.guests,
+        breakfast_included:        input.breakfastIncluded,
+        breakfast_price_per_person: input.breakfastPricePerPerson > 0 ? input.breakfastPricePerPerson : null,
       })
       .select('id').single();
 

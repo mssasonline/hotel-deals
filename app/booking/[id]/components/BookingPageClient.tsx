@@ -219,9 +219,11 @@ export default function BookingPageClient({
         pricePerNight,
         roomsCount,
         guests,
-        hotelName:     hotel.name,
-        checkInLabel:  checkIn,
-        checkOutLabel: checkOut,
+        hotelName:               hotel.name,
+        checkInLabel:            checkIn,
+        checkOutLabel:           checkOut,
+        breakfastIncluded:       hasBreakfast,
+        breakfastPricePerPerson: hasBreakfast ? breakfastPricePerPerson : 0,
       });
 
       if (!result.ok) {

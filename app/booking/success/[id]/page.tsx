@@ -54,6 +54,8 @@ export default async function BookingSuccessPage({ params }: Props) {
             totalPrice: Number(booking.total_price ?? 0),
             guestName: booking.guest_name ?? '',
             status: booking.status ?? 'pending',
+            breakfastIncluded: booking.breakfast_included ?? false,
+            breakfastPricePerPerson: Number(booking.breakfast_price_per_person ?? 0),
           }}
         />
       </main>
