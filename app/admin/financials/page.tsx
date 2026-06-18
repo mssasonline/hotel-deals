@@ -187,18 +187,19 @@ export default async function AdminFinancialsPage() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
         {([
-          { label: 'Total Bookings',       value: String(totals.bookingCount),   isAmount: false },
-          { label: 'Gross Collected',      value: totals.grossCollected,          isAmount: true  },
-          { label: 'Platform Revenue',     value: totals.platformCommission,      isAmount: true, amber: true },
-          { label: 'Total Partner Payouts', value: totals.netPayout,              isAmount: true, green: true },
-        ] as const).map(({ label, value, isAmount, amber, green }: {
-          label: string; value: string | number; isAmount: boolean; amber?: boolean; green?: boolean
+          { label: 'Total Bookings',        value: String(totals.bookingCount),                                      isAmount: false },
+          { label: 'Gross Collected',       value: totals.grossCollected,                                            isAmount: true  },
+          { label: 'Govt Taxes',            value: totals.municipalityFee + totals.tourismDirham + totals.vat,       isAmount: true, red: true },
+          { label: 'Platform Revenue',      value: totals.platformCommission,                                        isAmount: true, amber: true },
+          { label: 'Total Partner Payouts', value: totals.netPayout,                                                 isAmount: true, green: true },
+        ] as const).map(({ label, value, isAmount, red, amber, green }: {
+          label: string; value: string | number; isAmount: boolean; red?: boolean; amber?: boolean; green?: boolean
         }) => (
           <div key={label} className="bg-white rounded-2xl p-5" style={{ border: '1px solid rgba(30,58,138,0.09)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">{label}</p>
-            <p className={`text-2xl font-bold ${amber ? 'text-amber-600' : green ? 'text-emerald-600' : 'text-gray-900'}`}>
+            <p className={`text-2xl font-bold ${red ? 'text-red-500' : amber ? 'text-amber-600' : green ? 'text-emerald-600' : 'text-gray-900'}`}>
               {isAmount ? <AEDAmount amount={value as number} /> : value}
             </p>
           </div>
