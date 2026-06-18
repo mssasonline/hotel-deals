@@ -2,7 +2,6 @@ import { createAdminClient } from '@/lib/supabase-admin';
 import DashboardClient, {
   type DashboardStats,
   type RevenueTrendPoint,
-  type TopCity,
   type RecentBookingRow,
 } from './DashboardClient';
 
@@ -10,16 +9,20 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
   const supabase = createAdminClient();
+  const today = new Date().toISOString().split('T')[0];
 
-  const [statsRes, trendRes, citiesRes, recentRes, lastMinRes, hotelDealsRes] = await Promise.all([
+  const [
+    statsRes, trendRes, recentRes,
+    lastMinRes, hotelDealsRes,
+    checkinsRes, checkoutsRes, pendingRes,
+  ] = await Promise.all([
     supabase.rpc('get_dashboard_stats'),
     supabase.rpc('get_revenue_trend'),
-    supabase.rpc('get_top_cities'),
     supabase
       .from('bookings')
       .select('id, guest_name, status, total_price, created_at, hotels(name)')
       .order('created_at', { ascending: false })
-      .limit(6),
+      .limit(10),
     supabase
       .from('rooms')
       .select('id', { count: 'exact', head: true })
@@ -28,7 +31,21 @@ export default async function AdminDashboardPage() {
       .from('partner_deals')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'active')
-      .gte('end_date', new Date().toISOString().split('T')[0]),
+      .gte('end_date', today),
+    supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('check_in', today)
+      .neq('status', 'cancelled'),
+    supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('check_out', today)
+      .neq('status', 'cancelled'),
+    supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('payment_status', 'pending'),
   ]);
 
   const statsRow = (statsRes.data as DashboardStats[] | null)?.[0];
@@ -42,24 +59,16 @@ export default async function AdminDashboardPage() {
     revenue: Number(r.revenue),
   }));
 
-  const topCities: TopCity[] = ((citiesRes.data ?? []) as TopCity[]).map((c) => ({
-    city: c.city,
-    booking_count: Number(c.booking_count),
-    revenue: Number(c.revenue),
-  }));
-
-  const recentBookings    = (recentRes.data ?? []) as RecentBookingRow[];
-  const lastMinRoomsCount = lastMinRes.count ?? 0;
-  const hotelDealsCount   = hotelDealsRes.count ?? 0;
-
   return (
     <DashboardClient
       stats={stats}
       revenueTrend={revenueTrend}
-      topCities={topCities}
-      recentBookings={recentBookings}
-      lastMinRoomsCount={lastMinRoomsCount}
-      hotelDealsCount={hotelDealsCount}
+      recentBookings={(recentRes.data ?? []) as RecentBookingRow[]}
+      lastMinRoomsCount={lastMinRes.count ?? 0}
+      hotelDealsCount={hotelDealsRes.count ?? 0}
+      checkinsToday={checkinsRes.count ?? 0}
+      checkoutsToday={checkoutsRes.count ?? 0}
+      pendingCount={pendingRes.count ?? 0}
     />
   );
 }

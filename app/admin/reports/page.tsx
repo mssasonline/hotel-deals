@@ -13,8 +13,17 @@ export const dynamic = 'force-dynamic';
 export default async function ReportsPage() {
   const supabase = createAdminClient();
 
-  const [trendRes, hotelsRes, citiesRes, bookingsRes, dashRes, partnerRevRes, commissionRate] = await Promise.all([
-    supabase.rpc('get_monthly_trend'),
+  const twelveMonthsAgo = new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+  const [rawBookingsRes, hotelsRes, citiesRes, bookingsRes, dashRes, partnerRevRes, commissionRate] = await Promise.all([
+    // 12-month paid bookings for trend data
+    supabase
+      .from('bookings')
+      .select('created_at, total_price, booking_revenue(partner_amount, admin_amount)')
+      .eq('payment_status', 'paid')
+      .neq('status', 'cancelled')
+      .gte('created_at', twelveMonthsAgo.toISOString()),
     supabase.rpc('get_top_hotels'),
     supabase.rpc('get_top_cities'),
     supabase.from('bookings').select('status, total_price'),
@@ -23,30 +32,53 @@ export default async function ReportsPage() {
     getCommissionRate(),
   ]);
 
-  // ── Trend ────────────────────────────────────────────────────
-  const trend: TrendPoint[] = ((trendRes.data ?? []) as TrendPoint[]).map((r) => ({
-    month:         r.month,
-    revenue:       Number(r.revenue),
-    booking_count: Number(r.booking_count),
-  }));
+  // Build 12-month trend from raw bookings
+  const trendMap = new Map<string, { revenue: number; booking_count: number; platform_rev: number; partner_payout: number }>();
+  for (const b of (rawBookingsRes.data ?? []) as Record<string, unknown>[]) {
+    const month = String(b.created_at).slice(0, 7);
+    if (!trendMap.has(month)) {
+      trendMap.set(month, { revenue: 0, booking_count: 0, platform_rev: 0, partner_payout: 0 });
+    }
+    const entry = trendMap.get(month)!;
+    const total = Number(b.total_price ?? 0);
+    const rev = (Array.isArray(b.booking_revenue) ? b.booking_revenue[0] : b.booking_revenue) as
+      { partner_amount: number; admin_amount: number } | null;
+    entry.revenue        += total;
+    entry.booking_count  += 1;
+    entry.platform_rev   += Number(rev?.admin_amount   ?? total * 0.1);
+    entry.partner_payout += Number(rev?.partner_amount ?? total * 0.9);
+  }
 
-  // ── Top Hotels ───────────────────────────────────────────────
+  // Fill all 12 months (zero-fill empty months)
+  const trend: TrendPoint[] = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - i);
+    const ym = d.toISOString().slice(0, 7);
+    const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    const data = trendMap.get(ym) ?? { revenue: 0, booking_count: 0, platform_rev: 0, partner_payout: 0 };
+    trend.push({
+      month:          label,
+      revenue:        Math.round(data.revenue),
+      booking_count:  data.booking_count,
+      platform_rev:   Math.round(data.platform_rev),
+      partner_payout: Math.round(data.partner_payout),
+    });
+  }
+
   const topHotels: TopHotel[] = ((hotelsRes.data ?? []) as TopHotel[]).map((h) => ({
-    id:            h.id,
-    name:          h.name,
-    city:          h.city,
+    id: h.id, name: h.name, city: h.city,
     booking_count: Number(h.booking_count),
     revenue:       Number(h.revenue),
   }));
 
-  // ── Top Cities ───────────────────────────────────────────────
   const topCities: TopCity[] = ((citiesRes.data ?? []) as TopCity[]).map((c) => ({
-    city:          c.city,
+    city: c.city,
     booking_count: Number(c.booking_count),
     revenue:       Number(c.revenue),
   }));
 
-  // ── Booking stats (inline) ───────────────────────────────────
   const allBookings = bookingsRes.data ?? [];
   const totalBookings = allBookings.length;
   const cancelled = allBookings.filter((b) => b.status === 'cancelled').length;
@@ -54,26 +86,13 @@ export default async function ReportsPage() {
     ? Number(((cancelled / totalBookings) * 100).toFixed(1))
     : 0;
 
-  const active = allBookings.filter((b) => b.status !== 'cancelled');
-  const avgBookingValue = active.length > 0
-    ? Math.round(active.reduce((s, b) => s + Number(b.total_price ?? 0), 0) / active.length)
-    : 0;
-
-  const statusCounts: Record<string, number> = {};
-  for (const b of allBookings) {
-    statusCounts[b.status] = (statusCounts[b.status] ?? 0) + 1;
-  }
-
-  // ── Dashboard KPIs ───────────────────────────────────────────
   const dash = (dashRes.data as { total_revenue: number; growth_pct: number }[] | null)?.[0];
 
   const stats: ReportStats = {
     total_revenue:     Number(dash?.total_revenue ?? 0),
     growth_pct:        Number(dash?.growth_pct    ?? 0),
     cancel_rate:       cancelRate,
-    avg_booking_value: avgBookingValue,
     total_bookings:    totalBookings,
-    status_counts:     statusCounts,
   };
 
   const partnerRevenue: PartnerRevenueSummary[] = ((partnerRevRes.data ?? []) as PartnerRevenueSummary[]).map(r => ({

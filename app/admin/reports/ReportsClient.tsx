@@ -1,22 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import AnalyticsCard from '../components/AnalyticsCard';
 import AEDAmount, { useAEDFormat } from '../../partner/components/AEDAmount';
 
-// ── Types ─────────────────────────────────────────────────────
-
-export type TrendPoint = { month: string; revenue: number; booking_count: number };
+export type TrendPoint = {
+  month: string;
+  revenue: number;
+  booking_count: number;
+  platform_rev: number;
+  partner_payout: number;
+};
 export type TopHotel   = { id: number; name: string; city: string; booking_count: number; revenue: number };
 export type TopCity    = { city: string; booking_count: number; revenue: number };
 
 export type ReportStats = {
-  total_revenue:     number;
-  growth_pct:        number;
-  cancel_rate:       number;
-  avg_booking_value: number;
-  total_bookings:    number;
-  status_counts:     Record<string, number>;
+  total_revenue:  number;
+  growth_pct:     number;
+  cancel_rate:    number;
+  total_bookings: number;
 };
 
 export type PartnerRevenueSummary = {
@@ -32,6 +33,8 @@ export type PartnerRevenueSummary = {
   admin_commission: number;
 };
 
+type Range = '3m' | '6m' | '12m';
+
 // ── Charts ────────────────────────────────────────────────────
 
 function RevenueLineChart({ data }: { data: TrendPoint[] }) {
@@ -40,15 +43,13 @@ function RevenueLineChart({ data }: { data: TrendPoint[] }) {
   if (data.length === 0) return null;
 
   const W = 500, H = 140;
-  const PAD = { t: 12, r: 12, b: 28, l: 48 };
+  const PAD = { t: 12, r: 12, b: 28, l: 56 };
   const innerW = W - PAD.l - PAD.r;
   const innerH = H - PAD.t - PAD.b;
   const max = Math.max(...data.map((d) => d.revenue), 1);
   const step = data.length > 1 ? innerW / (data.length - 1) : innerW;
-
   const toX = (i: number) => PAD.l + i * step;
   const toY = (v: number) => PAD.t + innerH - (v / max) * innerH;
-
   const linePath = data.map((d, i) => `${i === 0 ? 'M' : 'L'}${toX(i)},${toY(d.revenue)}`).join(' ');
   const areaPath = [
     ...data.map((d, i) => `${i === 0 ? 'M' : 'L'}${toX(i)},${toY(d.revenue)}`),
@@ -59,10 +60,10 @@ function RevenueLineChart({ data }: { data: TrendPoint[] }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100">
-        <h2 className="font-semibold text-gray-900">Revenue Growth</h2>
-        <p className="text-xs text-gray-400 mt-0.5">Monthly platform revenue</p>
+        <h2 className="font-semibold text-gray-900">Revenue Trend</h2>
+        <p className="text-xs text-gray-400 mt-0.5">Monthly gross collected</p>
       </div>
-      <div className="px-6 py-4">
+      <div className="px-4 py-4">
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" onMouseLeave={() => setHovered(null)}>
           <defs>
             <linearGradient id="rg2" x1="0" y1="0" x2="0" y2="1">
@@ -75,12 +76,12 @@ function RevenueLineChart({ data }: { data: TrendPoint[] }) {
             return (
               <g key={t}>
                 <line x1={PAD.l} y1={y} x2={W - PAD.r} y2={y} stroke="#f1f5f9" strokeWidth="1" />
-                <text x={PAD.l - 6} y={y} textAnchor="end" dominantBaseline="middle" fontSize="10" fill="#94a3b8">{fmt(t * max)}</text>
+                <text x={PAD.l - 6} y={y} textAnchor="end" dominantBaseline="middle" fontSize="9" fill="#94a3b8">{fmt(t * max)}</text>
               </g>
             );
           })}
           {data.map((d, i) => (
-            <text key={d.month} x={toX(i)} y={H - 4} textAnchor="middle" fontSize="10" fill={hovered === i ? '#003B95' : '#94a3b8'}>{d.month}</text>
+            <text key={d.month} x={toX(i)} y={H - 4} textAnchor="middle" fontSize="9" fill={hovered === i ? '#003B95' : '#94a3b8'}>{d.month}</text>
           ))}
           <path d={areaPath} fill="url(#rg2)" />
           <path d={linePath} fill="none" stroke="#003B95" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -89,8 +90,8 @@ function RevenueLineChart({ data }: { data: TrendPoint[] }) {
               <circle cx={toX(i)} cy={toY(d.revenue)} r={hovered === i ? 5 : 3} fill={hovered === i ? '#003B95' : 'white'} stroke="#003B95" strokeWidth="2" />
               {hovered === i && (
                 <g>
-                  <rect x={toX(i) - 36} y={toY(d.revenue) - 28} width="72" height="20" rx="4" fill="#003B95" />
-                  <text x={toX(i)} y={toY(d.revenue) - 14} textAnchor="middle" fontSize="10" fill="white" fontWeight="700">{fmt(d.revenue)}</text>
+                  <rect x={toX(i) - 40} y={toY(d.revenue) - 30} width="80" height="20" rx="4" fill="#003B95" />
+                  <text x={toX(i)} y={toY(d.revenue) - 16} textAnchor="middle" fontSize="10" fill="white" fontWeight="700">{fmt(d.revenue)}</text>
                 </g>
               )}
               <rect x={toX(i) - step / 2} y={PAD.t} width={step} height={innerH} fill="transparent" onMouseEnter={() => setHovered(i)} />
@@ -105,35 +106,34 @@ function RevenueLineChart({ data }: { data: TrendPoint[] }) {
 function BookingBarChart({ data }: { data: TrendPoint[] }) {
   const [hovered, setHovered] = useState<number | null>(null);
   if (data.length === 0) return null;
-
   const max = Math.max(...data.map((d) => d.booking_count), 1);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100">
-        <h2 className="font-semibold text-gray-900">Booking Trends</h2>
-        <p className="text-xs text-gray-400 mt-0.5">Monthly bookings over last 6 months</p>
+        <h2 className="font-semibold text-gray-900">Booking Volume</h2>
+        <p className="text-xs text-gray-400 mt-0.5">Monthly bookings</p>
       </div>
       <div className="px-6 py-6">
-        <div className="flex items-end gap-3 h-40">
+        <div className="flex items-end gap-2 h-36">
           {data.map((d, i) => {
             const pct = (d.booking_count / max) * 100;
             const active = hovered === i;
             return (
               <div
                 key={d.month}
-                className="flex-1 flex flex-col items-center gap-1.5 cursor-pointer group"
+                className="flex-1 flex flex-col items-center gap-1 cursor-pointer group"
                 onMouseEnter={() => setHovered(i)}
                 onMouseLeave={() => setHovered(null)}
               >
                 {active && (
-                  <span className="text-xs font-bold text-brand-blue bg-blue-50 px-2 py-0.5 rounded-lg">
+                  <span className="text-xs font-bold text-brand-blue bg-blue-50 px-1.5 py-0.5 rounded-lg whitespace-nowrap">
                     {d.booking_count}
                   </span>
                 )}
-                <div className="w-full flex items-end justify-center" style={{ height: '120px' }}>
+                <div className="w-full flex items-end justify-center" style={{ height: '100px' }}>
                   <div
-                    className={`w-full rounded-t-lg transition-all duration-200 ${active ? 'bg-brand-blue' : 'bg-brand-blue-light group-hover:bg-brand-blue/40'}`}
+                    className={`w-full rounded-t-lg transition-all duration-200 ${active ? 'bg-brand-blue' : 'bg-blue-100 group-hover:bg-blue-200'}`}
                     style={{ height: `${Math.max(pct, 2)}%` }}
                   />
                 </div>
@@ -147,7 +147,7 @@ function BookingBarChart({ data }: { data: TrendPoint[] }) {
   );
 }
 
-// ── Panels ────────────────────────────────────────────────────
+// ── Tables ────────────────────────────────────────────────────
 
 function TopHotelsPanel({ hotels }: { hotels: TopHotel[] }) {
   const max = hotels[0]?.revenue || 1;
@@ -155,6 +155,7 @@ function TopHotelsPanel({ hotels }: { hotels: TopHotel[] }) {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100">
         <h2 className="font-semibold text-gray-900">Top Hotels by Revenue</h2>
+        <p className="text-xs text-gray-400 mt-0.5">All time</p>
       </div>
       <div className="px-6 py-4 space-y-4">
         {hotels.length === 0 ? (
@@ -169,11 +170,12 @@ function TopHotelsPanel({ hotels }: { hotels: TopHotel[] }) {
                   <p className="text-sm font-medium text-gray-800 truncate">{hotel.name}</p>
                   <span className="text-xs text-gray-400 shrink-0">{hotel.city}</span>
                 </div>
-                <span className="text-sm font-bold text-gray-900 shrink-0 ml-2">
-                  <AEDAmount amount={hotel.revenue} />
-                </span>
+                <div className="text-right shrink-0 ml-2">
+                  <span className="text-sm font-bold text-gray-900"><AEDAmount amount={hotel.revenue} /></span>
+                  <p className="text-xs text-gray-400">{hotel.booking_count} bookings</p>
+                </div>
               </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full rounded-full bg-gradient-to-r from-brand-blue to-blue-400" style={{ width: `${pct}%` }} />
               </div>
             </div>
@@ -186,37 +188,35 @@ function TopHotelsPanel({ hotels }: { hotels: TopHotel[] }) {
 
 function CityBreakdown({ cities }: { cities: TopCity[] }) {
   const total = cities.reduce((s, c) => s + c.booking_count, 0) || 1;
-  const colors = ['bg-brand-blue', 'bg-blue-400', 'bg-blue-300', 'bg-brand-gold', 'bg-amber-300'];
-
+  const colors = ['bg-brand-blue', 'bg-blue-400', 'bg-blue-300', 'bg-amber-400', 'bg-amber-300'];
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100">
         <h2 className="font-semibold text-gray-900">Top Cities</h2>
-        <p className="text-xs text-gray-400 mt-0.5">Booking distribution by city</p>
+        <p className="text-xs text-gray-400 mt-0.5">Booking distribution · All time</p>
       </div>
       <div className="px-6 py-4">
-        <div className="flex h-4 rounded-full overflow-hidden mb-5">
+        <div className="flex h-3 rounded-full overflow-hidden mb-5">
           {cities.map((c, i) => (
             <div
               key={c.city}
               className={`${colors[i % colors.length]} transition-all`}
               style={{ width: `${(c.booking_count / total) * 100}%` }}
-              title={`${c.city}: ${c.booking_count} bookings`}
             />
           ))}
         </div>
         <div className="space-y-3">
-          {cities.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-2">No data yet.</p>
-          ) : cities.map((c, i) => (
+          {cities.map((c, i) => (
             <div key={c.city} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className={`w-2.5 h-2.5 rounded-full ${colors[i % colors.length]}`} />
-                <span className="text-sm text-gray-700">{c.city}</span>
+              <div className="flex items-center gap-2 min-w-0">
+                <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${colors[i % colors.length]}`} />
+                <span className="text-sm font-medium text-gray-700 truncate">{c.city}</span>
               </div>
-              <div className="flex items-center gap-4 text-xs text-gray-500">
-                <span>{c.booking_count.toLocaleString()} bookings</span>
-                <span className="font-semibold text-gray-700">{((c.booking_count / total) * 100).toFixed(1)}%</span>
+              <div className="flex items-center gap-3 shrink-0 ml-2">
+                <span className="text-xs text-gray-400">{c.booking_count} bookings</span>
+                <span className="text-xs font-semibold text-gray-600 w-8 text-right">
+                  {((c.booking_count / total) * 100).toFixed(0)}%
+                </span>
               </div>
             </div>
           ))}
@@ -226,118 +226,51 @@ function CityBreakdown({ cities }: { cities: TopCity[] }) {
   );
 }
 
-function StatusBreakdown({ counts, total }: { counts: Record<string, number>; total: number }) {
-  const statuses = [
-    { key: 'upcoming',  label: 'Upcoming',  color: 'bg-indigo-400' },
-    { key: 'confirmed', label: 'Confirmed', color: 'bg-blue-500'   },
-    { key: 'pending',   label: 'Pending',   color: 'bg-amber-400'  },
-    { key: 'completed', label: 'Completed', color: 'bg-emerald-500'},
-    { key: 'cancelled', label: 'Cancelled', color: 'bg-red-400'    },
-  ].filter((s) => (counts[s.key] ?? 0) > 0);
-
-  const max = Math.max(...statuses.map((s) => counts[s.key] ?? 0), 1);
-
+function PartnerTable({ partners, commissionRate }: { partners: PartnerRevenueSummary[]; commissionRate: number }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100">
-        <h2 className="font-semibold text-gray-900">Booking Status</h2>
-        <p className="text-xs text-gray-400 mt-0.5">
-          Total: <span className="font-semibold text-gray-700">{total.toLocaleString()}</span> bookings
-        </p>
-      </div>
-      <div className="px-6 py-5 space-y-3">
-        {statuses.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-4">No bookings yet.</p>
-        ) : statuses.map((s) => {
-          const count = counts[s.key] ?? 0;
-          const pct = (count / max) * 100;
-          return (
-            <div key={s.key} className="flex items-center gap-3">
-              <div
-                className={`${s.color} rounded-lg flex items-center justify-end px-3`}
-                style={{ width: `${Math.max(pct, 10)}%`, minWidth: '80px', height: '36px' }}
-              >
-                <span className="text-xs font-bold text-white">{count.toLocaleString()}</span>
-              </div>
-              <span className="text-xs text-gray-500 shrink-0">{s.label}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ── Partner Revenue Table ─────────────────────────────────────
-
-function PartnerRevenueTable({ partners, commissionRate }: { partners: PartnerRevenueSummary[]; commissionRate: number }) {
-  const partnerRate    = 100 - commissionRate;
-  const totalGross     = partners.reduce((s, p) => s + p.gross_revenue,    0);
-  const totalTax       = partners.reduce((s, p) => s + p.tax_collected,    0);
-  const totalAdmin     = partners.reduce((s, p) => s + p.admin_commission, 0);
-  const totalPayout    = partners.reduce((s, p) => s + p.partner_payout,   0);
-
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-        <div>
-          <h2 className="font-semibold text-gray-900">Partner Revenue Distribution</h2>
-          <p className="text-xs text-gray-400 mt-0.5">{partnerRate}% Partner · {commissionRate}% Platform · of room price (excl. taxes)</p>
-        </div>
-        <div className="flex flex-wrap gap-2 text-xs shrink-0">
-          <span className="px-3 py-1.5 bg-gray-50 rounded-lg text-gray-600">
-            Guest paid: <strong className="text-gray-900"><AEDAmount amount={totalGross} /></strong>
-          </span>
-          <span className="px-3 py-1.5 bg-orange-50 rounded-lg text-orange-700">
-            Taxes: <strong><AEDAmount amount={totalTax} /></strong>
-          </span>
-          <span className="px-3 py-1.5 bg-emerald-50 rounded-lg text-emerald-700">
-            Partners: <strong><AEDAmount amount={totalPayout} /></strong>
-          </span>
-          <span className="px-3 py-1.5 bg-blue-50 rounded-lg text-brand-blue">
-            Platform: <strong><AEDAmount amount={totalAdmin} /></strong>
-          </span>
-        </div>
+        <h2 className="font-semibold text-gray-900">Partner Performance</h2>
+        <p className="text-xs text-gray-400 mt-0.5">All time · {commissionRate}% platform commission</p>
       </div>
       {partners.length === 0 ? (
-        <div className="px-6 py-10 text-center text-gray-400 text-sm">No data yet.</div>
+        <div className="px-6 py-8 text-center text-gray-400 text-sm">No partner data yet.</div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[800px]">
+          <table className="w-full text-sm min-w-[700px]">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Partner</th>
-                <th className="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase">Hotels</th>
-                <th className="px-5 py-3 text-center text-xs font-semibold text-gray-400 uppercase">Bookings</th>
-                <th className="px-5 py-3 text-right text-xs font-semibold text-gray-400 uppercase">Guest Paid</th>
-                <th className="px-5 py-3 text-right text-xs font-semibold text-orange-500 uppercase">Taxes</th>
-                <th className="px-5 py-3 text-right text-xs font-semibold text-emerald-600 uppercase">Partner ({partnerRate}%)</th>
-                <th className="px-5 py-3 text-right text-xs font-semibold text-brand-blue uppercase">Platform ({commissionRate}%)</th>
+              <tr className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                <th className="px-5 py-3 text-left">Partner</th>
+                <th className="px-5 py-3 text-right">Hotels</th>
+                <th className="px-5 py-3 text-right">Bookings</th>
+                <th className="px-5 py-3 text-right">Gross</th>
+                <th className="px-5 py-3 text-right text-amber-600">Platform ({commissionRate}%)</th>
+                <th className="px-5 py-3 text-right text-emerald-600">Partner Payout</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {partners.map(p => (
+              {partners.map((p) => (
                 <tr key={p.partner_id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-5 py-4">
-                    <p className="font-medium text-gray-900">{p.partner_name}</p>
-                    <p className="text-xs text-gray-400">{p.partner_email}</p>
+                  <td className="px-5 py-3.5">
+                    <p className="font-medium text-gray-900 truncate max-w-[160px]">{p.partner_name}</p>
+                    <p className="text-xs text-gray-400 truncate max-w-[160px]">{p.partner_email}</p>
                   </td>
-                  <td className="px-5 py-4 text-center text-gray-600">{p.hotel_count}</td>
-                  <td className="px-5 py-4 text-center text-gray-600">{p.booking_count}</td>
-                  <td className="px-5 py-4 text-right font-semibold text-gray-900"><AEDAmount amount={p.gross_revenue} /></td>
-                  <td className="px-5 py-4 text-right text-orange-600"><AEDAmount amount={p.tax_collected} /></td>
-                  <td className="px-5 py-4 text-right font-semibold text-emerald-600"><AEDAmount amount={p.partner_payout} /></td>
-                  <td className="px-5 py-4 text-right font-semibold text-brand-blue"><AEDAmount amount={p.admin_commission} /></td>
+                  <td className="px-5 py-3.5 text-right text-gray-600">{p.hotel_count}</td>
+                  <td className="px-5 py-3.5 text-right text-gray-600">{p.booking_count}</td>
+                  <td className="px-5 py-3.5 text-right font-semibold text-gray-900"><AEDAmount amount={p.gross_revenue} /></td>
+                  <td className="px-5 py-3.5 text-right font-medium text-amber-600"><AEDAmount amount={p.admin_commission} /></td>
+                  <td className="px-5 py-3.5 text-right font-bold text-emerald-600"><AEDAmount amount={p.partner_payout} /></td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
-              <tr className="bg-gray-50 border-t-2 border-gray-200 font-bold">
-                <td className="px-5 py-3 text-gray-700" colSpan={3}>Total</td>
-                <td className="px-5 py-3 text-right text-gray-900"><AEDAmount amount={totalGross} /></td>
-                <td className="px-5 py-3 text-right text-orange-600"><AEDAmount amount={totalTax} /></td>
-                <td className="px-5 py-3 text-right text-emerald-600"><AEDAmount amount={totalPayout} /></td>
-                <td className="px-5 py-3 text-right text-brand-blue"><AEDAmount amount={totalAdmin} /></td>
+              <tr className="bg-gray-50 border-t-2 border-gray-200 font-bold text-right">
+                <td className="px-5 py-3 text-left text-gray-900">Total</td>
+                <td className="px-5 py-3 text-gray-700">{partners.reduce((s, p) => s + p.hotel_count, 0)}</td>
+                <td className="px-5 py-3 text-gray-700">{partners.reduce((s, p) => s + p.booking_count, 0)}</td>
+                <td className="px-5 py-3 text-gray-900"><AEDAmount amount={partners.reduce((s, p) => s + p.gross_revenue, 0)} /></td>
+                <td className="px-5 py-3 text-amber-600"><AEDAmount amount={partners.reduce((s, p) => s + p.admin_commission, 0)} /></td>
+                <td className="px-5 py-3 text-emerald-600"><AEDAmount amount={partners.reduce((s, p) => s + p.partner_payout, 0)} /></td>
               </tr>
             </tfoot>
           </table>
@@ -347,79 +280,116 @@ function PartnerRevenueTable({ partners, commissionRate }: { partners: PartnerRe
   );
 }
 
-// ── Page Component ────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────
 
 export default function ReportsClient({
-  stats,
-  trend,
-  topHotels,
-  topCities,
-  partnerRevenue,
-  commissionRate,
+  stats, trend, topHotels, topCities, partnerRevenue, commissionRate,
 }: {
-  stats:          ReportStats;
-  trend:          TrendPoint[];
-  topHotels:      TopHotel[];
-  topCities:      TopCity[];
+  stats: ReportStats;
+  trend: TrendPoint[];
+  topHotels: TopHotel[];
+  topCities: TopCity[];
   partnerRevenue: PartnerRevenueSummary[];
   commissionRate: number;
 }) {
-  const adminCommission = Math.round(partnerRevenue.reduce((s, p) => s + p.admin_commission, 0) * 100) / 100;
+  const [range, setRange] = useState<Range>('6m');
+  const sliceCount = range === '3m' ? 3 : range === '6m' ? 6 : 12;
+  const sliced = trend.slice(-sliceCount);
+
+  // KPI metrics derived from sliced period
+  const periodRevenue    = sliced.reduce((s, d) => s + d.revenue,        0);
+  const periodPlatform   = sliced.reduce((s, d) => s + d.platform_rev,   0);
+  const periodPartner    = sliced.reduce((s, d) => s + d.partner_payout, 0);
+  const periodBookings   = sliced.reduce((s, d) => s + d.booking_count,  0);
+  const adr              = periodBookings > 0 ? Math.round(periodRevenue / periodBookings) : 0;
+
+  // MoM growth: last month vs month before
+  const last  = sliced[sliced.length - 1]?.revenue ?? 0;
+  const prev  = sliced[sliced.length - 2]?.revenue ?? 0;
+  const momPct = prev > 0 ? Number(((last - prev) / prev * 100).toFixed(1)) : 0;
+
+  const RANGE_LABELS: Record<Range, string> = { '3m': 'Last 3 Months', '6m': 'Last 6 Months', '12m': 'Last 12 Months' };
 
   return (
     <div className="p-6 lg:p-8 max-w-[1400px]">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
-        <p className="text-gray-400 text-sm mt-0.5">Platform performance overview</p>
+      {/* Header */}
+      <div className="mb-6 rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
+        <div className="px-6 py-5 flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1 h-5 rounded-full" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
+              <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>Analytics & Reports</h1>
+            </div>
+            <p className="text-white/45 text-xs pl-3">Platform-wide performance · {RANGE_LABELS[range]}</p>
+          </div>
+          {/* Date range tabs */}
+          <div className="flex gap-1 bg-white/10 rounded-xl p-1">
+            {(['3m', '6m', '12m'] as Range[]).map((r) => (
+              <button
+                key={r}
+                onClick={() => setRange(r)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                  range === r ? 'bg-white text-brand-blue shadow-sm' : 'text-white/60 hover:text-white'
+                }`}
+              >
+                {r === '3m' ? '3M' : r === '6m' ? '6M' : '12M'}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <AnalyticsCard
-          title="Total Revenue"
-          value={<AEDAmount amount={stats.total_revenue} />}
-          change={`${stats.growth_pct >= 0 ? '+' : ''}${stats.growth_pct}% vs last month`}
-          positive={stats.growth_pct >= 0}
-          description="All time"
-        />
-        <AnalyticsCard
-          title={`Platform Commission (${commissionRate}%)`}
-          value={<AEDAmount amount={adminCommission} />}
-          change={`${commissionRate}% of total bookings`}
-          positive={true}
-          description="Platform revenue"
-        />
-        <AnalyticsCard
-          title="Total Bookings"
-          value={stats.total_bookings.toLocaleString()}
-          change="All time"
-          positive={true}
-          description="Confirmed + active"
-        />
-        <AnalyticsCard
-          title="Average Booking Value"
-          value={stats.avg_booking_value > 0 ? <AEDAmount amount={stats.avg_booking_value} /> : '—'}
-          change="Per confirmed booking"
-          positive={true}
-          description="Excl. cancelled"
-        />
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+        {[
+          { label: 'Gross Revenue',    value: periodRevenue,  isAED: true  },
+          { label: 'Platform Revenue', value: periodPlatform, isAED: true,  amber: true },
+          { label: 'Partner Payouts',  value: periodPartner,  isAED: true,  green: true },
+          { label: 'Bookings',         value: periodBookings, isAED: false },
+          { label: 'Avg Booking (ADR)',value: adr,            isAED: true,  blue: true  },
+          { label: 'Cancel Rate',      value: `${stats.cancel_rate}%`, isAED: false, red: stats.cancel_rate > 10 },
+        ].map(({ label, value, isAED, amber, green, blue, red }) => (
+          <div key={label} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1 leading-tight">{label}</p>
+            <p className={`text-xl font-bold ${
+              amber ? 'text-amber-600' : green ? 'text-emerald-600' : blue ? 'text-brand-blue' : red ? 'text-red-500' : 'text-gray-900'
+            }`}>
+              {isAED && typeof value === 'number' ? <AEDAmount amount={value} /> : value}
+            </p>
+          </div>
+        ))}
       </div>
 
-      {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
-        <RevenueLineChart data={trend} />
-        <BookingBarChart data={trend} />
+      {/* Charts */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+        <RevenueLineChart data={sliced} />
+        <BookingBarChart  data={sliced} />
       </div>
 
-      {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4">
+      {/* MoM growth callout */}
+      {sliced.length >= 2 && (
+        <div className={`mb-6 rounded-2xl px-6 py-4 flex items-center gap-3 ${momPct >= 0 ? 'bg-emerald-50 border border-emerald-100' : 'bg-red-50 border border-red-100'}`}>
+          <span className={`text-2xl font-bold ${momPct >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+            {momPct >= 0 ? '↑' : '↓'} {Math.abs(momPct)}%
+          </span>
+          <div>
+            <p className={`text-sm font-semibold ${momPct >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+              Month-over-Month Revenue {momPct >= 0 ? 'Growth' : 'Decline'}
+            </p>
+            <p className="text-xs text-gray-400">
+              Comparing {sliced[sliced.length - 1]?.month} vs {sliced[sliced.length - 2]?.month}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Tables */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
         <TopHotelsPanel hotels={topHotels} />
-        <CityBreakdown cities={topCities} />
-        <StatusBreakdown counts={stats.status_counts} total={stats.total_bookings} />
+        <CityBreakdown  cities={topCities} />
       </div>
 
-      {/* Partner revenue split table */}
-      <PartnerRevenueTable partners={partnerRevenue} commissionRate={commissionRate} />
+      <PartnerTable partners={partnerRevenue} commissionRate={commissionRate} />
     </div>
   );
 }
