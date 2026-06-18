@@ -175,6 +175,10 @@ export default function BookingSuccessContent({ data }: { data: BookingSuccessDa
 
         {/* Stay Details */}
         <div className="px-6 py-5 grid grid-cols-2 gap-x-6 gap-y-4 border-b border-gray-50">
+          <div className="col-span-2">
+            <p className="text-gray-400 text-[11px] font-medium uppercase tracking-wide mb-1">{t['success.guestName']}</p>
+            <p className="font-bold text-gray-900 text-sm truncate">{guestName || '—'}</p>
+          </div>
           <div>
             <p className="text-gray-400 text-[11px] font-medium uppercase tracking-wide mb-1">{t['success.checkIn']}</p>
             <p className="font-bold text-gray-900 text-sm">{formatDate(checkIn)}</p>
@@ -214,10 +218,6 @@ export default function BookingSuccessContent({ data }: { data: BookingSuccessDa
               <p className="text-gray-400 text-xs mt-0.5">{guestsCount} {guestsCount === 1 ? 'guest' : 'guests'}</p>
             </div>
           )}
-          <div>
-            <p className="text-gray-400 text-[11px] font-medium uppercase tracking-wide mb-1">{t['success.guestName']}</p>
-            <p className="font-bold text-gray-900 text-sm truncate">{guestName || '—'}</p>
-          </div>
         </div>
 
         {/* Price */}
