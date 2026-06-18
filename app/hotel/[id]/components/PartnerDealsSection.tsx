@@ -30,6 +30,7 @@ interface Props {
   stars: number;
   rating: number;
   deals: PartnerDeal[];
+  breakfastPricePerPerson?: number | null;
 }
 
 function fmtDate(iso: string) {
@@ -55,6 +56,7 @@ export default function PartnerDealsSection({
   stars,
   rating,
   deals,
+  breakfastPricePerPerson,
 }: Props) {
   const { user } = useAuth();
   const router   = useRouter();
@@ -90,6 +92,7 @@ export default function PartnerDealsSection({
           address={address}
           stars={stars}
           rating={rating}
+          breakfastPricePerPerson={breakfastPricePerPerson ?? null}
           onClose={() => setModalDeal(null)}
         />
       )}

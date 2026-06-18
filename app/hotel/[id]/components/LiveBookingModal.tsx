@@ -30,6 +30,7 @@ interface Props {
   address: string;
   stars: number;
   rating: number;
+  breakfastPricePerPerson?: number | null;
   onClose: () => void;
 }
 
@@ -92,12 +93,13 @@ export default function LiveBookingModal({
   address,
   stars,
   rating,
+  breakfastPricePerPerson,
   onClose,
 }: Props) {
   const { user }  = useAuth();
   const router    = useRouter();
   const pathname  = usePathname();
-  const { setRoom, setSelectedHotel, setDates, setGuests } = useBookingStore();
+  const { setRoom, setSelectedHotel, setDates, setGuests, setBreakfast } = useBookingStore();
   const t         = useTranslation();
 
   const tier      = getCurrentTier();
@@ -115,13 +117,15 @@ export default function LiveBookingModal({
 
   const [adults,   setAdults]   = useState(Math.min(2, capacity));
   const [children, setChildren] = useState(0);
+  const [breakfastSelected, setBreakfastSelected] = useState(false);
 
-  const totalGuests = adults + children;
-  const maxAdults   = capacity;
-  const maxChildren = 2;
-
-  const taxes   = Math.round(livePrice * 0.15);
-  const total   = livePrice + taxes;
+  const totalGuests       = adults + children;
+  const maxAdults         = capacity;
+  const maxChildren       = 2;
+  const hasBreakfast      = breakfastPricePerPerson != null && breakfastPricePerPerson > 0;
+  const breakfastTotal    = hasBreakfast && breakfastSelected ? breakfastPricePerPerson! * totalGuests : 0;
+  const taxes             = Math.round((livePrice + breakfastTotal) * 0.15);
+  const total             = livePrice + breakfastTotal + taxes;
 
   // Dates: always tonight → tomorrow
   const checkIn  = localDateISO();
@@ -177,6 +181,7 @@ export default function LiveBookingModal({
 
     setDates(isoToStored(checkIn), isoToStored(checkOut));
     setGuests(totalGuests);
+    setBreakfast(breakfastSelected && hasBreakfast, hasBreakfast ? breakfastPricePerPerson! : 0);
 
     router.push(`/booking/${hotelId}`);
   }
@@ -297,12 +302,38 @@ export default function LiveBookingModal({
             )}
           </div>
 
+          {/* Breakfast add-on */}
+          {hasBreakfast && (
+            <label className="flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-colors"
+              style={{ borderColor: breakfastSelected ? '#2563EB' : '#E5E7EB', background: breakfastSelected ? '#EFF6FF' : '#F9FAFB' }}>
+              <input
+                type="checkbox"
+                checked={breakfastSelected}
+                onChange={e => setBreakfastSelected(e.target.checked)}
+                className="mt-0.5 w-4 h-4 accent-brand-blue shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-800">🍳 Add Breakfast</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  <CurrencyAmount amount={breakfastPricePerPerson!} /> per person · {totalGuests} guest{totalGuests !== 1 ? 's' : ''}
+                  {' = '}<span className="font-semibold text-gray-700"><CurrencyAmount amount={breakfastPricePerPerson! * totalGuests} /></span>
+                </p>
+              </div>
+            </label>
+          )}
+
           {/* Price breakdown */}
           <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm border border-gray-100">
             <div className="flex justify-between text-gray-600">
               <span>{t['hotel.nightStay']} × <CurrencyAmount amount={livePrice} /></span>
               <span className="font-semibold text-gray-800"><CurrencyAmount amount={livePrice} /></span>
             </div>
+            {breakfastSelected && hasBreakfast && (
+              <div className="flex justify-between text-gray-600">
+                <span>🍳 Breakfast (×{totalGuests})</span>
+                <span className="font-semibold text-gray-800"><CurrencyAmount amount={breakfastTotal} /></span>
+              </div>
+            )}
             <div className="flex justify-between text-gray-500">
               <span>{t['hotel.taxesFees']}</span>
               <span><CurrencyAmount amount={taxes} /></span>

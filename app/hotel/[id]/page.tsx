@@ -164,6 +164,9 @@ export default async function HotelPage({ params }: Props) {
   const status = getDealStatus(countdownHours);
   const tonightOnly = status === 'HIGH_DEMAND' || status === 'CRITICAL';
   const amenities = parseAmenities(row.amenities).map(a => AMENITY_DISPLAY[a] ?? a);
+  const breakfastPricePerPerson: number | null = row.breakfast_price_per_person != null
+    ? Number(row.breakfast_price_per_person)
+    : null;
 
   // ── Gallery images ───────────────────────────────────────────
   const rawImages = (hotelImages ?? []) as HotelImage[];
@@ -420,6 +423,7 @@ export default async function HotelPage({ params }: Props) {
               </div>
               <RoomsGrid
                 rooms={(rooms ?? []) as Room[]}
+                breakfastPricePerPerson={breakfastPricePerPerson}
                 {...hotelBaseProps}
               />
             </section>
@@ -428,6 +432,7 @@ export default async function HotelPage({ params }: Props) {
             {partnerDeals.length > 0 && (
               <PartnerDealsSection
                 deals={partnerDeals}
+                breakfastPricePerPerson={breakfastPricePerPerson}
                 {...hotelBaseProps}
               />
             )}

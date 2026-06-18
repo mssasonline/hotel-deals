@@ -18,6 +18,7 @@ interface Props {
   address: string;
   stars: number;
   rating: number;
+  breakfastPricePerPerson?: number | null;
   onClose: () => void;
 }
 
@@ -55,12 +56,13 @@ export default function DealBookingModal({
   address,
   stars,
   rating,
+  breakfastPricePerPerson,
   onClose,
 }: Props) {
   const { user } = useAuth();
   const router   = useRouter();
   const pathname = usePathname();
-  const { setRoom, setSelectedHotel, setDates, setGuests } = useBookingStore();
+  const { setRoom, setSelectedHotel, setDates, setGuests, setBreakfast } = useBookingStore();
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -75,6 +77,8 @@ export default function DealBookingModal({
   const capacity = deal.capacity || 2;
   const [adults,   setAdults]   = useState(Math.min(2, capacity));
   const [children, setChildren] = useState(0);
+  const [breakfastSelected, setBreakfastSelected] = useState(false);
+
   const totalGuests = adults + children;
   const maxAdults   = capacity;
   const maxChildren = 2;
@@ -82,10 +86,12 @@ export default function DealBookingModal({
   const [availability,   setAvailability]   = useState<number | null>(null);
   const [checkingAvail,  setCheckingAvail]  = useState(false);
 
-  const nights  = countNights(checkIn, checkOut);
-  const subtotal = nights * deal.deal_price;
-  const taxes    = Math.round(subtotal * 0.15);
-  const total    = subtotal + taxes;
+  const nights          = countNights(checkIn, checkOut);
+  const subtotal        = nights * deal.deal_price;
+  const hasBreakfast    = breakfastPricePerPerson != null && breakfastPricePerPerson > 0;
+  const breakfastTotal  = hasBreakfast && breakfastSelected ? breakfastPricePerPerson! * totalGuests * nights : 0;
+  const taxes           = Math.round((subtotal + breakfastTotal) * 0.15);
+  const total           = subtotal + breakfastTotal + taxes;
   const disc     = deal.base_price > 0
     ? Math.round((1 - deal.deal_price / deal.base_price) * 100)
     : 0;
@@ -144,6 +150,7 @@ export default function DealBookingModal({
 
     setDates(isoToStored(checkIn), isoToStored(checkOut));
     setGuests(totalGuests);
+    setBreakfast(breakfastSelected && hasBreakfast, hasBreakfast ? breakfastPricePerPerson! : 0);
 
     router.push(`/booking/${hotelId}`);
   }
@@ -325,6 +332,27 @@ export default function DealBookingModal({
             </div>
           )}
 
+          {/* ── Breakfast add-on ── */}
+          {hasBreakfast && (
+            <label className="flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-colors"
+              style={{ borderColor: breakfastSelected ? '#2563EB' : '#E5E7EB', background: breakfastSelected ? '#EFF6FF' : '#F9FAFB' }}>
+              <input
+                type="checkbox"
+                checked={breakfastSelected}
+                onChange={e => setBreakfastSelected(e.target.checked)}
+                className="mt-0.5 w-4 h-4 accent-brand-blue shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-800">🍳 Add Breakfast</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  <CurrencyAmount amount={breakfastPricePerPerson!} /> per person · {totalGuests} guest{totalGuests !== 1 ? 's' : ''}
+                  {nights > 1 && ` · ${nights} nights`}
+                  {' = '}<span className="font-semibold text-gray-700"><CurrencyAmount amount={breakfastPricePerPerson! * totalGuests * nights} /></span>
+                </p>
+              </div>
+            </label>
+          )}
+
           {/* ── Price breakdown ── */}
           {nights > 0 && (
             <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm border border-gray-100">
@@ -334,6 +362,12 @@ export default function DealBookingModal({
                 </span>
                 <span className="font-semibold text-gray-800"><CurrencyAmount amount={subtotal} /></span>
               </div>
+              {breakfastSelected && hasBreakfast && (
+                <div className="flex justify-between text-gray-600">
+                  <span>🍳 Breakfast (×{totalGuests}{nights > 1 ? ` · ${nights}n` : ''})</span>
+                  <span className="font-semibold text-gray-800"><CurrencyAmount amount={breakfastTotal} /></span>
+                </div>
+              )}
               <div className="flex justify-between text-gray-500">
                 <span>Taxes & fees (15%)</span>
                 <span><CurrencyAmount amount={taxes} /></span>

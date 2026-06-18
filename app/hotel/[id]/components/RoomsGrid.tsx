@@ -50,6 +50,7 @@ interface Props {
   address: string;
   stars: number;
   rating: number;
+  breakfastPricePerPerson?: number | null;
 }
 
 function getRoomBasePrice(room: Room): number {
@@ -61,7 +62,7 @@ function getRoomMinPrice(room: Room): number {
   return Math.round(getRoomBasePrice(room) * 0.6);
 }
 
-export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, address, stars, rating }: Props) {
+export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, address, stars, rating, breakfastPricePerPerson }: Props) {
   const [modalRoom, setModalRoom] = useState<Room | null>(null);
   const tier        = useLiveTier();
   const bookingOpen = useBookingOpen();
@@ -87,6 +88,7 @@ export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, a
           address={address}
           stars={stars}
           rating={rating}
+          breakfastPricePerPerson={breakfastPricePerPerson ?? null}
           onClose={() => setModalRoom(null)}
         />
       )}

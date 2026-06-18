@@ -270,6 +270,13 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
   const [addingImg, setAddingImg]   = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  // ── Breakfast state
+  const [breakfastEnabled, setBreakfastEnabled] = useState(hotel.breakfast_price_per_person != null);
+  const [breakfastPrice, setBreakfastPrice]     = useState(String(hotel.breakfast_price_per_person ?? ''));
+  const [breakfastSaving, setBreakfastSaving]   = useState(false);
+  const [breakfastMsg, setBreakfastMsg]         = useState<string | null>(null);
+  const [breakfastError, setBreakfastError]     = useState<string | null>(null);
+
   // ── Amenities state
   const [amenities, setAmenities]         = useState<string[]>(Array.isArray(hotel.amenities) ? hotel.amenities : []);
   const [amenitiesSaving, setAmenitiesSaving] = useState(false);
@@ -411,6 +418,23 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
     onSaved({ ...hotel, latitude: lat, longitude: lng, airport_code: code });
   }
 
+  // ── Save breakfast
+  async function saveBreakfast() {
+    setBreakfastError(null);
+    const price = breakfastEnabled ? parseFloat(breakfastPrice) : null;
+    if (breakfastEnabled && (!breakfastPrice.trim() || isNaN(price!) || price! <= 0)) {
+      setBreakfastError('Please enter a valid price per person.');
+      return;
+    }
+    setBreakfastSaving(true);
+    const { error } = await updateMyHotel(hotel.id, { breakfast_price_per_person: price });
+    setBreakfastSaving(false);
+    if (error) { setBreakfastError(error); return; }
+    setBreakfastMsg('Breakfast option saved.');
+    setTimeout(() => setBreakfastMsg(null), 2500);
+    onSaved({ ...hotel, breakfast_price_per_person: price });
+  }
+
   // ── Save amenities
   async function saveAmenities() {
     setAmenitiesSaving(true);
@@ -526,6 +550,52 @@ function ManageHotelModal({ hotel, onClose, onSaved }: ManageModalProps) {
                   {detailsMsg}
                 </div>
               )}
+
+              {/* ── Breakfast option ── */}
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-sm font-semibold text-gray-700 mb-3">🍳 Breakfast Add-on</p>
+                <label className="flex items-center gap-3 cursor-pointer mb-3">
+                  <div
+                    onClick={() => setBreakfastEnabled(p => !p)}
+                    className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${breakfastEnabled ? 'bg-brand-blue' : 'bg-gray-200'}`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${breakfastEnabled ? 'translate-x-5' : ''}`} />
+                  </div>
+                  <span className="text-sm text-gray-600">
+                    {breakfastEnabled ? 'Breakfast option is enabled' : 'Enable breakfast add-on for guests'}
+                  </span>
+                </label>
+                {breakfastEnabled && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1">Price per person (AED)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={breakfastPrice}
+                        onChange={e => setBreakfastPrice(e.target.value)}
+                        placeholder="e.g. 50"
+                        className={INPUT}
+                      />
+                    </div>
+                  </div>
+                )}
+                {breakfastError && (
+                  <p className="mt-2 text-xs text-red-500">{breakfastError}</p>
+                )}
+                {breakfastMsg && (
+                  <p className="mt-2 text-xs text-green-600">{breakfastMsg}</p>
+                )}
+                <button
+                  type="button"
+                  onClick={saveBreakfast}
+                  disabled={breakfastSaving}
+                  className="mt-3 px-4 py-2 text-sm font-semibold text-white rounded-xl disabled:opacity-50 hover:-translate-y-0.5 transition-all"
+                  style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
+                >
+                  {breakfastSaving ? 'Saving…' : 'Save Breakfast Option'}
+                </button>
+              </div>
             </div>
           )}
 

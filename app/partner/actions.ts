@@ -15,6 +15,7 @@ export type PartnerHotel = {
   latitude: number | null;
   longitude: number | null;
   airport_code: string | null;
+  breakfast_price_per_person: number | null;
 };
 
 export type HotelImage = {
@@ -250,7 +251,7 @@ export async function getMyHotels(): Promise<PartnerHotel[]> {
 
   const { data } = await supabase
     .from('hotel_partners')
-    .select('hotels(id, name, city, country, address, description, star_rating, amenities, latitude, longitude, airport_code)')
+    .select('hotels(id, name, city, country, address, description, star_rating, amenities, latitude, longitude, airport_code, breakfast_price_per_person)')
     .eq('user_id', user.id);
 
   type RawHotel = {
@@ -265,6 +266,7 @@ export async function getMyHotels(): Promise<PartnerHotel[]> {
     latitude: number | null;
     longitude: number | null;
     airport_code: string | null;
+    breakfast_price_per_person: number | null;
   };
   type Row = { hotels: RawHotel | RawHotel[] | null };
 
@@ -286,6 +288,7 @@ export async function getMyHotels(): Promise<PartnerHotel[]> {
         latitude:     h.latitude     ?? null,
         longitude:    h.longitude    ?? null,
         airport_code: h.airport_code ?? null,
+        breakfast_price_per_person: h.breakfast_price_per_person ?? null,
       };
     })
     .filter((h): h is PartnerHotel => h !== null);
@@ -630,6 +633,7 @@ export async function updateMyHotel(
     latitude?: number | null;
     longitude?: number | null;
     airport_code?: string | null;
+    breakfast_price_per_person?: number | null;
   }
 ): Promise<{ error: string | null }> {
   const supabase = await createSupabaseServerClient();

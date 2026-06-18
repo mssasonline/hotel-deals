@@ -56,12 +56,15 @@ interface BookingStore {
   checkOutDate: string;
   guests: number;
   totalPrice: number;
+  breakfastIncluded: boolean;
+  breakfastPricePerPerson: number;
   bookings: SavedBooking[];
 
   setSelectedHotel: (hotel: SelectedHotel) => void;
   setRoom: (room: SelectedRoom | null) => void;
   setDates: (checkIn: string, checkOut: string) => void;
   setGuests: (guests: number) => void;
+  setBreakfast: (included: boolean, pricePerPerson: number) => void;
   calculateTotalPrice: () => number;
   confirmBooking: () => string;
   resetBooking: () => void;
@@ -107,6 +110,8 @@ export const useBookingStore = create<BookingStore>()(
       checkOutDate: defaultCheckOut(),
       guests: 2,
       totalPrice: 0,
+      breakfastIncluded: false,
+      breakfastPricePerPerson: 0,
       bookings: [],
 
       setSelectedHotel: (hotel) => set({ selectedHotel: hotel }),
@@ -125,14 +130,18 @@ export const useBookingStore = create<BookingStore>()(
 
       setGuests: (guests) => set({ guests }),
 
+      setBreakfast: (included, pricePerPerson) =>
+        set({ breakfastIncluded: included, breakfastPricePerPerson: pricePerPerson }),
+
       calculateTotalPrice: () => {
-        const { selectedRoom, checkInDate, checkOutDate } = get();
+        const { selectedRoom, checkInDate, checkOutDate, guests, breakfastIncluded, breakfastPricePerPerson } = get();
         if (!selectedRoom) { set({ totalPrice: 0 }); return 0; }
         const nights = calcNights(checkInDate, checkOutDate);
         const price = calcRoomPrice(selectedRoom.basePrice, selectedRoom.pricePerNight).currentPrice;
         const subtotal = price * nights * Math.max(1, selectedRoom.quantity ?? 1);
-        const taxes = Math.round(subtotal * 0.15);
-        const total = subtotal + taxes;
+        const breakfastTotal = breakfastIncluded ? breakfastPricePerPerson * Math.max(1, guests) * nights : 0;
+        const taxes = Math.round((subtotal + breakfastTotal) * 0.15);
+        const total = subtotal + breakfastTotal + taxes;
         set({ totalPrice: total });
         return total;
       },
@@ -183,6 +192,8 @@ export const useBookingStore = create<BookingStore>()(
           checkOutDate: defaultCheckOut(),
           guests: 2,
           totalPrice: 0,
+          breakfastIncluded: false,
+          breakfastPricePerPerson: 0,
         }),
     }),
     {
@@ -194,6 +205,8 @@ export const useBookingStore = create<BookingStore>()(
         checkOutDate: state.checkOutDate,
         guests: state.guests,
         totalPrice: state.totalPrice,
+        breakfastIncluded: state.breakfastIncluded,
+        breakfastPricePerPerson: state.breakfastPricePerPerson,
         bookings: state.bookings,
       }),
     }
