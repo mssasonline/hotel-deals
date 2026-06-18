@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 import AEDAmount, { useAEDFormat } from '../components/AEDAmount';
@@ -198,8 +198,8 @@ export default function BookingsPage() {
                 const nights = calcNightsFromDates(b.check_in, b.check_out);
                 const roomSub = estimateRoomSubtotal(b.total_price, b.subtotal, nights);
                 return (
-                  <>
-                  <tr key={b.id} className="hover:bg-gray-50/50 transition-colors">
+                  <Fragment key={b.id}>
+                  <tr className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 font-mono text-xs text-gray-500 font-semibold">
                       {String(b.id).slice(0, 8)}&hellip;
                     </td>
@@ -254,7 +254,7 @@ export default function BookingsPage() {
                       </td>
                     </tr>
                   )}
-                  </>
+                  </Fragment>
                 );
               })}
               {filtered.length === 0 && (
