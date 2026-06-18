@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/authContext';
 import { saveLoginRedirect } from '@/lib/auth';
 import { useBookingStore } from '@/store/bookingStore';
 import CurrencyAmount from '@/app/components/CurrencyAmount';
-import { getCurrentTier, calcLivePrice, calcActualDiscount, isBookingOpen } from '@/lib/pricingEngine';
+import { getCurrentTier, calcLivePrice, calcActualDiscount, isBookingOpen, calcTaxBreakdown, type HotelFeeConfig, UAE_FEE_DEFAULTS } from '@/lib/pricingEngine';
 import { localDateISO } from '@/lib/dateUtils';
 import type { RoomCategory } from '@/lib/roomImages';
 import { useTranslation } from '@/lib/i18n/useTranslation';
@@ -31,6 +31,7 @@ interface Props {
   stars: number;
   rating: number;
   breakfastPricePerPerson?: number | null;
+  feeConfig?: HotelFeeConfig;
   onClose: () => void;
 }
 
@@ -94,6 +95,7 @@ export default function LiveBookingModal({
   stars,
   rating,
   breakfastPricePerPerson,
+  feeConfig = UAE_FEE_DEFAULTS,
   onClose,
 }: Props) {
   const { user }  = useAuth();
@@ -122,10 +124,17 @@ export default function LiveBookingModal({
   const totalGuests       = adults + children;
   const maxAdults         = capacity;
   const maxChildren       = 2;
-  const hasBreakfast      = breakfastPricePerPerson != null && breakfastPricePerPerson > 0;
-  const breakfastTotal    = hasBreakfast && breakfastSelected ? breakfastPricePerPerson! * totalGuests : 0;
-  const taxes             = Math.round((livePrice + breakfastTotal) * 0.15);
-  const total             = livePrice + breakfastTotal + taxes;
+  const hasBreakfast   = breakfastPricePerPerson != null && breakfastPricePerPerson > 0;
+  const breakfastTotal = hasBreakfast && breakfastSelected ? breakfastPricePerPerson! * totalGuests : 0;
+  const taxBreakdown   = calcTaxBreakdown({
+    roomSubtotal: livePrice,
+    breakfastSubtotal: breakfastTotal,
+    nights: 1,
+    rooms: 1,
+    ...feeConfig,
+  });
+  const taxes = taxBreakdown.total;
+  const total = livePrice + breakfastTotal + taxes;
 
   // Dates: always tonight → tomorrow
   const checkIn  = localDateISO();

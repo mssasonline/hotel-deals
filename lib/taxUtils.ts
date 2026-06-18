@@ -7,19 +7,23 @@
 import { createClient } from '@supabase/supabase-js';
 
 export interface HotelTaxRate {
-  country_code:        string;
-  country_name:        string;
-  vat_pct:             number;
-  fixed_fee_per_night: number;
-  fixed_fee_currency:  string;
+  country_code:         string;
+  country_name:         string;
+  vat_pct:              number;
+  fixed_fee_per_night:  number;
+  fixed_fee_currency:   string;
+  service_charge_pct:   number;
+  municipality_fee_pct: number;
 }
 
 const DEFAULT_TAX: HotelTaxRate = {
-  country_code:        'AE',
-  country_name:        'United Arab Emirates',
-  vat_pct:             5,
-  fixed_fee_per_night: 15,
-  fixed_fee_currency:  'AED',
+  country_code:         'AE',
+  country_name:         'United Arab Emirates',
+  vat_pct:              5,
+  fixed_fee_per_night:  15,
+  fixed_fee_currency:   'AED',
+  service_charge_pct:   10,
+  municipality_fee_pct: 7,
 };
 
 function getServiceClient() {
@@ -61,7 +65,7 @@ export async function getTaxRateForHotel(hotelId: number): Promise<HotelTaxRate>
   // 2. Fetch rate for that country (including star-based fees)
   const { data: rate } = await supabase
     .from('tax_rates')
-    .select('country_code, country_name, vat_pct, fixed_fee_per_night, fixed_fee_currency, fixed_fee_by_stars')
+    .select('country_code, country_name, vat_pct, fixed_fee_per_night, fixed_fee_currency, fixed_fee_by_stars, service_charge_pct, municipality_fee_pct')
     .eq('country_code', countryCode)
     .single();
 
@@ -73,10 +77,12 @@ export async function getTaxRateForHotel(hotelId: number): Promise<HotelTaxRate>
   const fixedFee = starFee !== null ? starFee : Number(rate.fixed_fee_per_night);
 
   return {
-    country_code:        rate.country_code,
-    country_name:        rate.country_name,
-    vat_pct:             Number(rate.vat_pct),
-    fixed_fee_per_night: fixedFee,
-    fixed_fee_currency:  rate.fixed_fee_currency,
+    country_code:         rate.country_code,
+    country_name:         rate.country_name,
+    vat_pct:              Number(rate.vat_pct),
+    fixed_fee_per_night:  fixedFee,
+    fixed_fee_currency:   rate.fixed_fee_currency,
+    service_charge_pct:   Number((rate as Record<string, unknown>).service_charge_pct ?? 10),
+    municipality_fee_pct: Number((rate as Record<string, unknown>).municipality_fee_pct ?? 7),
   };
 }

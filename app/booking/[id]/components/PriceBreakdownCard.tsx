@@ -4,7 +4,7 @@ import CurrencyAmount from '@/app/components/CurrencyAmount';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { useBookingStore } from '@/store/bookingStore';
 import { getTranslations } from '@/lib/i18n/translations';
-import { calcRoomStayPrice } from '@/lib/pricingEngine';
+import { calcRoomStayPrice, calcTaxBreakdown } from '@/lib/pricingEngine';
 import type { HotelDetail, RoomType } from '@/app/hotel/[id]/lib/hotelDetailData';
 
 interface PriceBreakdownCardProps {
@@ -13,6 +13,8 @@ interface PriceBreakdownCardProps {
   taxVatPct?: number;
   fixedFeePerNight?: number;
   taxCountryCode?: string;
+  serviceChargePct?: number;
+  municipalityFeePct?: number;
 }
 
 function parseToISO(dateStr: string): string {
@@ -30,9 +32,11 @@ function parseToISO(dateStr: string): string {
 export default function PriceBreakdownCard({
   hotel,
   room,
-  taxVatPct = 15,
-  fixedFeePerNight = 0,
+  taxVatPct = 5,
+  fixedFeePerNight = 15,
   taxCountryCode = 'AE',
+  serviceChargePct = 10,
+  municipalityFeePct = 7,
 }: PriceBreakdownCardProps) {
   const { checkInDate, checkOutDate, guests, breakfastIncluded, breakfastPricePerPerson } = useBookingStore();
   const language = useAppSettingsStore((s) => s.language);
@@ -50,7 +54,7 @@ export default function PriceBreakdownCard({
   );
 
   const roomsCount = Math.max(1, room.quantity ?? 1);
-  const { currentPrice, basePrice, discountPercent, subtotal, taxes: roomTaxes, total: roomTotal } =
+  const { currentPrice, basePrice, discountPercent, subtotal } =
     calcRoomStayPrice({
       basePrice: room.basePrice,
       pricePerNight: room.pricePerNight,
@@ -60,19 +64,25 @@ export default function PriceBreakdownCard({
       fixedFeePerNight,
     });
 
-  const hasBreakfast = breakfastIncluded && breakfastPricePerPerson > 0;
+  const hasBreakfast   = breakfastIncluded && breakfastPricePerPerson > 0;
   const breakfastTotal = hasBreakfast ? breakfastPricePerPerson * Math.max(1, guests) * nights : 0;
-  const breakfastTax = hasBreakfast ? Math.round(breakfastTotal * (taxVatPct / 100)) : 0;
-  const taxes = roomTaxes + breakfastTax;
-  const total = roomTotal + breakfastTotal + breakfastTax;
+
+  const taxBreakdown = calcTaxBreakdown({
+    roomSubtotal: subtotal,
+    breakfastSubtotal: breakfastTotal,
+    nights,
+    rooms: roomsCount,
+    serviceChargePct,
+    municipalityFeePct,
+    tourismDirhamPerNight: fixedFeePerNight,
+    vatPct: taxVatPct,
+  });
+
+  const taxes = taxBreakdown.total;
+  const total = subtotal + breakfastTotal + taxes;
 
   const totalBasePrice = basePrice * nights * roomsCount;
   const savings = totalBasePrice - subtotal;
-
-  // Tax breakdown for tooltip/display
-  const vatAmount = Math.round((subtotal + breakfastTotal) * (taxVatPct / 100));
-  const fixedFees = taxes - vatAmount;
-  const showFixedFee = fixedFees > 0;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -116,22 +126,16 @@ export default function PriceBreakdownCard({
             </div>
           )}
 
-          {/* Tax breakdown */}
+          {/* Taxes & fees — single line for guests */}
           <div className="flex justify-between items-center">
             <span className="text-gray-500 flex items-center gap-1.5">
               {t['price.taxes']}
               <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full font-medium">
-                {taxCountryCode} · {taxVatPct}% VAT
+                {taxCountryCode}
               </span>
             </span>
-            <span className="font-medium text-gray-900"><CurrencyAmount amount={vatAmount} /></span>
+            <span className="font-medium text-gray-900"><CurrencyAmount amount={taxes} /></span>
           </div>
-          {showFixedFee && (
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500 text-xs">Tourism fee ({nights} {nights === 1 ? 'night' : 'nights'})</span>
-              <span className="font-medium text-gray-900 text-xs"><CurrencyAmount amount={fixedFees} /></span>
-            </div>
-          )}
         </div>
 
         {/* Divider + total */}

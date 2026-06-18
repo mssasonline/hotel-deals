@@ -192,6 +192,7 @@ export type BookingRow = {
   status: string;
   payment_status: string;
   total_price: number;
+  subtotal: number | null;
   created_at: string;
   rooms: { name: string } | null;
 };
@@ -224,7 +225,7 @@ export async function getMyBookings(): Promise<{
 
   const { data: bookingData } = await supabase
     .from('bookings')
-    .select('id, hotel_id, guest_name, guest_email, check_in, check_out, status, payment_status, total_price, created_at, rooms(name)')
+    .select('id, hotel_id, guest_name, guest_email, check_in, check_out, status, payment_status, total_price, subtotal, created_at, rooms(name)')
     .in('hotel_id', hotelIds)
     .order('created_at', { ascending: false });
 

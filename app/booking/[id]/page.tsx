@@ -145,6 +145,8 @@ export default async function BookingPage({ params }: Props) {
             taxVatPct={taxRate.vat_pct}
             fixedFeePerNight={taxRate.fixed_fee_per_night}
             taxCountryCode={taxRate.country_code}
+            serviceChargePct={taxRate.service_charge_pct}
+            municipalityFeePct={taxRate.municipality_fee_pct}
           />
         </div>
       </main>

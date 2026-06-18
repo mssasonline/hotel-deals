@@ -106,6 +106,64 @@ export function getAllTiers(basePrice: number, minPrice: number = 0) {
   });
 }
 
+// ── UAE Hotel Fee Structure ───────────────────────────────────────────────────
+
+export interface HotelFeeConfig {
+  serviceChargePct: number;       // typically 10% — on room subtotal
+  municipalityFeePct: number;     // typically 7%  — on room subtotal
+  tourismDirhamPerNight: number;  // typically AED 15 per room per night (fixed)
+  vatPct: number;                 // typically 5%  — on room + breakfast only
+}
+
+export const UAE_FEE_DEFAULTS: HotelFeeConfig = {
+  serviceChargePct: 10,
+  municipalityFeePct: 7,
+  tourismDirhamPerNight: 15,
+  vatPct: 5,
+};
+
+export interface TaxBreakdown {
+  serviceCharge: number;
+  municipalityFee: number;
+  tourismDirham: number;
+  vat: number;
+  total: number;
+}
+
+/**
+ * UAE hotel tax breakdown per UAE hospitality law:
+ *   Service charge  10% of room subtotal
+ *   Municipality fee 7% of room subtotal
+ *   Tourism Dirham  AED 15 × nights × rooms (fixed)
+ *   VAT              5% of (room + breakfast) only
+ */
+export function calcTaxBreakdown({
+  roomSubtotal,
+  breakfastSubtotal = 0,
+  nights = 1,
+  rooms = 1,
+  serviceChargePct = UAE_FEE_DEFAULTS.serviceChargePct,
+  municipalityFeePct = UAE_FEE_DEFAULTS.municipalityFeePct,
+  tourismDirhamPerNight = UAE_FEE_DEFAULTS.tourismDirhamPerNight,
+  vatPct = UAE_FEE_DEFAULTS.vatPct,
+}: {
+  roomSubtotal: number;
+  breakfastSubtotal?: number;
+  nights?: number;
+  rooms?: number;
+  serviceChargePct?: number;
+  municipalityFeePct?: number;
+  tourismDirhamPerNight?: number;
+  vatPct?: number;
+}): TaxBreakdown {
+  const serviceCharge   = Math.round(roomSubtotal * serviceChargePct / 100);
+  const municipalityFee = Math.round(roomSubtotal * municipalityFeePct / 100);
+  const tourismDirham   = Math.round(tourismDirhamPerNight * nights * rooms);
+  const vat             = Math.round((roomSubtotal + breakfastSubtotal) * vatPct / 100);
+  const total           = serviceCharge + municipalityFee + tourismDirham + vat;
+  return { serviceCharge, municipalityFee, tourismDirham, vat, total };
+}
+
 export interface RoomPriceResult {
   currentPrice: number;
   basePrice: number;

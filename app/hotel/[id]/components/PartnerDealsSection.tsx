@@ -7,6 +7,7 @@ import { saveLoginRedirect } from '@/lib/auth';
 import CurrencyAmount from '@/app/components/CurrencyAmount';
 import DealBookingModal from './DealBookingModal';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { type HotelFeeConfig, UAE_FEE_DEFAULTS } from '@/lib/pricingEngine';
 
 export interface PartnerDeal {
   id: string;
@@ -31,6 +32,7 @@ interface Props {
   rating: number;
   deals: PartnerDeal[];
   breakfastPricePerPerson?: number | null;
+  feeConfig?: HotelFeeConfig;
 }
 
 function fmtDate(iso: string) {
@@ -57,6 +59,7 @@ export default function PartnerDealsSection({
   rating,
   deals,
   breakfastPricePerPerson,
+  feeConfig = UAE_FEE_DEFAULTS,
 }: Props) {
   const { user } = useAuth();
   const router   = useRouter();
@@ -93,6 +96,7 @@ export default function PartnerDealsSection({
           stars={stars}
           rating={rating}
           breakfastPricePerPerson={breakfastPricePerPerson ?? null}
+          feeConfig={feeConfig}
           onClose={() => setModalDeal(null)}
         />
       )}

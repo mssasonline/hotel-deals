@@ -8,6 +8,7 @@ import { useBookingStore } from '@/store/bookingStore';
 import CurrencyAmount from '@/app/components/CurrencyAmount';
 import type { RoomCategory } from '@/lib/roomImages';
 import type { PartnerDeal } from './PartnerDealsSection';
+import { calcTaxBreakdown, type HotelFeeConfig, UAE_FEE_DEFAULTS } from '@/lib/pricingEngine';
 
 interface Props {
   deal: PartnerDeal;
@@ -19,6 +20,7 @@ interface Props {
   stars: number;
   rating: number;
   breakfastPricePerPerson?: number | null;
+  feeConfig?: HotelFeeConfig;
   onClose: () => void;
 }
 
@@ -57,6 +59,7 @@ export default function DealBookingModal({
   stars,
   rating,
   breakfastPricePerPerson,
+  feeConfig = UAE_FEE_DEFAULTS,
   onClose,
 }: Props) {
   const { user } = useAuth();
@@ -86,12 +89,19 @@ export default function DealBookingModal({
   const [availability,   setAvailability]   = useState<number | null>(null);
   const [checkingAvail,  setCheckingAvail]  = useState(false);
 
-  const nights          = countNights(checkIn, checkOut);
-  const subtotal        = nights * deal.deal_price;
-  const hasBreakfast    = breakfastPricePerPerson != null && breakfastPricePerPerson > 0;
-  const breakfastTotal  = hasBreakfast && breakfastSelected ? breakfastPricePerPerson! * totalGuests * nights : 0;
-  const taxes           = Math.round((subtotal + breakfastTotal) * 0.15);
-  const total           = subtotal + breakfastTotal + taxes;
+  const nights         = countNights(checkIn, checkOut);
+  const subtotal       = nights * deal.deal_price;
+  const hasBreakfast   = breakfastPricePerPerson != null && breakfastPricePerPerson > 0;
+  const breakfastTotal = hasBreakfast && breakfastSelected ? breakfastPricePerPerson! * totalGuests * nights : 0;
+  const taxBreakdown   = calcTaxBreakdown({
+    roomSubtotal: subtotal,
+    breakfastSubtotal: breakfastTotal,
+    nights: Math.max(1, nights),
+    rooms: 1,
+    ...feeConfig,
+  });
+  const taxes = taxBreakdown.total;
+  const total = subtotal + breakfastTotal + taxes;
   const disc     = deal.base_price > 0
     ? Math.round((1 - deal.deal_price / deal.base_price) * 100)
     : 0;

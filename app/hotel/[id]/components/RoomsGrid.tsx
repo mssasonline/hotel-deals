@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { getCurrentTier, calcLivePrice, calcActualDiscount, isBookingOpen, type PriceTier } from '@/lib/pricingEngine';
+import { getCurrentTier, calcLivePrice, calcActualDiscount, isBookingOpen, type PriceTier, type HotelFeeConfig, UAE_FEE_DEFAULTS } from '@/lib/pricingEngine';
 import { getRoomImage } from '@/lib/roomImages';
 import CurrencyAmount from '@/app/components/CurrencyAmount';
 import LiveBookingModal from './LiveBookingModal';
@@ -51,6 +51,7 @@ interface Props {
   stars: number;
   rating: number;
   breakfastPricePerPerson?: number | null;
+  feeConfig?: HotelFeeConfig;
 }
 
 function getRoomBasePrice(room: Room): number {
@@ -62,7 +63,7 @@ function getRoomMinPrice(room: Room): number {
   return Math.round(getRoomBasePrice(room) * 0.6);
 }
 
-export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, address, stars, rating, breakfastPricePerPerson }: Props) {
+export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, address, stars, rating, breakfastPricePerPerson, feeConfig = UAE_FEE_DEFAULTS }: Props) {
   const [modalRoom, setModalRoom] = useState<Room | null>(null);
   const tier        = useLiveTier();
   const bookingOpen = useBookingOpen();
@@ -89,6 +90,7 @@ export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, a
           stars={stars}
           rating={rating}
           breakfastPricePerPerson={breakfastPricePerPerson ?? null}
+          feeConfig={feeConfig}
           onClose={() => setModalRoom(null)}
         />
       )}

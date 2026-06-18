@@ -5,8 +5,21 @@ import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 import AEDAmount, { useAEDFormat } from '../components/AEDAmount';
 import { getMyBookings, type BookingRow } from '../actions';
+import TaxFeeBreakdown from '@/app/components/TaxFeeBreakdown';
 
 type Booking = BookingRow;
+
+function calcNightsFromDates(checkIn: string, checkOut: string): number {
+  const a = new Date(checkIn).getTime();
+  const b = new Date(checkOut).getTime();
+  return Math.max(1, Math.round((b - a) / 86_400_000));
+}
+
+function estimateRoomSubtotal(totalPrice: number, subtotal: number | null, nights: number): number {
+  if (subtotal != null && subtotal > 0) return subtotal;
+  // Back-calculate from total: total = room×1.22 + 15×nights, so room ≈ (total - 15×nights)/1.22
+  return Math.max(0, Math.round((totalPrice - 15 * nights) / 1.22));
+}
 
 const BOOKING_STATUS_STYLE: Record<string, { bg: string; text: string; dot: string; key: string }> = {
   upcoming:   { bg: 'bg-blue-50',   text: 'text-blue-700',  dot: 'bg-blue-500',  key: 'partner.status.upcoming'   },
@@ -35,6 +48,7 @@ export default function BookingsPage() {
   const [search, setSearch]             = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [hotelFilter, setHotelFilter]   = useState('all');
+  const [expandedId, setExpandedId]     = useState<string | null>(null);
 
   useEffect(() => {
     getMyBookings()
@@ -181,7 +195,10 @@ export default function BookingsPage() {
                 const statusLabel = cfg
                   ? (t[cfg.key as keyof typeof t] as string ?? b.status)
                   : b.status.replace(/_/g, ' ');
+                const nights = calcNightsFromDates(b.check_in, b.check_out);
+                const roomSub = estimateRoomSubtotal(b.total_price, b.subtotal, nights);
                 return (
+                  <>
                   <tr key={b.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 font-mono text-xs text-gray-500 font-semibold">
                       {String(b.id).slice(0, 8)}&hellip;
@@ -209,13 +226,35 @@ export default function BookingsPage() {
                         {b.payment_status ?? '—'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right font-bold text-gray-900">
-                      {(b.total_price ?? 0) > 0
-                        ? <AEDAmount amount={b.total_price} />
-                        : <span className="text-gray-400 font-normal">—</span>
-                      }
+                    <td className="px-6 py-4 text-right">
+                      {(b.total_price ?? 0) > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => setExpandedId(expandedId === b.id ? null : b.id)}
+                          className="group flex items-center gap-1.5 ml-auto hover:text-brand-blue transition-colors"
+                        >
+                          <span className="font-bold text-gray-900 group-hover:text-brand-blue">
+                            <AEDAmount amount={b.total_price} />
+                          </span>
+                          <svg className={`w-3.5 h-3.5 text-gray-400 group-hover:text-brand-blue transition-transform ${expandedId === b.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      ) : (
+                        <span className="text-gray-400 font-normal">—</span>
+                      )}
                     </td>
                   </tr>
+                  {expandedId === b.id && (b.total_price ?? 0) > 0 && (
+                    <tr key={`${b.id}-breakdown`}>
+                      <td colSpan={multiHotel ? 9 : 8} className="px-6 pb-4 pt-0 bg-gray-50/60">
+                        <div className="max-w-sm ml-auto pt-2">
+                          <TaxFeeBreakdown roomSubtotal={roomSub} nights={nights} />
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </>
                 );
               })}
               {filtered.length === 0 && (

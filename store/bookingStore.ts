@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { calcRoomPrice } from '@/lib/pricingEngine';
+import { calcRoomPrice, calcTaxBreakdown, UAE_FEE_DEFAULTS } from '@/lib/pricingEngine';
 import type { RoomCategory } from '@/lib/roomImages';
 
 export interface SelectedHotel {
@@ -137,10 +137,11 @@ export const useBookingStore = create<BookingStore>()(
         const { selectedRoom, checkInDate, checkOutDate, guests, breakfastIncluded, breakfastPricePerPerson } = get();
         if (!selectedRoom) { set({ totalPrice: 0 }); return 0; }
         const nights = calcNights(checkInDate, checkOutDate);
+        const rooms = Math.max(1, selectedRoom.quantity ?? 1);
         const price = calcRoomPrice(selectedRoom.basePrice, selectedRoom.pricePerNight).currentPrice;
-        const subtotal = price * nights * Math.max(1, selectedRoom.quantity ?? 1);
+        const subtotal = price * nights * rooms;
         const breakfastTotal = breakfastIncluded ? breakfastPricePerPerson * Math.max(1, guests) * nights : 0;
-        const taxes = Math.round((subtotal + breakfastTotal) * 0.15);
+        const taxes = calcTaxBreakdown({ roomSubtotal: subtotal, breakfastSubtotal: breakfastTotal, nights, rooms, ...UAE_FEE_DEFAULTS }).total;
         const total = subtotal + breakfastTotal + taxes;
         set({ totalPrice: total });
         return total;

@@ -5,6 +5,8 @@ import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { getDealStatus } from '@/lib/dealsEngine';
+import { getTaxRateForHotel } from '@/lib/taxUtils';
+import { type HotelFeeConfig } from '@/lib/pricingEngine';
 import RoomsGrid from './components/RoomsGrid';
 import { HotelClientLabel, HotelRatingLabel } from './components/HotelClientLabel';
 import HotelGalleryLightbox from './components/HotelGalleryLightbox';
@@ -117,6 +119,7 @@ export default async function HotelPage({ params }: Props) {
   const [
     { data: row, error },
     { data: rooms, error: roomsError },
+    hotelTaxRate,
     { data: rawReviews },
     { data: hotelImages },
     { data: rawDeals },
@@ -127,6 +130,7 @@ export default async function HotelPage({ params }: Props) {
       .select('*')
       .eq('hotel_id', hotelId)
       .order('base_price', { ascending: true, nullsFirst: false }),
+    getTaxRateForHotel(hotelId),
     supabase
       .from('reviews')
       .select('id, booking_id, hotel_id, user_id, rating, comment, created_at, bookings(guest_name)')
@@ -167,6 +171,13 @@ export default async function HotelPage({ params }: Props) {
   const breakfastPricePerPerson: number | null = row.breakfast_price_per_person != null
     ? Number(row.breakfast_price_per_person)
     : null;
+
+  const feeConfig: HotelFeeConfig = {
+    serviceChargePct:      hotelTaxRate.service_charge_pct,
+    municipalityFeePct:    hotelTaxRate.municipality_fee_pct,
+    tourismDirhamPerNight: hotelTaxRate.fixed_fee_per_night,
+    vatPct:                hotelTaxRate.vat_pct,
+  };
 
   // ── Gallery images ───────────────────────────────────────────
   const rawImages = (hotelImages ?? []) as HotelImage[];
@@ -424,6 +435,7 @@ export default async function HotelPage({ params }: Props) {
               <RoomsGrid
                 rooms={(rooms ?? []) as Room[]}
                 breakfastPricePerPerson={breakfastPricePerPerson}
+                feeConfig={feeConfig}
                 {...hotelBaseProps}
               />
             </section>
@@ -433,6 +445,7 @@ export default async function HotelPage({ params }: Props) {
               <PartnerDealsSection
                 deals={partnerDeals}
                 breakfastPricePerPerson={breakfastPricePerPerson}
+                feeConfig={feeConfig}
                 {...hotelBaseProps}
               />
             )}

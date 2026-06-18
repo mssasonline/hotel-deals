@@ -10,7 +10,7 @@ import { sendBookingEmailAction } from '@/lib/actions/sendBookingEmail';
 import { createBooking } from '../actions';
 import type { HotelDetail } from '@/app/hotel/[id]/lib/hotelDetailData';
 import { useBookingStore } from '@/store/bookingStore';
-import { calcRoomPrice } from '@/lib/pricingEngine';
+import { calcRoomPrice, calcTaxBreakdown } from '@/lib/pricingEngine';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import BookingSummary from './BookingSummary';
 import PriceBreakdownCard from './PriceBreakdownCard';
@@ -33,14 +33,18 @@ function parseToISO(dateStr: string): string {
 
 export default function BookingPageClient({
   hotel,
-  taxVatPct = 15,
-  fixedFeePerNight = 0,
+  taxVatPct = 5,
+  fixedFeePerNight = 15,
   taxCountryCode = 'AE',
+  serviceChargePct = 10,
+  municipalityFeePct = 7,
 }: {
   hotel: HotelDetail;
   taxVatPct?: number;
   fixedFeePerNight?: number;
   taxCountryCode?: string;
+  serviceChargePct?: number;
+  municipalityFeePct?: number;
 }) {
   const router = useRouter();
   const { user, loading } = useAuth();
@@ -81,9 +85,17 @@ export default function BookingPageClient({
   const subtotal = nights * pricePerNight * roomsCount;
   const hasBreakfast = breakfastIncluded && breakfastPricePerPerson > 0;
   const breakfastTotal = hasBreakfast ? breakfastPricePerPerson * Math.max(1, guests) * nights : 0;
-  const vatAmount = Math.round((subtotal + breakfastTotal) * (taxVatPct / 100));
-  const fixedFees = Math.round(fixedFeePerNight * nights * roomsCount);
-  const taxes = vatAmount + fixedFees;
+  const taxBreakdown = calcTaxBreakdown({
+    roomSubtotal: subtotal,
+    breakfastSubtotal: breakfastTotal,
+    nights,
+    rooms: roomsCount,
+    serviceChargePct,
+    municipalityFeePct,
+    tourismDirhamPerNight: fixedFeePerNight,
+    vatPct: taxVatPct,
+  });
+  const taxes = taxBreakdown.total;
   const total = subtotal + breakfastTotal + taxes;
 
   useEffect(() => {
@@ -274,7 +286,7 @@ export default function BookingPageClient({
 
         {/* Mobile price breakdown between forms */}
         <div className="lg:hidden">
-          <PriceBreakdownCard hotel={hotel} room={room} taxVatPct={taxVatPct} fixedFeePerNight={fixedFeePerNight} taxCountryCode={taxCountryCode} />
+          <PriceBreakdownCard hotel={hotel} room={room} taxVatPct={taxVatPct} fixedFeePerNight={fixedFeePerNight} taxCountryCode={taxCountryCode} serviceChargePct={serviceChargePct} municipalityFeePct={municipalityFeePct} />
         </div>
 
         {/* Saved cards — shown when user has at least one */}
@@ -412,7 +424,7 @@ export default function BookingPageClient({
       <div className="hidden lg:block">
         <div className="sticky top-24 space-y-4">
           <BookingSummary hotel={hotel} room={room} checkIn={checkIn} checkOut={checkOut} guests={guests} nights={nights} breakfastIncluded={breakfastIncluded} breakfastPricePerPerson={breakfastPricePerPerson} />
-          <PriceBreakdownCard hotel={hotel} room={room} taxVatPct={taxVatPct} fixedFeePerNight={fixedFeePerNight} taxCountryCode={taxCountryCode} />
+          <PriceBreakdownCard hotel={hotel} room={room} taxVatPct={taxVatPct} fixedFeePerNight={fixedFeePerNight} taxCountryCode={taxCountryCode} serviceChargePct={serviceChargePct} municipalityFeePct={municipalityFeePct} />
         </div>
       </div>
 
