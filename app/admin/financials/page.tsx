@@ -57,36 +57,54 @@ function monthLabel(ym: string): string {
 export default async function AdminFinancialsPage() {
   const admin = createAdminClient();
 
-  // All paid bookings with revenue split + hotel + partner info
+  // Step 1: All paid bookings with revenue split + hotel name
   const { data: bookings } = await admin
     .from('bookings')
     .select(`
       id, hotel_id, check_in, check_out, subtotal, total_price, room_count, created_at,
       booking_revenue ( partner_amount, admin_amount ),
-      hotels ( name, hotel_partners ( user_id, profiles ( id, full_name, email ) ) )
+      hotels ( name, hotel_partners ( user_id ) )
     `)
     .eq('payment_status', 'paid')
     .neq('status', 'cancelled')
     .order('created_at', { ascending: false });
+
+  // Step 2: Build hotel_id → partner user_id map, then fetch profiles separately
+  const hotelToPartnerUser = new Map<string, string>();
+  for (const b of (bookings ?? []) as Record<string, unknown>[]) {
+    const hotel = (Array.isArray(b.hotels) ? b.hotels[0] : b.hotels) as {
+      name: string;
+      hotel_partners: Array<{ user_id: string }> | null;
+    } | null;
+    const uid = hotel?.hotel_partners?.[0]?.user_id;
+    if (uid) hotelToPartnerUser.set(String(b.hotel_id), uid);
+  }
+
+  const uniqueUserIds = [...new Set(hotelToPartnerUser.values())];
+  const profileMap = new Map<string, string>(); // user_id → display name
+  if (uniqueUserIds.length > 0) {
+    const { data: profiles } = await admin
+      .from('profiles')
+      .select('id, full_name, email')
+      .in('id', uniqueUserIds);
+    for (const p of (profiles ?? []) as { id: string; full_name: string | null; email: string | null }[]) {
+      profileMap.set(p.id, p.full_name || p.email || p.id);
+    }
+  }
 
   const rawRows: RawBooking[] = [];
 
   for (const b of (bookings ?? []) as Record<string, unknown>[]) {
     const rev = (Array.isArray(b.booking_revenue) ? b.booking_revenue[0] : b.booking_revenue) as
       { partner_amount: number; admin_amount: number } | null;
-
-    const hotel = (Array.isArray(b.hotels) ? b.hotels[0] : b.hotels) as {
-      name: string;
-      hotel_partners: Array<{ user_id: string; profiles: { id: string; full_name: string | null; email: string } | null }> | null;
-    } | null;
-
-    const hp = hotel?.hotel_partners?.[0] ?? null;
-    const profile = hp?.profiles ?? null;
+    const hotel = (Array.isArray(b.hotels) ? b.hotels[0] : b.hotels) as { name: string } | null;
     const total = Number(b.total_price ?? 0);
+    const hotelId = String(b.hotel_id);
+    const partnerUserId = hotelToPartnerUser.get(hotelId) ?? '';
 
     rawRows.push({
       id: String(b.id),
-      hotel_id: String(b.hotel_id),
+      hotel_id: hotelId,
       check_in: String(b.check_in),
       check_out: String(b.check_out),
       subtotal: Number(b.subtotal ?? 0),
@@ -96,7 +114,7 @@ export default async function AdminFinancialsPage() {
       partner_amount: Number(rev?.partner_amount ?? total * 0.9),
       admin_amount: Number(rev?.admin_amount ?? total * 0.1),
       hotel_name: hotel?.name ?? '—',
-      partner_name: profile?.full_name || profile?.email || hp?.user_id || 'Unknown',
+      partner_name: profileMap.get(partnerUserId) || partnerUserId || 'Unknown',
     });
   }
 
