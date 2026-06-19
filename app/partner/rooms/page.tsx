@@ -934,9 +934,9 @@ export default function RoomsPage() {
                     </td>
                     {/* Capacity */}
                     <td className="px-3 py-3 text-gray-600 text-sm text-center">{room.capacity ?? 0}</td>
-                    {/* Base price */}
+                    {/* Base price — shows today's effective rate from calendar */}
                     <td className="px-3 py-3 whitespace-nowrap">
-                      <span className="font-semibold text-gray-800 text-sm"><AEDAmount amount={basePrice} /></span>
+                      <span className="font-semibold text-gray-800 text-sm"><AEDAmount amount={effectivePrice} /></span>
                       <span className="text-[10px] text-gray-400 block leading-tight">{t['partner.dash.perNight']}</span>
                     </td>
                     {/* Min price */}
