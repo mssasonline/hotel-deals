@@ -104,8 +104,8 @@ export default function PriceBreakdownCard({
             </span>
             <div className="flex items-center gap-2">
               {totalBasePrice > subtotal && (
-                <span className="text-red-500 text-sm font-semibold" style={{ textDecoration: 'line-through', textDecorationThickness: '2px' }}>
-                  <CurrencyAmount amount={basePrice * nights} />
+                <span className="text-base font-semibold text-red-500">
+                  <CurrencyAmount amount={basePrice * nights} className="line-through decoration-2 decoration-red-500" />
                 </span>
               )}
               <span className="font-medium text-gray-900"><CurrencyAmount amount={currentPrice * nights} /></span>

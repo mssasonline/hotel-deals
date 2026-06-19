@@ -171,8 +171,8 @@ export default function PartnerDealsSection({
                 {/* Price + CTA */}
                 <div className="border-t sm:border-t-0 sm:border-l border-gray-100 bg-gray-50/50 px-5 py-5 flex flex-col justify-center items-end gap-2 sm:min-w-[170px]">
                   {deal.base_price > deal.deal_price && (
-                    <p className="text-xs text-red-400 line-through">
-                      <CurrencyAmount amount={deal.base_price} />{t['price.perNight']}
+                    <p className="text-base font-semibold leading-none mb-0.5 text-red-500">
+                      <CurrencyAmount amount={deal.base_price} className="line-through decoration-2 decoration-red-500" />{t['price.perNight']}
                     </p>
                   )}
                   <div className="flex items-baseline gap-1">
@@ -240,8 +240,8 @@ export default function PartnerDealsSection({
                 {/* Price + CTA */}
                 <div className="border-t sm:border-t-0 sm:border-l border-amber-100 bg-amber-50/30 px-5 py-5 flex flex-col justify-center items-end gap-2 sm:min-w-[170px]">
                   {deal.base_price > deal.deal_price && (
-                    <p className="text-xs text-red-400 line-through">
-                      <CurrencyAmount amount={deal.base_price} />{t['price.perNight']}
+                    <p className="text-base font-semibold leading-none mb-0.5 text-red-500">
+                      <CurrencyAmount amount={deal.base_price} className="line-through decoration-2 decoration-red-500" />{t['price.perNight']}
                     </p>
                   )}
                   <div className="flex items-baseline gap-1">

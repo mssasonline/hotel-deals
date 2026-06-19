@@ -132,8 +132,8 @@ export default function SpecialDealsPreview({ deals }: Props) {
                     <div className="flex items-end justify-between">
                       <div>
                         {deal.basePrice > deal.dealPrice && (
-                          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)', textDecoration: 'line-through', textDecorationColor: 'rgba(255,255,255,0.25)' }}>
-                            <AEDAmount amount={deal.basePrice} />
+                          <p className="text-base font-semibold leading-none mb-1 text-red-400">
+                            <AEDAmount amount={deal.basePrice} className="line-through decoration-2 decoration-red-400" /><span className="text-xs font-normal text-white/30">/night</span>
                           </p>
                         )}
                         <div className="flex items-baseline gap-1 mt-0.5">

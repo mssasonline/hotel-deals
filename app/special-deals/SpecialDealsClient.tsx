@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { SpecialDealHotel } from './page';
 import AEDAmount from '@/app/partner/components/AEDAmount';
 import FilterSidebar, { type FilterState, DEFAULT_FILTERS } from '@/app/search/components/FilterSidebar';
+
+type SortOption = 'discount' | 'price' | 'rating' | 'recommended';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80';
 const NO_PRICE_LIMIT = 99999;
@@ -114,9 +116,9 @@ function HotelDealCard({ hotel, index, checkIn, checkOut }: { hotel: SpecialDeal
               </span>
               <span className="text-xs text-gray-400">/night</span>
             </div>
-            {hotel.bestBasePrice > 0 && (
-              <p className="text-xs text-red-400 line-through">
-                <AEDAmount amount={hotel.bestBasePrice} />
+            {hotel.bestBasePrice > hotel.bestDealPrice && (
+              <p className="text-base font-semibold leading-none mt-1 text-red-500">
+                <AEDAmount amount={hotel.bestBasePrice} className="line-through decoration-2 decoration-red-500" /><span className="text-xs font-normal text-gray-400">/night</span>
               </p>
             )}
           </div>
@@ -154,6 +156,17 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
   const [checkOut, setCheckOut] = useState('');
   const [filters, setFilters]   = useState<FilterState>(DEFAULT_FILTERS);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [sortBy, setSortBy]     = useState<SortOption>('discount');
+
+  const checkInRef  = useRef<HTMLInputElement>(null);
+  const checkOutRef = useRef<HTMLInputElement>(null);
+
+  const sortOptions: { value: SortOption; label: string }[] = [
+    { value: 'discount',    label: 'Highest Discount' },
+    { value: 'price',       label: 'Lowest Price' },
+    { value: 'rating',      label: 'Guest Rating' },
+    { value: 'recommended', label: 'Recommended' },
+  ];
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -205,8 +218,17 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
     filters.selectedCities.length > 0,
   ].filter(Boolean).length;
 
-  const activeNow = filtered.filter(h => !h.isUpcoming);
-  const upcoming  = filtered.filter(h =>  h.isUpcoming);
+  const sortFn = (a: SpecialDealHotel, b: SpecialDealHotel): number => {
+    switch (sortBy) {
+      case 'discount':    return b.discountPct - a.discountPct;
+      case 'price':       return a.bestDealPrice - b.bestDealPrice;
+      case 'rating':      return b.rating - a.rating;
+      case 'recommended': return (b.stars - a.stars) || (b.rating - a.rating);
+    }
+  };
+
+  const activeNow = filtered.filter(h => !h.isUpcoming).sort(sortFn);
+  const upcoming  = filtered.filter(h =>  h.isUpcoming).sort(sortFn);
 
   const hasDateFilter = !!(checkIn && checkOut);
 
@@ -239,38 +261,40 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
             </div>
 
             {/* Check-in */}
-            <label className="flex items-center gap-2 px-4 py-3 border-b sm:border-b-0 sm:border-r border-gray-100 cursor-pointer min-w-[150px]">
-              <svg className="w-4 h-4 text-brand-blue shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+            <div
+              className="flex items-center px-4 py-3 border-b sm:border-b-0 sm:border-r border-gray-100 cursor-pointer min-w-[150px]"
+              onClick={() => checkInRef.current?.showPicker()}
+            >
               <div className="flex flex-col min-w-0">
                 <span className="text-[10px] text-gray-400 uppercase tracking-wide leading-none mb-0.5">Check-in</span>
                 <input
+                  ref={checkInRef}
                   type="date"
                   value={checkIn}
                   min={today}
                   onChange={(e) => handleCheckIn(e.target.value)}
-                  className="outline-none text-gray-800 text-sm bg-transparent cursor-pointer"
+                  className="outline-none text-gray-800 text-sm bg-transparent cursor-pointer pointer-events-none"
                 />
               </div>
-            </label>
+            </div>
 
             {/* Check-out */}
-            <label className="flex items-center gap-2 px-4 py-3 border-b sm:border-b-0 sm:border-r border-gray-100 cursor-pointer min-w-[150px]">
-              <svg className="w-4 h-4 text-brand-blue shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+            <div
+              className="flex items-center px-4 py-3 border-b sm:border-b-0 sm:border-r border-gray-100 cursor-pointer min-w-[150px]"
+              onClick={() => checkOutRef.current?.showPicker()}
+            >
               <div className="flex flex-col min-w-0">
                 <span className="text-[10px] text-gray-400 uppercase tracking-wide leading-none mb-0.5">Check-out</span>
                 <input
+                  ref={checkOutRef}
                   type="date"
                   value={checkOut}
                   min={checkIn || today}
                   onChange={(e) => setCheckOut(e.target.value)}
-                  className="outline-none text-gray-800 text-sm bg-transparent cursor-pointer"
+                  className="outline-none text-gray-800 text-sm bg-transparent cursor-pointer pointer-events-none"
                 />
               </div>
-            </label>
+            </div>
 
             {/* Clear dates */}
             {hasDateFilter && (
@@ -317,9 +341,27 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
           {/* Content */}
           <div className="flex-1 min-w-0">
 
-            {/* Active filters row */}
-            <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
-              <div className="flex items-center gap-2 flex-wrap">
+            {/* Sort bar */}
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 mb-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+              <div className="flex gap-1.5 flex-wrap">
+                {sortOptions.map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setSortBy(opt.value)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                      sortBy === opt.value
+                        ? 'text-white shadow-sm'
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
+                    }`}
+                    style={sortBy === opt.value ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0">
                 {hasDateFilter && (
                   <span className="flex items-center gap-1.5 bg-brand-blue/8 border border-brand-blue/20 text-brand-blue text-xs font-semibold px-3 py-1.5 rounded-full">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -328,24 +370,23 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
                     {fmtDate(checkIn)} → {fmtDate(checkOut)}
                   </span>
                 )}
-                {activeFiltersCount > 0 && (
-                  <span className="text-xs text-gray-400">{activeFiltersCount} filter{activeFiltersCount !== 1 ? 's' : ''} active</span>
-                )}
+                <span className="text-gray-500 text-sm">
+                  <span className="font-bold text-gray-900">{filtered.length}</span> offer{filtered.length !== 1 ? 's' : ''}
+                </span>
+                {/* Mobile filter button */}
+                <button
+                  onClick={() => setMobileFiltersOpen(true)}
+                  className="lg:hidden flex items-center gap-1.5 border border-gray-200 hover:border-brand-blue text-gray-700 hover:text-brand-blue text-sm font-medium px-3 py-1.5 rounded-lg transition-colors bg-white"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+                  </svg>
+                  Filters
+                  {activeFiltersCount > 0 && (
+                    <span className="bg-brand-blue text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{activeFiltersCount}</span>
+                  )}
+                </button>
               </div>
-
-              {/* Mobile filter button */}
-              <button
-                onClick={() => setMobileFiltersOpen(true)}
-                className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 shadow-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
-                </svg>
-                Filters
-                {activeFiltersCount > 0 && (
-                  <span className="bg-brand-blue text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">{activeFiltersCount}</span>
-                )}
-              </button>
             </div>
 
             {/* Hotel grid */}

@@ -214,8 +214,8 @@ export default function RoomsGrid({ rooms, todayRates, hotelId, hotelName, city,
                   <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                     <div>
                       {discountPercent > 0 && (
-                        <p className="text-xs text-red-400 line-through">
-                          <CurrencyAmount amount={basePrice} />
+                        <p className="text-base font-semibold leading-none mb-1 text-red-500">
+                          <CurrencyAmount amount={basePrice} className="line-through decoration-2 decoration-red-500" />{t['price.perNight']}
                         </p>
                       )}
                       <div className="flex items-baseline gap-1">

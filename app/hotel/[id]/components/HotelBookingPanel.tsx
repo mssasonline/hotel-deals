@@ -377,9 +377,8 @@ export default function HotelBookingPanel({
         <div className="flex items-end gap-3 flex-wrap mt-4">
           <div>
             {discountPercent > 0 && (
-              <div className="text-gray-400 text-xs line-through mb-0.5">
-                <CurrencyAmount amount={basePrice} />
-                {t['price.perNight']}
+              <div className="text-base font-semibold leading-none mb-1.5 text-red-500">
+                <CurrencyAmount amount={basePrice} className="line-through decoration-2 decoration-red-500" />{t['price.perNight']}
               </div>
             )}
             <div className="flex items-baseline gap-1">
