@@ -346,6 +346,50 @@ export default function RateCalendar({ roomId, roomName, basePrice, onClose }: P
   const [msg,       setMsg]       = useState<{ text: string; ok: boolean } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ── Quick monthly rate setup ──────────────────────────────────────────────
+  const curY  = now.getFullYear();
+  const curM  = now.getMonth() + 1;
+  const nextM = curM === 12 ? 1  : curM + 1;
+  const nextY = curM === 12 ? curY + 1 : curY;
+
+  const [quickPrices,   setQuickPrices]   = useState({ current: String(basePrice), next: String(basePrice) });
+  const [quickApplying, setQuickApplying] = useState<'current' | 'next' | null>(null);
+  const [quickMsg,      setQuickMsg]      = useState<{ which: 'current' | 'next'; text: string; ok: boolean } | null>(null);
+
+  async function quickFillMonth(which: 'current' | 'next') {
+    const targetYear  = which === 'current' ? curY  : nextY;
+    const targetMonth = which === 'current' ? curM  : nextM;
+    const price = Number(quickPrices[which]);
+    if (!price || price <= 0) return;
+
+    const todayStr = todayISO();
+    const total    = daysInMonth(targetYear, targetMonth);
+    const rates: RoomRate[] = [];
+    for (let d = 1; d <= total; d++) {
+      const iso = toISO(targetYear, targetMonth, d);
+      if (iso >= todayStr) rates.push({ date: iso, price });
+    }
+    if (!rates.length) return;
+
+    setQuickApplying(which);
+    const { error } = await upsertRoomRates(roomId, rates);
+    setQuickApplying(null);
+
+    if (!error) {
+      // Reflect in the calendar grid if viewing that month
+      if (targetYear === year && targetMonth === month) {
+        const patch: Record<string, number> = {};
+        for (const r of rates) patch[r.date] = r.price;
+        setRatesMap(prev => ({ ...prev, ...patch }));
+        setDirty(false);
+      }
+      setQuickMsg({ which, text: `✓ ${rates.length} days set to ${fmt(price)}`, ok: true });
+    } else {
+      setQuickMsg({ which, text: error, ok: false });
+    }
+    setTimeout(() => setQuickMsg(null), 3500);
+  }
+
   const dayNames   = getDayNames(language);
   const monthLabel = getMonthLabel(year, month, language);
 
@@ -476,6 +520,58 @@ export default function RateCalendar({ roomId, roomName, basePrice, onClose }: P
         </div>
 
         <div className="p-6">
+
+          {/* ── Quick Monthly Rate Setup ── */}
+          <div className="mb-5 rounded-xl border border-brand-blue/10 bg-blue-50/40 p-4">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
+              Monthly Rate Setup
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {(['current', 'next'] as const).map(which => {
+                const y     = which === 'current' ? curY  : nextY;
+                const m     = which === 'current' ? curM  : nextM;
+                const label = getMonthLabel(y, m, language);
+                const isApp = quickApplying === which;
+                const qMsg  = quickMsg?.which === which ? quickMsg : null;
+                return (
+                  <div key={which} className="bg-white rounded-xl p-3 border border-gray-200">
+                    <p className="text-xs font-semibold text-gray-600 mb-2 capitalize">{label}</p>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        min="1"
+                        value={quickPrices[which]}
+                        onChange={e => setQuickPrices(p => ({ ...p, [which]: e.target.value }))}
+                        className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-1.5 text-sm font-mono focus:outline-none focus:border-brand-blue bg-white"
+                        placeholder={String(basePrice)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => quickFillMonth(which)}
+                        disabled={isApp || !Number(quickPrices[which])}
+                        className="shrink-0 text-xs font-semibold text-white px-3 py-1.5 rounded-lg disabled:opacity-50 flex items-center gap-1 transition-all hover:-translate-y-0.5"
+                        style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
+                      >
+                        {isApp
+                          ? <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          : t['partner.cal.apply']
+                        }
+                      </button>
+                    </div>
+                    {qMsg && (
+                      <p className={`text-[11px] mt-1.5 font-medium ${qMsg.ok ? 'text-green-600' : 'text-red-500'}`}>
+                        {qMsg.text}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[11px] text-gray-400 mt-2">
+              Sets all remaining days in the month. Saves immediately — no need to press Save Rates.
+            </p>
+          </div>
+
           {/* Month nav */}
           <div className="flex items-center justify-between mb-5">
             <button type="button" onClick={() => navMonth(-1)}
