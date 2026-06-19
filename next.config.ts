@@ -8,7 +8,7 @@ const securityHeaders = [
   // Send full URL only for same-origin requests; strip to origin for cross-origin
   { key: 'Referrer-Policy',        value: 'strict-origin-when-cross-origin' },
   // Disable browser features not used by this app
-  { key: 'Permissions-Policy',     value: 'camera=(), microphone=(), geolocation=(), payment=()' },
+  { key: 'Permissions-Policy',     value: 'camera=(), microphone=(), geolocation=(self), payment=()' },
 ];
 
 const nextConfig: NextConfig = {
