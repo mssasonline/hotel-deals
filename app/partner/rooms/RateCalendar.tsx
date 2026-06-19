@@ -468,36 +468,6 @@ export default function RateCalendar({
               </div>
             </div>
 
-            {/* Range preview */}
-            {(() => {
-              const b  = parseFloat(pricingForm.base_price);
-              const wm = parseFloat(pricingForm.min_price);
-              const em = parseFloat(pricingForm.min_price_weekend);
-              if (!b || b <= 0 || !wm || wm <= 0 || !em || em <= 0) return null;
-              const discW = Math.round((1 - Math.min(wm, b) / b) * 100);
-              const discE = Math.round((1 - Math.min(em, b) / b) * 100);
-              return (
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <div className="bg-white rounded-lg p-2.5 border border-blue-100 flex items-center justify-between">
-                    <span className="text-[11px] text-gray-600">
-                      Weekday: <strong>{fmt(Math.min(wm, b))}</strong> – <strong>{fmt(b)}</strong>
-                    </span>
-                    <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">
-                      max -{discW}%
-                    </span>
-                  </div>
-                  <div className="bg-white rounded-lg p-2.5 border border-purple-100 flex items-center justify-between">
-                    <span className="text-[11px] text-gray-600">
-                      Weekend: <strong>{fmt(Math.min(em, b))}</strong> – <strong>{fmt(b)}</strong>
-                    </span>
-                    <span className="text-[11px] font-bold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded-full">
-                      max -{discE}%
-                    </span>
-                  </div>
-                </div>
-              );
-            })()}
-
             {pricingMsg && (
               <p className={`text-[11px] mt-2 font-medium ${pricingMsg.ok ? 'text-green-600' : 'text-red-500'}`}>
                 {pricingMsg.text}
@@ -531,6 +501,17 @@ export default function RateCalendar({
                   }
                 </button>
               </div>
+              {(() => {
+                const rate = Number(bulkPrices.weekday);
+                const min  = Number(pricingForm.min_price);
+                if (!rate || !min || min >= rate) return null;
+                const disc = Math.round((1 - min / rate) * 100);
+                return (
+                  <p className="text-[11px] text-blue-600 mt-1.5">
+                    {fmt(min)} – {fmt(rate)} · max -{disc}%
+                  </p>
+                );
+              })()}
               {bulkMsg?.type === 'weekday' && (
                 <p className={`text-[11px] mt-1.5 font-medium ${bulkMsg.ok ? 'text-green-600' : 'text-red-500'}`}>
                   {bulkMsg.text}
@@ -562,6 +543,17 @@ export default function RateCalendar({
                   }
                 </button>
               </div>
+              {(() => {
+                const rate = Number(bulkPrices.weekend);
+                const min  = Number(pricingForm.min_price_weekend);
+                if (!rate || !min || min >= rate) return null;
+                const disc = Math.round((1 - min / rate) * 100);
+                return (
+                  <p className="text-[11px] text-purple-600 mt-1.5">
+                    {fmt(min)} – {fmt(rate)} · max -{disc}%
+                  </p>
+                );
+              })()}
               {bulkMsg?.type === 'weekend' && (
                 <p className={`text-[11px] mt-1.5 font-medium ${bulkMsg.ok ? 'text-green-600' : 'text-red-500'}`}>
                   {bulkMsg.text}
