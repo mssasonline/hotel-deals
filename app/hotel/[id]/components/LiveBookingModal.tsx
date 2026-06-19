@@ -356,6 +356,7 @@ export default function LiveBookingModal({
           {/* CTA */}
           <button
             type="button"
+            data-testid="modal-book-now"
             onClick={handleBook}
             disabled={!bookingOpen || soldOut || checkingAvail}
             className="w-full disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl text-base flex items-center justify-between px-5 transition-all hover:-translate-y-0.5"

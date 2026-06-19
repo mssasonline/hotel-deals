@@ -65,7 +65,7 @@ export async function createHotelForPartner(fields: {
       partnerEmail: authUser.user.email,
       tempPassword: '',
       hotelName:    fields.name.trim(),
-      loginUrl:     `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://selectedroom.com'}/partner/dashboard`,
+      loginUrl:     `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://selectedroom.com'}/partner/dashboard`,
     }).catch((err) => console.error('[onboarding] sendPartnerWelcome failed:', err));
   }
 

@@ -346,6 +346,7 @@ export default function BookingPageClient({
           )}
           <button
             type="button"
+            data-testid="confirm-booking"
             onClick={handleConfirm}
             disabled={submitting || availability === 0}
             className="w-full disabled:opacity-60 text-white font-extrabold py-4 rounded-2xl text-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99]"

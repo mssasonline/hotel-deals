@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { rateLimit, getClientIp, rateLimitHeaders } from '@/lib/rateLimit';
 
-/**
- * GET /api/room-rates?room_id=X&check_in=YYYY-MM-DD&check_out=YYYY-MM-DD
- *
- * Returns a map of { "YYYY-MM-DD": price } for every date in the stay range
- * that has a custom rate in room_rates. Dates without a row are omitted —
- * the client falls back to rooms.base_price for those.
- */
+const LIMIT = 30;       // requests
+const WINDOW = 60_000;  // per minute
+
 export async function GET(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rl = rateLimit(`room-rates:${ip}`, LIMIT, WINDOW);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: rateLimitHeaders(rl, LIMIT) },
+    );
+  }
+
   const { searchParams } = req.nextUrl;
   const roomId   = searchParams.get('room_id');
   const checkIn  = searchParams.get('check_in');

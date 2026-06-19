@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { rateLimit, getClientIp, rateLimitHeaders } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
+
+const LIMIT = 30;       // requests
+const WINDOW = 60_000;  // per minute
 
 interface AutocompleteItem {
   type: 'city' | 'hotel' | 'country';
@@ -14,6 +18,15 @@ interface AutocompleteItem {
 type Row = { id: number; name: string; city: string | null; country: string | null };
 
 export async function GET(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rl = rateLimit(`autocomplete:${ip}`, LIMIT, WINDOW);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: rateLimitHeaders(rl, LIMIT) },
+    );
+  }
+
   const q = req.nextUrl.searchParams.get('q')?.trim().toLowerCase() ?? '';
   if (!q) return NextResponse.json([]);
 

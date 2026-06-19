@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase-admin';
 
 export async function GET(req: NextRequest) {
+  if (process.env.NODE_ENV !== 'development') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   const hotelId = req.nextUrl.searchParams.get('id') ?? '5';
   const admin = createAdminClient();
 

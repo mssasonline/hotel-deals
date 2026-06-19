@@ -27,15 +27,39 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from('hotels')
-    .select('name, description')
+    .select('name, description, city, country, stars, image_url')
     .eq('id', Number(id))
     .single();
-  if (!data) return { title: 'Hotel Not Found — SelectedRoom' };
-  const name = String(data.name ?? '');
-  const desc = String(data.description ?? '');
+  if (!data) return { title: 'Hotel Not Found' };
+
+  const name    = String(data.name        ?? '');
+  const desc    = String(data.description ?? '');
+  const city    = String(data.city        ?? '');
+  const country = String(data.country     ?? '');
+  const image   = String(data.image_url   ?? FALLBACK_IMAGE);
+  const loc     = [city, country].filter(Boolean).join(', ');
+
+  const title       = name;
+  const description = desc.slice(0, 155) || `Book ${name} in ${loc} tonight at exclusive last-minute prices.`;
+  const canonical   = `/hotel/${id}`;
+
   return {
-    title: `${name} — SelectedRoom`,
-    description: desc.slice(0, 155) || undefined,
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url: canonical,
+      images: [{ url: image, width: 1200, height: 800, alt: name }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 
@@ -257,8 +281,40 @@ export default async function HotelPage({ params }: Props) {
     rating,
   };
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://selectedroom.com';
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Hotel',
+    name,
+    description: String(row.description ?? ''),
+    image: galleryImages[0] ?? FALLBACK_IMAGE,
+    url: `${siteUrl}/hotel/${hotelId}`,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: address || undefined,
+      addressLocality: city || undefined,
+      addressCountry: country || undefined,
+    },
+    ...(stars > 0 && {
+      starRating: { '@type': 'Rating', ratingValue: String(stars) },
+    }),
+    ...(avgReviewRating != null && reviews.length > 0 && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: avgReviewRating.toFixed(1),
+        reviewCount: String(reviews.length),
+        bestRating: '5',
+        worstRating: '1',
+      },
+    }),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header />
 
       <main className="min-h-screen pb-16" style={{ background: '#F8FAFC' }}>

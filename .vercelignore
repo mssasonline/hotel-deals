@@ -1,0 +1,4 @@
+tests/
+playwright.config.ts
+.env.test.local
+tests/.auth/

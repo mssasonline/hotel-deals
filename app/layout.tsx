@@ -32,10 +32,33 @@ const montserrat = Montserrat({
 });
 
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://selectedroom.com';
+
 export const metadata: Metadata = {
-  title: "SelectedRoom — Tonight's Best Hotel Prices",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "SelectedRoom — Tonight's Best Hotel Prices",
+    template: '%s — SelectedRoom',
+  },
   description:
     "Flash deals on luxury hotel rooms — up to 50% off, tonight only. SelectedRoom connects travelers with premium unsold rooms at end-of-day prices.",
+  openGraph: {
+    siteName: 'SelectedRoom',
+    type: 'website',
+    locale: 'en_US',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: "SelectedRoom — Tonight's Best Hotel Prices",
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['/og-image.jpg'],
+  },
 };
 
 export default function RootLayout({

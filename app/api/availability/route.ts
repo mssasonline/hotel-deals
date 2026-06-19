@@ -1,11 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
+import { rateLimit, getClientIp, rateLimitHeaders } from '@/lib/rateLimit';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+const LIMIT = 30;       // requests
+const WINDOW = 60_000;  // per minute
+
 export async function GET(request: Request) {
+  const ip = getClientIp(request);
+  const rl = rateLimit(`availability:${ip}`, LIMIT, WINDOW);
+  if (!rl.allowed) {
+    return Response.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: rateLimitHeaders(rl, LIMIT) },
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const roomId    = searchParams.get('room_id');
   const checkIn   = searchParams.get('check_in');

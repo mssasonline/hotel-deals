@@ -7,13 +7,12 @@ export const dynamic = 'force-dynamic';
 // Set CRON_SECRET in .env.local and pass it as ?secret=xxx or Authorization: Bearer xxx
 const CRON_SECRET = process.env.CRON_SECRET;
 
-export async function POST(req: NextRequest) {
-  // Auth check
+async function handler(req: NextRequest) {
   const secret =
     req.nextUrl.searchParams.get('secret') ??
     req.headers.get('authorization')?.replace('Bearer ', '');
 
-  if (CRON_SECRET && secret !== CRON_SECRET) {
+  if (!CRON_SECRET || secret !== CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -28,3 +27,6 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ ok: true, resetAt: new Date().toISOString() });
 }
+
+// Vercel Cron Jobs send GET requests; POST is kept for manual/external triggers
+export { handler as GET, handler as POST };

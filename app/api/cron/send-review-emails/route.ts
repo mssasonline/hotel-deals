@@ -5,14 +5,14 @@ import { sendReviewRequestEmail } from '@/lib/emailService';
 export const dynamic = 'force-dynamic';
 
 const CRON_SECRET = process.env.CRON_SECRET;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://selectedroom.com';
+const APP_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://selectedroom.com';
 
-export async function POST(req: NextRequest) {
+async function handler(req: NextRequest) {
   const secret =
     req.nextUrl.searchParams.get('secret') ??
     req.headers.get('authorization')?.replace('Bearer ', '');
 
-  if (CRON_SECRET && secret !== CRON_SECRET) {
+  if (!CRON_SECRET || secret !== CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -91,3 +91,6 @@ export async function POST(req: NextRequest) {
   console.log(`[send-review-emails] date=${yesterdayStr} sent=${sent} errors=${errors.length}`);
   return NextResponse.json({ ok: true, sent, errors, date: yesterdayStr });
 }
+
+// Vercel Cron Jobs send GET requests; POST is kept for manual/external triggers
+export { handler as GET, handler as POST };
