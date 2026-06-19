@@ -641,7 +641,7 @@ export default function HotelsPage() {
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-1 h-5 shrink-0 rounded-full" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
-              <h1 className="text-xl font-bold text-white truncate" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)' }}>{hotel.name}</h1>
+              <h1 className="text-xl font-bold truncate" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>{hotel.name}</h1>
             </div>
             <div className="flex items-center gap-3 pl-3">
               {stars > 0 && (
