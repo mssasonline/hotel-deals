@@ -948,7 +948,7 @@ export default function RoomsPage() {
                       <div className="flex items-center gap-1">
                         <span className="font-bold text-green-600 text-sm"><AEDAmount amount={livePrice} /></span>
                         <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1 py-0.5 rounded-full leading-none">
-                          {calcActualDiscount(basePrice, livePrice)}%
+                          {calcActualDiscount(effectivePrice, livePrice)}%
                         </span>
                       </div>
                     </td>
