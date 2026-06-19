@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getRoomRates, upsertRoomRates, deleteRoomRate, type RoomRate } from '../actions';
+import { getRoomRates, upsertRoomRates, deleteRoomRate, updateMyRoom, type RoomRate } from '../actions';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 import { useAEDFormat } from '../components/AEDAmount';
@@ -323,10 +323,12 @@ interface Props {
   roomId: string;
   roomName: string;
   basePrice: number;
+  minPrice: number;
   onClose: () => void;
+  onPricingUpdate: (newBase: number, newMin: number) => void;
 }
 
-export default function RateCalendar({ roomId, roomName, basePrice, onClose }: Props) {
+export default function RateCalendar({ roomId, roomName, basePrice, minPrice, onClose, onPricingUpdate }: Props) {
   const language = useAppSettingsStore(s => s.language);
   const t        = getTranslations(language);
   const fmt      = useAEDFormat();
@@ -345,6 +347,31 @@ export default function RateCalendar({ roomId, roomName, basePrice, onClose }: P
   const [csvRows,   setCsvRows]   = useState<CsvRow[] | null>(null);
   const [msg,       setMsg]       = useState<{ text: string; ok: boolean } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Pricing Settings state ─────────────────────────────────────────────────
+  const [liveBasePrice,  setLiveBasePrice]  = useState(basePrice);
+  const [pricingForm,    setPricingForm]    = useState({ base_price: String(basePrice), min_price: String(minPrice) });
+  const [pricingSaving,  setPricingSaving]  = useState(false);
+  const [pricingMsg,     setPricingMsg]     = useState<{ text: string; ok: boolean } | null>(null);
+
+  async function savePricing() {
+    const newBase = parseFloat(pricingForm.base_price);
+    const newMin  = parseFloat(pricingForm.min_price);
+    if (!newBase || newBase <= 0) { setPricingMsg({ text: 'Base price must be a positive number', ok: false }); setTimeout(() => setPricingMsg(null), 3000); return; }
+    if (!newMin  || newMin  <= 0) { setPricingMsg({ text: 'Minimum price must be a positive number', ok: false }); setTimeout(() => setPricingMsg(null), 3000); return; }
+    if (newMin > newBase)         { setPricingMsg({ text: 'Minimum price cannot exceed base price', ok: false }); setTimeout(() => setPricingMsg(null), 3000); return; }
+    setPricingSaving(true);
+    const { error } = await updateMyRoom(roomId, { base_price: newBase, min_price: newMin });
+    setPricingSaving(false);
+    if (!error) {
+      setLiveBasePrice(newBase);
+      onPricingUpdate(newBase, newMin);
+      setPricingMsg({ text: '✓ Pricing saved', ok: true });
+    } else {
+      setPricingMsg({ text: error, ok: false });
+    }
+    setTimeout(() => setPricingMsg(null), 3000);
+  }
 
   // ── Quick monthly rate setup ──────────────────────────────────────────────
   const curY  = now.getFullYear();
@@ -439,7 +466,7 @@ export default function RateCalendar({ roomId, roomName, basePrice, onClose }: P
   function openEdit(iso: string) {
     const cur = ratesMap[iso];
     setEditCell(iso);
-    setEditVal(cur != null ? String(cur) : String(basePrice));
+    setEditVal(cur != null ? String(cur) : String(liveBasePrice));
   }
 
   function commitEdit(iso: string) {
@@ -520,6 +547,74 @@ export default function RateCalendar({ roomId, roomName, basePrice, onClose }: P
         </div>
 
         <div className="p-6">
+
+          {/* ── Pricing Settings ── */}
+          <div className="mb-5 rounded-xl border border-amber-200/70 bg-gradient-to-br from-amber-50/60 to-orange-50/30 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">💰 Pricing Settings</p>
+              <button
+                type="button"
+                onClick={savePricing}
+                disabled={pricingSaving}
+                className="text-xs font-semibold text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 disabled:opacity-50 transition-all hover:-translate-y-0.5"
+                style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
+              >
+                {pricingSaving
+                  ? <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  : 'Save Prices'
+                }
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Base Price <span className="text-gray-400 font-normal">(AED / night)</span>
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={pricingForm.base_price}
+                  onChange={e => setPricingForm(p => ({ ...p, base_price: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-brand-blue bg-white"
+                />
+                <p className="text-[11px] text-gray-400 mt-1">Shown as full rate (rack rate) to guests</p>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  Minimum Price Floor <span className="text-gray-400 font-normal">(AED)</span>
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={pricingForm.min_price}
+                  onChange={e => setPricingForm(p => ({ ...p, min_price: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-brand-blue bg-white"
+                />
+                <p className="text-[11px] text-gray-400 mt-1">Lowest price even at 70% last-minute discount</p>
+              </div>
+            </div>
+            {(() => {
+              const b = parseFloat(pricingForm.base_price);
+              const m = parseFloat(pricingForm.min_price);
+              if (!b || !m || m <= 0 || m >= b) return null;
+              const maxDisc = Math.round((1 - m / b) * 100);
+              return (
+                <div className="mt-3 bg-white rounded-lg p-3 border border-amber-100 flex items-center justify-between">
+                  <span className="text-xs text-gray-600">
+                    Guest pays <strong>{fmt(m)}</strong> – <strong>{fmt(b)}</strong> depending on demand
+                  </span>
+                  <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                    up to -{maxDisc}%
+                  </span>
+                </div>
+              );
+            })()}
+            {pricingMsg && (
+              <p className={`text-[11px] mt-2 font-medium ${pricingMsg.ok ? 'text-green-600' : 'text-red-500'}`}>
+                {pricingMsg.text}
+              </p>
+            )}
+          </div>
 
           {/* ── Quick Monthly Rate Setup ── */}
           <div className="mb-5 rounded-xl border border-brand-blue/10 bg-blue-50/40 p-4">
@@ -641,7 +736,7 @@ export default function RateCalendar({ roomId, roomName, basePrice, onClose }: P
             </button>
             <span className="flex-1" />
             <span className="text-xs text-gray-400">
-              {t['partner.cal.basePrice'].replace('{price}', fmt(basePrice))}
+              {t['partner.cal.basePrice'].replace('{price}', fmt(liveBasePrice))}
             </span>
           </div>
 
@@ -666,7 +761,7 @@ export default function RateCalendar({ roomId, roomName, basePrice, onClose }: P
                 const isToday   = iso === today;
                 const custom    = ratesMap[iso];
                 const hasCustom = custom != null && custom !== null;
-                const price     = hasCustom ? (custom as number) : basePrice;
+                const price     = hasCustom ? (custom as number) : liveBasePrice;
                 const isWeekend = [5, 6, 0].includes(new Date(year, month - 1, day).getDay());
                 const isEditing = editCell === iso;
 
@@ -746,7 +841,7 @@ export default function RateCalendar({ roomId, roomName, basePrice, onClose }: P
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded bg-white border border-gray-200" />
-              {t['partner.cal.legendBase'].replace('{price}', fmt(basePrice))}
+              {t['partner.cal.legendBase'].replace('{price}', fmt(liveBasePrice))}
             </span>
           </div>
         </div>
@@ -782,7 +877,7 @@ export default function RateCalendar({ roomId, roomName, basePrice, onClose }: P
           type={bulkType}
           year={year}
           month={month}
-          basePrice={basePrice}
+          basePrice={liveBasePrice}
           fmt={fmt}
           t={t}
           onApply={applyBulk}

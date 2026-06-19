@@ -122,14 +122,7 @@ interface EditRoomModalProps {
 }
 
 function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalProps) {
-  const fmt      = useAEDFormat();
-  const currency = useAppSettingsStore(s => s.currency) as CurrencyCode;
-  const currSymbol = CURRENCY_MAP[currency]?.symbol ?? 'AED';
-
-  // Pre-fill in partner's selected currency (DB stores AED)
   const [form, setForm] = useState({
-    base_price:     String(currency === 'aed' ? (room.base_price ?? '') : (fromAEDTo(room.base_price ?? 0, currency) || '')),
-    min_price:      String(currency === 'aed' ? (room.min_price ?? '') : (fromAEDTo(room.min_price ?? 0, currency) || '')),
     quantity_total: String(room.quantity_total ?? ''),
     area_sqm:       String(room.area_sqm ?? ''),
     bed_type:       room.bed_type ?? '',
@@ -143,12 +136,6 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState<string | null>(null);
 
-  const basePrice = parseFloat(form.base_price) || 0;
-  const minPrice  = parseFloat(form.min_price) || 0;
-  const tier      = getCurrentTier();
-  const livePreview = basePrice > 0 ? calcLivePrice(basePrice, minPrice, tier) : 0;
-  const discountPreview = calcActualDiscount(basePrice, livePreview);
-
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
@@ -156,19 +143,11 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
 
   async function handleSave() {
     setError(null);
-    const bp = parseFloat(form.base_price);
-    const mp = parseFloat(form.min_price);
     const qt = parseInt(form.quantity_total, 10);
-
-    if (isNaN(bp) || bp <= 0) { setError('Base price must be a positive number.'); return; }
-    if (isNaN(mp) || mp <= 0) { setError('Min price must be a positive number.'); return; }
-    if (mp > bp)              { setError('Min price cannot exceed Base price.'); return; }
     if (isNaN(qt) || qt <= 0) { setError('Total quantity must be a positive number.'); return; }
 
     setSaving(true);
     onSave(room.id, {
-      base_price:     toAED(bp, currency),
-      min_price:      toAED(mp, currency),
       quantity_total: qt,
       type:           form.room_type,
       area_sqm:       form.area_sqm ? parseFloat(form.area_sqm) : null,
@@ -284,57 +263,6 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
                 );
               })}
             </div>
-          </div>
-
-          {/* Pricing */}
-          <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{t['partner.rooms.pricingSection']}</p>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  {t['partner.rooms.basePriceOnSite']}
-                  <span className="text-xs text-gray-400 font-normal ml-1">(base_price)</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{currSymbol}</span>
-                  <input type="number" name="base_price" value={form.base_price} onChange={handleChange} min="1" step="1"
-                    className="w-full pl-12 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  {t['partner.rooms.minPriceFloor']}
-                  <span className="text-xs text-gray-400 font-normal ml-1">(min_price)</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">{currSymbol}</span>
-                  <input type="number" name="min_price" value={form.min_price} onChange={handleChange} min="1" step="1"
-                    className="w-full pl-12 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
-                </div>
-              </div>
-            </div>
-            {basePrice > 0 && minPrice > 0 && (
-              <div className="mt-3 p-3 bg-brand-blue-light rounded-xl text-sm space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-500">{t['partner.rooms.pricePreviewNow'].replace('{tier}', tier.label)}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="line-through text-gray-400 text-xs">{fmt(toAED(basePrice, currency))}</span>
-                    <span className="font-bold text-brand-blue">{fmt(toAED(livePreview, currency))}</span>
-                    {discountPreview > 0 && (
-                      <span className="text-xs font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">-{discountPreview}%</span>
-                    )}
-                  </div>
-                </div>
-                {livePreview === minPrice && (
-                  <div className="text-xs text-amber-600 flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {t['partner.rooms.priceAtFloor'].replace('{price}', fmt(toAED(minPrice, currency)))}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Inventory */}
@@ -1111,7 +1039,16 @@ export default function RoomsPage() {
           roomId={rateRoom.id}
           roomName={rateRoom.name}
           basePrice={rateRoom.base_price}
+          minPrice={rateRoom.min_price ?? 0}
           onClose={() => setRateRoom(null)}
+          onPricingUpdate={(newBase, newMin) => {
+            setRooms(prev => prev.map(r =>
+              r.id === rateRoom.id
+                ? { ...r, base_price: newBase, min_price: newMin }
+                : r
+            ));
+            setRateRoom(prev => prev ? { ...prev, base_price: newBase, min_price: newMin } : prev);
+          }}
         />
       )}
 
