@@ -378,6 +378,24 @@ export default function RateCalendar({
   const curMonthLabel  = getMonthLabel(curY,  curM,  language);
   const nextMonthLabel = getMonthLabel(nextY, nextM, language);
 
+  // Derive placeholder hints from loaded calendar data
+  const weekdayPlaceholder = (() => {
+    for (const [date, price] of Object.entries(ratesMap)) {
+      if (!price || date < today) continue;
+      const dow = new Date(date + 'T12:00:00').getDay();
+      if ([1, 2, 3, 4].includes(dow)) return String(price);
+    }
+    return String(liveBasePrice);
+  })();
+  const weekendPlaceholder = (() => {
+    for (const [date, price] of Object.entries(ratesMap)) {
+      if (!price || date < today) continue;
+      const dow = new Date(date + 'T12:00:00').getDay();
+      if ([5, 6, 0].includes(dow)) return String(price);
+    }
+    return String(liveBasePrice);
+  })();
+
   return (
     <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8">
@@ -422,7 +440,7 @@ export default function RateCalendar({
               >
                 {pricingSaving
                   ? <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  : 'Save Prices'
+                  : 'Save Min Prices'
                 }
               </button>
             </div>
@@ -485,7 +503,7 @@ export default function RateCalendar({
                   type="number" min="1"
                   value={bulkPrices.weekday}
                   onChange={e => setBulkPrices(p => ({ ...p, weekday: e.target.value }))}
-                  placeholder={String(liveBasePrice)}
+                  placeholder={weekdayPlaceholder}
                   className="flex-1 min-w-0 border border-blue-200 rounded-lg px-2.5 py-1.5 text-sm font-mono focus:outline-none focus:border-blue-400 bg-white"
                 />
                 <button
@@ -527,7 +545,7 @@ export default function RateCalendar({
                   type="number" min="1"
                   value={bulkPrices.weekend}
                   onChange={e => setBulkPrices(p => ({ ...p, weekend: e.target.value }))}
-                  placeholder={String(liveBasePrice)}
+                  placeholder={weekendPlaceholder}
                   className="flex-1 min-w-0 border border-purple-200 rounded-lg px-2.5 py-1.5 text-sm font-mono focus:outline-none focus:border-purple-400 bg-white"
                 />
                 <button
@@ -642,7 +660,7 @@ export default function RateCalendar({
               className="text-white font-semibold px-5 py-2 rounded-xl text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:-translate-y-0.5 flex items-center gap-2"
               style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
               {saving && <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
-              {t['partner.cal.saveRates']}
+              Save Calendar Rates
             </button>
           </div>
         </div>
