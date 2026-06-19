@@ -7,7 +7,7 @@ export async function sendBookingEmailAction(bookingId: string): Promise<void> {
   try {
     const supabase = createAdminClient();
 
-    // Fetch booking with hotel + room + partner details
+    // Fetch booking with hotel + room + partner + contact details
     const { data: booking, error } = await supabase
       .from('bookings')
       .select(`
@@ -20,6 +20,11 @@ export async function sendBookingEmailAction(bookingId: string): Promise<void> {
         hotels (
           id,
           name,
+          contact_phone,
+          contact_email,
+          contact_whatsapp,
+          checkin_time,
+          checkout_time,
           hotel_partners ( profiles ( email, full_name ) )
         ),
         rooms ( name )
@@ -44,10 +49,11 @@ export async function sendBookingEmailAction(bookingId: string): Promise<void> {
       )
     );
 
+    const h = hotel as Record<string, unknown>;
     const data: BookingEmailData = {
       guestName:    String(booking.guest_name  ?? ''),
       guestEmail:   String(booking.guest_email ?? ''),
-      hotelName:    String((hotel as Record<string, unknown>)?.name ?? ''),
+      hotelName:    String(h?.name ?? ''),
       roomName:     String((room  as Record<string, unknown>)?.name ?? ''),
       checkIn,
       checkOut,
@@ -56,6 +62,11 @@ export async function sendBookingEmailAction(bookingId: string): Promise<void> {
       bookingRef:   String(booking.id).slice(0, 8).toUpperCase(),
       partnerEmail: partner?.email,
       partnerName:  partner?.full_name,
+      hotelPhone:       (h?.contact_phone    as string | null) ?? undefined,
+      hotelEmail:       (h?.contact_email    as string | null) ?? undefined,
+      hotelWhatsapp:    (h?.contact_whatsapp as string | null) ?? undefined,
+      hotelCheckinTime: (h?.checkin_time     as string | null) ?? undefined,
+      hotelCheckoutTime:(h?.checkout_time    as string | null) ?? undefined,
     };
 
     await sendBookingConfirmation(data);

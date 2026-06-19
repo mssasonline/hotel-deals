@@ -20,12 +20,37 @@ export interface BookingEmailData {
   bookingRef: string;
   partnerEmail?: string;
   partnerName?:  string;
+  hotelPhone?:        string;
+  hotelEmail?:        string;
+  hotelWhatsapp?:     string;
+  hotelCheckinTime?:  string;
+  hotelCheckoutTime?: string;
 }
 
 const ENABLED = process.env.NOTIFICATIONS_ENABLED === 'true';
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'noreply@hotel-deals.com';
 
+function formatEmailTime(t: string): string {
+  const [h, m] = t.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const hour = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${hour}:${String(m).padStart(2, '0')} ${period}`;
+}
+
 function guestConfirmationHtml(d: BookingEmailData): string {
+  const hasContact = d.hotelPhone || d.hotelEmail || d.hotelWhatsapp;
+  const hasTimes   = d.hotelCheckinTime || d.hotelCheckoutTime;
+
+  const contactBlock = (hasContact || hasTimes) ? `
+    <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:20px;margin:20px 0">
+      <p style="margin:0 0 12px;color:#3730a3;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Hotel Contact</p>
+      ${d.hotelPhone    ? `<p style="margin:0 0 8px;color:#374151;font-size:14px">📞 <a href="tel:${d.hotelPhone}" style="color:#1d4ed8;text-decoration:none">${d.hotelPhone}</a></p>` : ''}
+      ${d.hotelEmail    ? `<p style="margin:0 0 8px;color:#374151;font-size:14px">✉️ <a href="mailto:${d.hotelEmail}" style="color:#1d4ed8;text-decoration:none">${d.hotelEmail}</a></p>` : ''}
+      ${d.hotelWhatsapp ? `<p style="margin:0 0 8px;color:#374151;font-size:14px">💬 <a href="https://wa.me/${d.hotelWhatsapp.replace(/[^0-9]/g, '')}" style="color:#059669;text-decoration:none">WhatsApp: ${d.hotelWhatsapp}</a></p>` : ''}
+      ${hasTimes        ? `<p style="margin:${hasContact ? '12px' : '0'} 0 0;color:#374151;font-size:14px">🕐 Check-in from <strong>${d.hotelCheckinTime ? formatEmailTime(d.hotelCheckinTime) : '—'}</strong> &nbsp;|&nbsp; Check-out by <strong>${d.hotelCheckoutTime ? formatEmailTime(d.hotelCheckoutTime) : '—'}</strong></p>` : ''}
+    </div>
+  ` : '';
+
   return `
     <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
       <div style="background:#003B95;padding:24px 32px;border-radius:12px 12px 0 0">
@@ -43,6 +68,7 @@ function guestConfirmationHtml(d: BookingEmailData): string {
           <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Nights</td><td style="padding:8px 0;color:#111827">${d.nights}</td></tr>
           <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Total</td><td style="padding:8px 0;font-weight:700;color:#059669;font-size:18px">$${d.totalPrice.toLocaleString()}</td></tr>
         </table>
+        ${contactBlock}
         <p style="color:#6b7280;font-size:13px">Thank you for booking with us. See you soon!</p>
       </div>
     </div>
