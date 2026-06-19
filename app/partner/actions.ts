@@ -819,6 +819,30 @@ export async function getRoomRates(
   return (data ?? []).map(r => ({ date: r.date, price: Number(r.price) }));
 }
 
+/** Fetch today's custom rate for each of the given room IDs in a single query. */
+export async function getTodayRoomRates(
+  roomIds: string[],
+): Promise<Record<string, number>> {
+  if (!roomIds.length) return {};
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return {};
+
+  const today = new Date().toISOString().split('T')[0];
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from('room_rates')
+    .select('room_id, price')
+    .in('room_id', roomIds)
+    .eq('date', today);
+
+  const map: Record<string, number> = {};
+  for (const row of (data ?? [])) {
+    map[row.room_id] = Number(row.price);
+  }
+  return map;
+}
+
 /** Upsert one or many room rates (partner must own the room). */
 export async function upsertRoomRates(
   roomId: string,

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import { getCurrentTier, calcLivePrice, calcActualDiscount, type PriceTier } from '@/lib/pricingEngine';
 import CountdownTimer from '@/app/components/CountdownTimer';
-import { getMyHotels, getMyRooms, updateMyRoom, syncRoomAvailability, addRoom, deleteRoom, type PartnerRoom } from '../actions';
+import { getMyHotels, getMyRooms, updateMyRoom, syncRoomAvailability, addRoom, deleteRoom, getTodayRoomRates, type PartnerRoom } from '../actions';
 import RateCalendar from './RateCalendar';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
@@ -621,6 +621,7 @@ export default function RoomsPage() {
   const [hotelNames, setHotelNames]   = useState<Record<string, string>>({});
   const [hotelFilter, setHotelFilter] = useState('all');
   const [typeFilter, setTypeFilter]   = useState('all');
+  const [todayRates, setTodayRates]   = useState<Record<string, number>>({});
   const [editRoom, setEditRoom]       = useState<Room | null>(null);
   const [rateRoom, setRateRoom]       = useState<Room | null>(null);
   const [addingRoom, setAddingRoom]   = useState(false);
@@ -649,6 +650,8 @@ export default function RoomsPage() {
           setHotelNames(nameMap);
           const myRooms = await getMyRooms();
           setRooms(myRooms);
+          const rates = await getTodayRoomRates(myRooms.map(r => r.id));
+          setTodayRates(rates);
         }
       } catch (err) {
         console.error('[rooms] load error:', err);
@@ -847,9 +850,10 @@ export default function RoomsPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(room => {
-                const basePrice = Number(room.base_price ?? 0);
-                const minPrice  = Number(room.min_price ?? 0);
-                const livePrice = calcLivePrice(basePrice, minPrice, tier);
+                const basePrice      = Number(room.base_price ?? 0);
+                const minPrice       = Number(room.min_price ?? 0);
+                const effectivePrice = todayRates[room.id] ?? basePrice;
+                const livePrice      = calcLivePrice(effectivePrice, minPrice, tier);
                 const qtyAvailable  = room.quantity_available ?? room.available ?? 0;
                 const qtyTotal      = room.quantity_total ?? room.capacity ?? 1;
                 const isDeleting    = deleting === room.id;
@@ -1040,7 +1044,11 @@ export default function RoomsPage() {
           roomName={rateRoom.name}
           basePrice={rateRoom.base_price}
           minPrice={rateRoom.min_price ?? 0}
-          onClose={() => setRateRoom(null)}
+          onClose={() => {
+            // Refresh today's rate for this room so the table stays in sync
+            getTodayRoomRates([rateRoom.id]).then(r => setTodayRates(prev => ({ ...prev, ...r })));
+            setRateRoom(null);
+          }}
           onPricingUpdate={(newBase, newMin) => {
             setRooms(prev => prev.map(r =>
               r.id === rateRoom.id
@@ -1048,6 +1056,8 @@ export default function RoomsPage() {
                 : r
             ));
             setRateRoom(prev => prev ? { ...prev, base_price: newBase, min_price: newMin } : prev);
+            // Refresh today's rates so live price in the table reflects any changes
+            getTodayRoomRates([rateRoom.id]).then(r => setTodayRates(prev => ({ ...prev, ...r })));
           }}
         />
       )}
