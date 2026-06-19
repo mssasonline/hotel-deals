@@ -263,7 +263,7 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
             {/* Check-in */}
             <div
               className="flex items-center px-4 py-3 border-b sm:border-b-0 sm:border-r border-gray-100 cursor-pointer min-w-[150px]"
-              onClick={() => checkInRef.current?.showPicker()}
+              onClick={() => { try { checkInRef.current?.showPicker(); } catch { checkInRef.current?.focus(); } }}
             >
               <div className="flex flex-col min-w-0">
                 <span className="text-[10px] text-gray-400 uppercase tracking-wide leading-none mb-0.5">Check-in</span>
@@ -273,7 +273,7 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
                   value={checkIn}
                   min={today}
                   onChange={(e) => handleCheckIn(e.target.value)}
-                  className="outline-none text-gray-800 text-sm bg-transparent cursor-pointer pointer-events-none"
+                  className="outline-none text-gray-800 text-sm bg-transparent cursor-pointer [pointer-events:none] focus:[pointer-events:auto]"
                 />
               </div>
             </div>
@@ -281,7 +281,7 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
             {/* Check-out */}
             <div
               className="flex items-center px-4 py-3 border-b sm:border-b-0 sm:border-r border-gray-100 cursor-pointer min-w-[150px]"
-              onClick={() => checkOutRef.current?.showPicker()}
+              onClick={() => { try { checkOutRef.current?.showPicker(); } catch { checkOutRef.current?.focus(); } }}
             >
               <div className="flex flex-col min-w-0">
                 <span className="text-[10px] text-gray-400 uppercase tracking-wide leading-none mb-0.5">Check-out</span>
@@ -291,7 +291,7 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
                   value={checkOut}
                   min={checkIn || today}
                   onChange={(e) => setCheckOut(e.target.value)}
-                  className="outline-none text-gray-800 text-sm bg-transparent cursor-pointer pointer-events-none"
+                  className="outline-none text-gray-800 text-sm bg-transparent cursor-pointer [pointer-events:none] focus:[pointer-events:auto]"
                 />
               </div>
             </div>
