@@ -650,7 +650,10 @@ export default function RoomsPage() {
           setHotelNames(nameMap);
           const myRooms = await getMyRooms();
           setRooms(myRooms);
-          const rates = await getTodayRoomRates(myRooms.map(r => r.id));
+          // Use client-local date to avoid UTC drift (e.g. Dubai = UTC+4)
+          const d = new Date();
+          const localToday = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+          const rates = await getTodayRoomRates(myRooms.map(r => r.id), localToday);
           setTodayRates(rates);
         }
       } catch (err) {
@@ -850,10 +853,14 @@ export default function RoomsPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(room => {
-                const basePrice      = Number(room.base_price ?? 0);
-                const minPrice       = Number(room.min_price ?? 0);
-                const effectivePrice = todayRates[room.id] ?? basePrice;
-                const livePrice      = calcLivePrice(effectivePrice, minPrice, tier);
+                const basePrice         = Number(room.base_price ?? 0);
+                const minPrice          = Number(room.min_price ?? 0);
+                const minPriceWeekend   = Number(room.min_price_weekend ?? 0) || minPrice;
+                const effectivePrice    = todayRates[room.id] ?? basePrice;
+                const todayDow          = new Date().getDay();
+                const isTodayWeekend    = todayDow === 5 || todayDow === 6 || todayDow === 0;
+                const effectiveMinPrice = isTodayWeekend ? minPriceWeekend : minPrice;
+                const livePrice         = calcLivePrice(effectivePrice, effectiveMinPrice, tier);
                 const qtyAvailable  = room.quantity_available ?? room.available ?? 0;
                 const qtyTotal      = room.quantity_total ?? room.capacity ?? 1;
                 const isDeleting    = deleting === room.id;
@@ -1044,20 +1051,24 @@ export default function RoomsPage() {
           roomName={rateRoom.name}
           basePrice={rateRoom.base_price}
           minPrice={rateRoom.min_price ?? 0}
+          minPriceWeekend={rateRoom.min_price_weekend ?? 0}
           onClose={() => {
             // Refresh today's rate for this room so the table stays in sync
-            getTodayRoomRates([rateRoom.id]).then(r => setTodayRates(prev => ({ ...prev, ...r })));
+            const d = new Date();
+            const ld = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            getTodayRoomRates([rateRoom.id], ld).then(r => setTodayRates(prev => ({ ...prev, ...r })));
             setRateRoom(null);
           }}
-          onPricingUpdate={(newBase, newMin) => {
+          onPricingUpdate={(newBase, newMin, newMinWeekend) => {
             setRooms(prev => prev.map(r =>
               r.id === rateRoom.id
-                ? { ...r, base_price: newBase, min_price: newMin }
+                ? { ...r, base_price: newBase, min_price: newMin, min_price_weekend: newMinWeekend }
                 : r
             ));
-            setRateRoom(prev => prev ? { ...prev, base_price: newBase, min_price: newMin } : prev);
-            // Refresh today's rates so live price in the table reflects any changes
-            getTodayRoomRates([rateRoom.id]).then(r => setTodayRates(prev => ({ ...prev, ...r })));
+            setRateRoom(prev => prev ? { ...prev, base_price: newBase, min_price: newMin, min_price_weekend: newMinWeekend } : prev);
+            const d = new Date();
+            const ld = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            getTodayRoomRates([rateRoom.id], ld).then(r => setTodayRates(prev => ({ ...prev, ...r })));
           }}
         />
       )}

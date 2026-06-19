@@ -45,6 +45,7 @@ export type PartnerRoom = {
   features: string[];
   base_price: number;
   min_price: number;
+  min_price_weekend: number;
   capacity: number;
   available: number;
   quantity_total: number;
@@ -340,7 +341,7 @@ export async function getMyRooms(): Promise<PartnerRoom[]> {
   const admin = createAdminClient();
   const { data: roomData, error } = await admin
     .from('rooms')
-    .select('id, hotel_id, name, room_type, area_sqm, bed_type, image_url, image_url_2, image_url_3, features, base_price, min_price, capacity, available, quantity_total, quantity_available')
+    .select('id, hotel_id, name, room_type, area_sqm, bed_type, image_url, image_url_2, image_url_3, features, base_price, min_price, min_price_weekend, capacity, available, quantity_total, quantity_available')
     .in('hotel_id', hotelIds)
     .order('hotel_id')
     .order('name');
@@ -363,6 +364,7 @@ export async function getMyRooms(): Promise<PartnerRoom[]> {
     features: string[] | null;
     base_price: number;
     min_price: number | null;
+    min_price_weekend: number | null;
     capacity: number;
     available: boolean | number;
     quantity_total: number | null;
@@ -411,6 +413,7 @@ export async function getMyRooms(): Promise<PartnerRoom[]> {
       features:           r.features  ?? [],
       base_price:         r.base_price,
       min_price:          r.min_price ?? 0,
+      min_price_weekend:  r.min_price_weekend ?? 0,
       capacity:           r.capacity,
       available:          liveAvail > 0 ? 1 : 0,
       quantity_total:     qty,
@@ -457,6 +460,7 @@ export async function updateMyRoom(
   fields: {
     base_price?: number;
     min_price?: number;
+    min_price_weekend?: number;
     quantity_total?: number;
     available?: number;
     image_url?: string | null;
@@ -497,8 +501,9 @@ export async function updateMyRoom(
   }
 
   const update: Record<string, unknown> = {};
-  if (fields.base_price     !== undefined) update.base_price     = fields.base_price;
-  if (fields.min_price      !== undefined) update.min_price      = fields.min_price;
+  if (fields.base_price         !== undefined) update.base_price         = fields.base_price;
+  if (fields.min_price          !== undefined) update.min_price          = fields.min_price;
+  if (fields.min_price_weekend  !== undefined) update.min_price_weekend  = fields.min_price_weekend;
   if (fields.quantity_total !== undefined) update.quantity_total = fields.quantity_total;
   if (fields.available      !== undefined) update.available      = fields.available;
   if ('image_url'   in fields) update.image_url   = fields.image_url   ?? null;
@@ -572,7 +577,7 @@ export async function addRoom(
       quantity_available: fields.quantity_available,
       available:          fields.quantity_available > 0,
     })
-    .select('id, hotel_id, name, room_type, area_sqm, bed_type, image_url, image_url_2, image_url_3, features, base_price, min_price, capacity, available, quantity_total, quantity_available')
+    .select('id, hotel_id, name, room_type, area_sqm, bed_type, image_url, image_url_2, image_url_3, features, base_price, min_price, min_price_weekend, capacity, available, quantity_total, quantity_available')
     .single();
 
   if (error) return { data: null, error: error.message };
@@ -582,7 +587,7 @@ export async function addRoom(
     area_sqm: number | null; bed_type: string | null;
     image_url: string | null; image_url_2: string | null; image_url_3: string | null;
     features: string[] | null;
-    base_price: number; min_price: number | null; capacity: number;
+    base_price: number; min_price: number | null; min_price_weekend: number | null; capacity: number;
     available: boolean | number; quantity_total: number; quantity_available: number;
   };
   const r = data as R;
@@ -600,6 +605,7 @@ export async function addRoom(
       features:           r.features  ?? [],
       base_price:         r.base_price,
       min_price:          r.min_price ?? 0,
+      min_price_weekend:  r.min_price_weekend ?? 0,
       capacity:           r.capacity,
       available:          typeof r.available === 'boolean' ? (r.available ? 1 : 0) : (r.available ?? 0),
       quantity_total:     r.quantity_total,
@@ -819,16 +825,18 @@ export async function getRoomRates(
   return (data ?? []).map(r => ({ date: r.date, price: Number(r.price) }));
 }
 
-/** Fetch today's custom rate for each of the given room IDs in a single query. */
+/** Fetch today's custom rate for each of the given room IDs in a single query.
+ *  Pass `date` as YYYY-MM-DD in the client's local timezone to avoid UTC drift. */
 export async function getTodayRoomRates(
   roomIds: string[],
+  date: string,
 ): Promise<Record<string, number>> {
   if (!roomIds.length) return {};
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return {};
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = date;
   const admin = createAdminClient();
   const { data } = await admin
     .from('room_rates')
