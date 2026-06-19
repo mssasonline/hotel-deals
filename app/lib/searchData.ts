@@ -42,9 +42,13 @@ const DEFAULT_GRADIENTS = [
 
 type RawHotelImage = { image_url: string; sort_order: number };
 
+export type SearchRawRoom = { id?: string; base_price?: number; min_price?: number; min_price_weekend?: number; quantity_available?: number; quantity_total?: number };
+
 export function mapRowToSearchHotel(
   row: Record<string, unknown>,
   index: number,
+  todayRate?: number,
+  isTodayWeekend?: boolean,
 ): SearchHotel {
   const countdownHours = Number(row.countdown_hours ?? 8);
   const countdownMinutes = Number(row.countdown_minutes ?? 0);
@@ -52,8 +56,7 @@ export function mapRowToSearchHotel(
   const urgency = getUrgencyConfig(timeLeft);
 
   // ── Room-based pricing: pick cheapest room by base_price ─────────────────────
-  type RawRoom = { base_price?: number; min_price?: number; quantity_available?: number; quantity_total?: number };
-  const rawRooms = Array.isArray(row.rooms) ? (row.rooms as RawRoom[]) : [];
+  const rawRooms = Array.isArray(row.rooms) ? (row.rooms as SearchRawRoom[]) : [];
   const cheapestRoom = rawRooms.length > 0
     ? rawRooms.reduce((best, r) => {
         const a = Number(r.base_price ?? 0);
@@ -61,8 +64,15 @@ export function mapRowToSearchHotel(
         return a > 0 && (b === 0 || a < b) ? r : best;
       }, rawRooms[0])
     : null;
-  const basePrice = cheapestRoom ? Number(cheapestRoom.base_price ?? 0) : 0;
-  const minPrice  = cheapestRoom ? Number(cheapestRoom.min_price ?? Math.round(basePrice * 0.6)) : 0;
+  const staticBase = cheapestRoom ? Number(cheapestRoom.base_price ?? 0) : 0;
+  const basePrice  = todayRate ?? staticBase;
+  const minPrice   = (() => {
+    if (!cheapestRoom) return 0;
+    if (isTodayWeekend && Number(cheapestRoom.min_price_weekend) > 0) {
+      return Number(cheapestRoom.min_price_weekend);
+    }
+    return Number(cheapestRoom.min_price ?? Math.round(staticBase * 0.6));
+  })();
   const roomsLeft = cheapestRoom
     ? Number(cheapestRoom.quantity_available ?? cheapestRoom.quantity_total ?? row.rooms_left ?? 5)
     : Number(row.rooms_left ?? 5);

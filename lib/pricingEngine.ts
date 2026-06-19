@@ -281,6 +281,7 @@ export function calcNightlyRates(
   minPrice: number,
   tier: PriceTier,
   ratesMap: Record<string, number>,
+  minPriceWeekend?: number,
 ): NightRate[] {
   const today  = (() => {
     const d = new Date();
@@ -289,6 +290,11 @@ export function calcNightlyRates(
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
   })();
+
+  function floorForDow(dow: number): number {
+    const isWknd = dow === 5 || dow === 6 || dow === 0;
+    return (isWknd && minPriceWeekend !== undefined) ? minPriceWeekend : minPrice;
+  }
 
   const nights: NightRate[] = [];
   const current = new Date(checkIn + 'T12:00:00');
@@ -302,14 +308,15 @@ export function calcNightlyRates(
       return `${y}-${m}-${d}`;
     })();
 
-    const publishedPrice = ratesMap[dateISO] ?? basePrice;
-    const isTonight      = dateISO === today;
+    const publishedPrice  = ratesMap[dateISO] ?? basePrice;
+    const isTonight       = dateISO === today;
+    const effectiveMin    = floorForDow(current.getDay());
 
     let finalPrice      = publishedPrice;
     let discountPercent = 0;
 
     if (isTonight && publishedPrice > 0) {
-      finalPrice      = calcLivePrice(publishedPrice, minPrice, tier);
+      finalPrice      = calcLivePrice(publishedPrice, effectiveMin, tier);
       discountPercent = calcActualDiscount(publishedPrice, finalPrice);
     }
 
@@ -317,12 +324,13 @@ export function calcNightlyRates(
     current.setDate(current.getDate() + 1);
   }
 
+  const todayFloor = floorForDow(new Date().getDay());
   return nights.length > 0 ? nights : [{
     date: checkIn,
     publishedPrice: basePrice,
-    finalPrice: calcLivePrice(basePrice, minPrice, tier),
+    finalPrice: calcLivePrice(basePrice, todayFloor, tier),
     isTonight: checkIn === today,
-    discountPercent: calcActualDiscount(basePrice, calcLivePrice(basePrice, minPrice, tier)),
+    discountPercent: calcActualDiscount(basePrice, calcLivePrice(basePrice, todayFloor, tier)),
   }];
 }
 

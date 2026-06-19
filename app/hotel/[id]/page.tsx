@@ -88,6 +88,7 @@ interface Room {
   name: string;
   base_price: number;
   min_price: number | null;
+  min_price_weekend?: number | null;
   capacity: number;
   image_url: string | null;
   room_type: string | null;
@@ -235,6 +236,11 @@ export default async function HotelPage({ params }: Props) {
       return best;
     }, null);
     if (!cheapest) return 0;
+    const todayDow = new Date().getDay();
+    const isTodayWeekend = todayDow === 5 || todayDow === 6 || todayDow === 0;
+    if (isTodayWeekend && Number(cheapest.min_price_weekend) > 0) {
+      return Number(cheapest.min_price_weekend);
+    }
     return Number(cheapest.min_price ?? Math.round(cheapestRoomBase * 0.6));
   })();
 

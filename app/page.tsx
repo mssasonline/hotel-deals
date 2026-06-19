@@ -38,11 +38,12 @@ function resolveImageUrl(row: SupabaseHotel): string | null {
   return null;
 }
 
-function mapToHotel(row: SupabaseHotel, index: number): Hotel {
+type RawRoom = { id?: string; base_price?: number; min_price?: number; min_price_weekend?: number; quantity_available?: number; quantity_total?: number };
+
+function mapToHotel(row: SupabaseHotel, index: number, todayRate?: number, isTodayWeekend?: boolean): Hotel {
   const countdownHours = Number(row.countdown_hours ?? 8);
   const status = getDealStatus(countdownHours);
 
-  type RawRoom = { base_price?: number; min_price?: number; quantity_available?: number; quantity_total?: number };
   const rawRooms = Array.isArray(row.rooms) ? (row.rooms as RawRoom[]) : [];
   const cheapestRoom = rawRooms.length > 0
     ? rawRooms.reduce((best, r) => {
@@ -51,8 +52,15 @@ function mapToHotel(row: SupabaseHotel, index: number): Hotel {
         return a > 0 && (b === 0 || a < b) ? r : best;
       }, rawRooms[0])
     : null;
-  const basePrice = cheapestRoom ? Number(cheapestRoom.base_price ?? 0) : 0;
-  const minPrice  = cheapestRoom ? Number(cheapestRoom.min_price ?? Math.round(basePrice * 0.6)) : 0;
+  const staticBase = cheapestRoom ? Number(cheapestRoom.base_price ?? 0) : 0;
+  const basePrice  = todayRate ?? staticBase;
+  const minPrice   = (() => {
+    if (!cheapestRoom) return 0;
+    if (isTodayWeekend && Number(cheapestRoom.min_price_weekend) > 0) {
+      return Number(cheapestRoom.min_price_weekend);
+    }
+    return Number(cheapestRoom.min_price ?? Math.round(staticBase * 0.6));
+  })();
   const roomsLeft = cheapestRoom
     ? Number(cheapestRoom.quantity_available ?? cheapestRoom.quantity_total ?? row.rooms_left ?? 5)
     : Number(row.rooms_left ?? 5);
@@ -75,14 +83,54 @@ function mapToHotel(row: SupabaseHotel, index: number): Hotel {
   };
 }
 
+function localDateStr(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 async function fetchHotels(): Promise<Hotel[]> {
   const { data, error } = await supabase
     .from("hotels")
-    .select("*, hotel_images(image_url, sort_order), rooms(base_price, min_price, quantity_available, quantity_total)")
+    .select("*, hotel_images(image_url, sort_order), rooms(id, base_price, min_price, min_price_weekend, quantity_available, quantity_total)")
     .order("id");
 
   if (error || !data) return [];
-  return data.map((row: SupabaseHotel, i: number) => mapToHotel(row, i));
+
+  // Collect cheapest room IDs to look up today's calendar rates
+  const cheapestRoomIds: string[] = [];
+  const hotelCheapestRoom = new Map<number, string>();
+  for (const row of data) {
+    const rawRooms = Array.isArray(row.rooms) ? (row.rooms as RawRoom[]) : [];
+    const cheapest = rawRooms.reduce<RawRoom | null>((best, r) => {
+      const a = Number(r.base_price ?? 0);
+      const b = Number(best?.base_price ?? 0);
+      return a > 0 && (b === 0 || a < b) ? r : best;
+    }, null);
+    if (cheapest?.id) {
+      cheapestRoomIds.push(cheapest.id);
+      hotelCheapestRoom.set(Number(row.id), cheapest.id);
+    }
+  }
+
+  const today = localDateStr();
+  const todayRates: Record<string, number> = {};
+  if (cheapestRoomIds.length > 0) {
+    const { data: rates } = await supabase
+      .from("room_rates")
+      .select("room_id, price")
+      .eq("date", today)
+      .in("room_id", cheapestRoomIds);
+    for (const r of rates ?? []) todayRates[String(r.room_id)] = Number(r.price);
+  }
+
+  const todayDow = new Date().getDay();
+  const isTodayWeekend = todayDow === 5 || todayDow === 6 || todayDow === 0;
+
+  return data.map((row: SupabaseHotel, i: number) => {
+    const roomId    = hotelCheapestRoom.get(Number(row.id));
+    const todayRate = roomId ? todayRates[roomId] : undefined;
+    return mapToHotel(row, i, todayRate, isTodayWeekend);
+  });
 }
 
 async function fetchSpecialDealsPreview(): Promise<SpecialDealPreviewItem[]> {

@@ -19,6 +19,7 @@ interface Room {
   name: string;
   base_price: number;
   min_price: number | null;
+  min_price_weekend?: number | null;
   capacity: number;
   image_url: string | null;
   room_type: string | null;
@@ -120,6 +121,17 @@ function getRoomBasePrice(room: Room): number {
 function getRoomMinPrice(room: Room): number {
   if (Number(room.min_price) > 0) return Number(room.min_price);
   return Math.round(getRoomBasePrice(room) * 0.6);
+}
+
+function getRoomMinPriceWeekend(room: Room): number {
+  if (Number(room.min_price_weekend) > 0) return Number(room.min_price_weekend);
+  return getRoomMinPrice(room);
+}
+
+function getTodayMinPrice(room: Room): number {
+  const dow = new Date().getDay();
+  const isWknd = dow === 5 || dow === 6 || dow === 0;
+  return isWknd ? getRoomMinPriceWeekend(room) : getRoomMinPrice(room);
 }
 
 // ── Main component ────────────────────────────────────────────
@@ -229,9 +241,10 @@ export default function HotelBookingPanel({
   // ── Per-night pricing (tonight discounted, future nights at calendar rate) ──
   const pricing = useMemo((): NightlyStayResult | null => {
     if (!selectedRoom) return null;
-    const basePrice = getRoomBasePrice(selectedRoom);
-    const minPrice  = getRoomMinPrice(selectedRoom);
-    const nightRates = calcNightlyRates(checkIn, checkOut, basePrice, minPrice, tier, ratesMap);
+    const basePrice       = getRoomBasePrice(selectedRoom);
+    const minPrice        = getRoomMinPrice(selectedRoom);
+    const minPriceWeekend = getRoomMinPriceWeekend(selectedRoom);
+    const nightRates = calcNightlyRates(checkIn, checkOut, basePrice, minPrice, tier, ratesMap, minPriceWeekend);
     return calcNightlyStayPrice(nightRates, roomsCount);
   }, [selectedRoom, checkIn, checkOut, roomsCount, tier, ratesMap]);
 
@@ -270,7 +283,7 @@ export default function HotelBookingPanel({
     if (!selectedRoom || !pricing) return;
 
     const basePrice = getRoomBasePrice(selectedRoom);
-    const pricePerNight = avgPerNight > 0 ? avgPerNight : calcLivePrice(basePrice, getRoomMinPrice(selectedRoom), tier);
+    const pricePerNight = avgPerNight > 0 ? avgPerNight : calcLivePrice(basePrice, getTodayMinPrice(selectedRoom), tier);
 
     setDates(isoToStored(checkIn), isoToStored(checkOut));
     setGuests(totalGuests);
@@ -550,7 +563,7 @@ export default function HotelBookingPanel({
             >
               {rooms.map((room) => {
                 const bp   = getRoomBasePrice(room);
-                const live = calcLivePrice(bp, getRoomMinPrice(room), tier);
+                const live = calcLivePrice(bp, getTodayMinPrice(room), tier);
                 return (
                   <option key={room.id} value={String(room.id)}>
                     {room.name}
