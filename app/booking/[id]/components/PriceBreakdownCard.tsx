@@ -102,7 +102,14 @@ export default function PriceBreakdownCard({
                 ? t['hotel.breakdown.night']
                 : t['hotel.breakdown.nights'].replace('{n}', String(nights))}
             </span>
-            <span className="font-medium text-gray-900"><CurrencyAmount amount={currentPrice * nights} /></span>
+            <div className="flex items-center gap-2">
+              {totalBasePrice > subtotal && (
+                <span className="line-through text-red-400 text-xs font-medium">
+                  <CurrencyAmount amount={basePrice * nights} />
+                </span>
+              )}
+              <span className="font-medium text-gray-900"><CurrencyAmount amount={currentPrice * nights} /></span>
+            </div>
           </div>
           {roomsCount > 1 && (
             <div className="flex justify-between items-center">
@@ -165,14 +172,6 @@ export default function PriceBreakdownCard({
               <p className="text-green-700 font-extrabold text-lg leading-none">-<CurrencyAmount amount={savings} /></p>
               <p className="text-green-600 text-xs font-semibold mt-0.5">{discountPercent}% off</p>
             </div>
-          </div>
-        )}
-
-        {/* Original price (strikethrough, RED) */}
-        {totalBasePrice > subtotal && (
-          <div className="flex items-center justify-between text-xs px-1">
-            <span className="text-gray-400">{t['price.regularPrice']}</span>
-            <span className="line-through text-red-500"><CurrencyAmount amount={totalBasePrice} /></span>
           </div>
         )}
 
