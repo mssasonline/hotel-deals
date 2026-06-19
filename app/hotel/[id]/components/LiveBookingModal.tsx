@@ -16,6 +16,7 @@ interface Room {
   name: string;
   base_price: number;
   min_price: number | null;
+  min_price_weekend?: number | null;
   capacity: number;
   image_url: string | null;
   room_type: string | null;
@@ -30,6 +31,7 @@ interface Props {
   address: string;
   stars: number;
   rating: number;
+  todayRate?: number;
   breakfastPricePerPerson?: number | null;
   feeConfig?: HotelFeeConfig;
   onClose: () => void;
@@ -94,6 +96,7 @@ export default function LiveBookingModal({
   address,
   stars,
   rating,
+  todayRate,
   breakfastPricePerPerson,
   feeConfig = UAE_FEE_DEFAULTS,
   onClose,
@@ -105,8 +108,14 @@ export default function LiveBookingModal({
   const t         = useTranslation();
 
   const tier      = getCurrentTier();
-  const basePrice = Number(room.base_price) || 0;
-  const minPrice  = Number(room.min_price)  || Math.round(basePrice * 0.6);
+  const staticBase = Number(room.base_price) || 0;
+  const basePrice  = todayRate ?? staticBase;
+  const minPrice   = (() => {
+    const dow = new Date().getDay();
+    const isWknd = dow === 5 || dow === 6 || dow === 0;
+    if (isWknd && Number(room.min_price_weekend) > 0) return Number(room.min_price_weekend);
+    return Number(room.min_price) || Math.round(staticBase * 0.6);
+  })();
   const livePrice = calcLivePrice(basePrice, minPrice, tier);
   const discount  = calcActualDiscount(basePrice, livePrice);
   const capacity  = Number(room.capacity) || 2;

@@ -138,7 +138,8 @@ export default async function HotelPage({ params }: Props) {
   const { id } = await params;
   const hotelId = Number(id);
 
-  const today = new Date().toISOString().split('T')[0];
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const supabase = await createSupabaseServerClient();
 
   const [
@@ -177,6 +178,18 @@ export default async function HotelPage({ params }: Props) {
 
   if (roomsError) console.error('[rooms] Supabase error:', roomsError.message);
   if (error || !row) notFound();
+
+  // Fetch today's room_rates for all rooms so RoomsGrid shows calendar prices
+  const roomIds = (rooms ?? []).map(r => String(r.id));
+  const todayRates: Record<string, number> = {};
+  if (roomIds.length > 0) {
+    const { data: rateRows } = await supabase
+      .from('room_rates')
+      .select('room_id, price')
+      .eq('date', today)
+      .in('room_id', roomIds);
+    for (const r of rateRows ?? []) todayRates[String(r.room_id)] = Number(r.price);
+  }
 
   // ── Hotel data ──────────────────────────────────────────────
   const name = String(row.name ?? '');
@@ -496,6 +509,7 @@ export default async function HotelPage({ params }: Props) {
               </div>
               <RoomsGrid
                 rooms={(rooms ?? []) as Room[]}
+                todayRates={todayRates}
                 breakfastPricePerPerson={breakfastPricePerPerson}
                 feeConfig={feeConfig}
                 {...hotelBaseProps}

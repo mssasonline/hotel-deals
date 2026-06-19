@@ -32,6 +32,7 @@ interface Room {
   name: string;
   base_price: number;
   min_price: number | null;
+  min_price_weekend?: number | null;
   capacity: number;
   image_url: string | null;
   room_type: string | null;
@@ -43,6 +44,7 @@ interface Room {
 
 interface Props {
   rooms: Room[];
+  todayRates?: Record<string, number>;
   hotelId: number;
   hotelName: string;
   city: string;
@@ -63,8 +65,16 @@ function getRoomMinPrice(room: Room): number {
   return Math.round(getRoomBasePrice(room) * 0.6);
 }
 
-export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, address, stars, rating, breakfastPricePerPerson, feeConfig = UAE_FEE_DEFAULTS }: Props) {
+function getTodayMinPrice(room: Room): number {
+  const dow = new Date().getDay();
+  const isWknd = dow === 5 || dow === 6 || dow === 0;
+  if (isWknd && Number(room.min_price_weekend) > 0) return Number(room.min_price_weekend);
+  return getRoomMinPrice(room);
+}
+
+export default function RoomsGrid({ rooms, todayRates, hotelId, hotelName, city, location, address, stars, rating, breakfastPricePerPerson, feeConfig = UAE_FEE_DEFAULTS }: Props) {
   const [modalRoom, setModalRoom] = useState<Room | null>(null);
+  const [modalTodayRate, setModalTodayRate] = useState<number | undefined>(undefined);
   const tier        = useLiveTier();
   const bookingOpen = useBookingOpen();
   const t           = useTranslation();
@@ -91,14 +101,15 @@ export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, a
           rating={rating}
           breakfastPricePerPerson={breakfastPricePerPerson ?? null}
           feeConfig={feeConfig}
+          todayRate={modalTodayRate}
           onClose={() => setModalRoom(null)}
         />
       )}
 
       <div className="space-y-4">
         {rooms.map((room) => {
-          const basePrice         = getRoomBasePrice(room);
-          const minPrice          = getRoomMinPrice(room);
+          const basePrice         = todayRates?.[room.id] ?? getRoomBasePrice(room);
+          const minPrice          = getTodayMinPrice(room);
           const livePrice         = calcLivePrice(basePrice, minPrice, tier);
           const discountPercent   = calcActualDiscount(basePrice, livePrice);
           const quantityAvailable = room.quantity_available ?? null;
@@ -218,7 +229,7 @@ export default function RoomsGrid({ rooms, hotelId, hotelName, city, location, a
                     <button
                       type="button"
                       disabled={!bookingOpen || soldOut}
-                      onClick={() => setModalRoom(room)}
+                      onClick={() => { setModalRoom(room); setModalTodayRate(todayRates?.[room.id]); }}
                       className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
                         !bookingOpen || soldOut
                           ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
