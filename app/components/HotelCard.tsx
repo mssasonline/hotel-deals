@@ -195,7 +195,7 @@ export default function HotelCard({ hotel, initialFavorited, onUnfavorite }: Hot
         <div className="flex items-end justify-between mb-2">
           <div>
             {hotel.basePrice > 0 && hotel.basePrice > livePrice && (
-              <span className="block text-xs font-medium leading-none mb-1.5" style={{ color: '#94A3B8', textDecoration: 'line-through', textDecorationColor: '#CBD5E1', textDecorationThickness: '1.5px' }}>
+              <span className="block text-sm font-semibold leading-none mb-1.5" style={{ color: '#EF4444', textDecoration: 'line-through', textDecorationColor: '#EF4444', textDecorationThickness: '2px' }}>
                 <CurrencyAmount amount={hotel.basePrice} />{t['price.perNight']}
               </span>
             )}
