@@ -331,7 +331,7 @@ export default function Header() {
                   </Link>
                   <Link
                     href="/signup"
-                    className="text-white text-sm font-bold px-5 py-2 rounded-xl transition-all duration-250"
+                    className="hidden sm:inline-flex text-white text-sm font-bold px-5 py-2 rounded-xl transition-all duration-250"
                     style={{ background: 'linear-gradient(135deg, #92400E 0%, #B45309 45%, #D97706 100%)', boxShadow: '0 2px 14px rgba(180,83,9,0.4)' }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 22px rgba(180,83,9,0.55)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 14px rgba(180,83,9,0.4)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
