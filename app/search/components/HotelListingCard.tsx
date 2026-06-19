@@ -159,7 +159,7 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
       <div className="flex flex-col sm:flex-row">
 
         {/* ── Image ───────────────────────────────────────────────── */}
-        <div className="relative h-56 sm:h-auto sm:w-64 lg:w-72 shrink-0 overflow-hidden">
+        <div className="relative h-40 sm:h-auto sm:w-48 lg:w-56 shrink-0 overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={hotel.imageUrl ?? FALLBACK_HOTEL_IMAGE}
@@ -207,10 +207,10 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
         </div>
 
         {/* ── Content ─────────────────────────────────────────────── */}
-        <div className="flex-1 p-5 flex flex-col min-w-0">
+        <div className="flex-1 p-3.5 flex flex-col min-w-0">
 
           {/* Deal badge + score row */}
-          <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex items-start justify-between gap-2 mb-2">
             <div className="flex items-center gap-2 flex-wrap shrink-0">
               <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${urgency.badgeBg} ${urgency.badgeText}`}>
                 <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${urgency.dotColor}`} />
@@ -240,12 +240,12 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
           <Stars count={hotel.stars} />
 
           {/* Hotel name */}
-          <h2 className="font-bold text-gray-900 text-lg sm:text-xl mt-1.5 mb-1 leading-tight line-clamp-1">
+          <h2 className="font-bold text-gray-900 text-base sm:text-lg mt-1 mb-0.5 leading-tight line-clamp-1">
             {hotel.name}
           </h2>
 
           {/* Location */}
-          <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-3 flex-wrap">
+          <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-2 flex-wrap">
             <svg className="w-4 h-4 text-brand-blue shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -258,11 +258,11 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
           </div>
 
           {/* Amenity pills */}
-          <div className="flex flex-wrap gap-1.5 mb-4">
+          <div className="flex flex-wrap gap-1 mb-2">
             {hotel.amenities.slice(0, 4).map(amenity => (
               <span
                 key={amenity}
-                className="bg-gray-50 border border-gray-200 text-gray-600 text-xs px-2.5 py-1 rounded-full"
+                className="bg-gray-50 border border-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded-full"
               >
                 {AMENITY_LABELS[amenity] ?? amenity}
               </span>
@@ -270,12 +270,12 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
           </div>
 
           {/* ── Bottom section: urgency left / price+CTA right ──── */}
-          <div className="mt-auto pt-3 border-t border-gray-100 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div className="mt-auto pt-2 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
 
             {/* Urgency + inventory column */}
-            <div className="space-y-1.5">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <div className="flex items-center gap-1.5">
-                <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span className="text-gray-500 text-xs">{t['hotel.expiresIn']}</span>
@@ -283,56 +283,50 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
               </div>
 
               {hotel.roomsLeft > 0 && hotel.roomsLeft <= 5 && (
-                <div className="flex items-center gap-1.5">
-                  <svg className="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <span className="text-red-600 text-xs font-semibold">
-                    {t['hotel.only']} {hotel.roomsLeft} {hotel.roomsLeft === 1 ? t['hotel.roomLeft'] : t['hotel.roomsLeft']}!
-                  </span>
-                </div>
+                <span className="text-red-600 text-xs font-semibold">
+                  {t['hotel.only']} {hotel.roomsLeft} {hotel.roomsLeft === 1 ? t['hotel.roomLeft'] : t['hotel.roomsLeft']}!
+                </span>
               )}
 
-              {/* Price decreasing urgency note */}
-              <div className="flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center gap-1">
+                <svg className="w-3 h-3 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
-                <span className="text-orange-600 text-xs font-medium">
-                  Price drops until midnight
-                </span>
+                <span className="text-orange-600 text-xs font-medium">Price drops until midnight</span>
               </div>
             </div>
 
             {/* Price + CTA column */}
-            <div className="sm:text-right shrink-0">
-              {displayDiscount > 0 ? (
-                <>
-                  <div className="text-xs font-medium leading-none" style={{ color: '#94A3B8', textDecoration: 'line-through', textDecorationColor: '#CBD5E1', textDecorationThickness: '1.5px' }}>
-                    <CurrencyAmount amount={displayOriginal} />{t['price.perNight']}
-                  </div>
-                  <div className="flex sm:justify-end items-baseline gap-1 mt-1">
-                    <span className="text-[11px] text-gray-500 font-medium mr-0.5">From</span>
-                    <span className="text-green-600 font-extrabold text-3xl leading-none">
+            <div className="flex sm:flex-col items-center sm:items-end gap-3 sm:gap-0 shrink-0">
+              <div className="sm:text-right">
+                {displayDiscount > 0 ? (
+                  <>
+                    <div className="text-xs font-medium leading-none" style={{ color: '#94A3B8', textDecoration: 'line-through', textDecorationColor: '#CBD5E1', textDecorationThickness: '1.5px' }}>
+                      <CurrencyAmount amount={displayOriginal} />{t['price.perNight']}
+                    </div>
+                    <div className="flex sm:justify-end items-baseline gap-0.5 mt-0.5">
+                      <span className="text-[10px] text-gray-500 font-medium mr-0.5">From</span>
+                      <span className="text-green-600 font-extrabold text-2xl leading-none">
+                        <CurrencyAmount amount={displayPrice} />
+                      </span>
+                      <span className="text-gray-400 text-xs">{t['price.perNight']}</span>
+                    </div>
+                    <div className="text-green-600 text-[11px] font-medium">
+                      {t['price.youSave']} <CurrencyAmount amount={savings} /> tonight
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex sm:justify-end items-baseline gap-0.5">
+                    <span className="text-[10px] text-gray-500 font-medium mr-0.5">From</span>
+                    <span className="text-green-600 font-extrabold text-2xl leading-none">
                       <CurrencyAmount amount={displayPrice} />
                     </span>
-                    <span className="text-gray-400 text-sm">{t['price.perNight']}</span>
+                    <span className="text-gray-400 text-xs">{t['price.perNight']}</span>
                   </div>
-                  <div className="text-green-600 text-xs font-medium mt-0.5 mb-2.5">
-                    {t['price.youSave']} <CurrencyAmount amount={savings} /> tonight
-                  </div>
-                </>
-              ) : (
-                <div className="flex sm:justify-end items-baseline gap-1 mb-2.5 mt-1">
-                  <span className="text-[11px] text-gray-500 font-medium mr-0.5">From</span>
-                  <span className="text-green-600 font-extrabold text-3xl leading-none">
-                    <CurrencyAmount amount={displayPrice} />
-                  </span>
-                  <span className="text-gray-400 text-sm">{t['price.perNight']}</span>
-                </div>
-              )}
+                )}
+              </div>
               <button
-                className="w-full sm:w-auto text-white font-semibold px-7 py-2.5 rounded-xl text-sm whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5"
+                className="text-white font-semibold px-5 py-2 rounded-xl text-sm whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5 mt-1.5"
                 style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.28)' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 20px rgba(30,58,138,0.38)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 10px rgba(30,58,138,0.28)'; }}

@@ -687,45 +687,26 @@ export default function MyTripsPage() {
               </div>
             </div>
 
-            {/* Stats row */}
-            <div className="grid grid-cols-4 gap-3">
-              {TAB_LABELS.map(({ key, label, status }) => (
-                <div key={key} className="rounded-xl px-4 py-3 text-center" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.10)' }}>
-                  <p className="text-white font-extrabold text-xl">{countByStatus(status)}</p>
-                  <p className="text-white/55 text-xs font-medium mt-0.5">{label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="bg-white sticky top-16 z-30" style={{ borderBottom: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 8px rgba(15,34,96,0.06)' }}>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex gap-0 overflow-x-auto">
+            {/* Stats row — clicking switches the active tab */}
+            <div className="grid grid-cols-3 gap-3">
               {TAB_LABELS.map(({ key, label, status }) => {
                 const isActive = activeTab === status;
-                const count = countByStatus(status);
                 return (
                   <button
                     key={key}
+                    type="button"
                     onClick={() => setActiveTab(status)}
-                    className={`relative flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-colors duration-150 border-b-2 ${
+                    className="rounded-xl px-4 py-3 text-center transition-all duration-200 focus:outline-none"
+                    style={
                       isActive
-                        ? 'text-brand-blue border-brand-blue'
-                        : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'
-                    }`}
+                        ? { background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.55)', boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }
+                        : { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }
+                    }
                   >
-                    {label}
-                    {count > 0 && (
-                      <span
-                        className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${
-                          isActive ? 'text-white' : 'bg-gray-100 text-gray-500'
-                        }`}
-                        style={isActive ? { background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' } : {}}
-                      >
-                        {count}
-                      </span>
+                    <p className="text-white font-extrabold text-2xl">{countByStatus(status)}</p>
+                    <p className={`text-xs font-semibold mt-0.5 ${isActive ? 'text-white' : 'text-white/55'}`}>{label}</p>
+                    {isActive && (
+                      <div className="mt-2 mx-auto w-5 h-0.5 rounded-full bg-brand-gold" />
                     )}
                   </button>
                 );

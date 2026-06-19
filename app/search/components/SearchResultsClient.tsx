@@ -260,7 +260,7 @@ export default function SearchResultsClient({
             <div
               className="overflow-y-auto overscroll-contain scroll-smooth pr-1
                          [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-track]:bg-transparent"
-              style={{ maxHeight: 'calc(100vh - 290px)' }}
+              style={{ height: 'calc(100vh - 290px)', minHeight: '400px' }}
             >
               <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center shadow-sm">
                 <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -285,7 +285,7 @@ export default function SearchResultsClient({
                       {t['search.featured']}
                     </span>
                   </div>
-                  <div className="space-y-4">
+                  <div className="space-y-2.5">
                     {fallbackHotels.map(hotel => (
                       <HotelListingCard key={hotel.id} hotel={hotel} checkinDate={checkin || undefined} />
                     ))}
@@ -373,7 +373,7 @@ export default function SearchResultsClient({
               <div
                 className="overflow-y-auto overscroll-contain scroll-smooth pr-1
                            [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-track]:bg-transparent"
-                style={{ maxHeight: 'calc(100vh - 430px)' }}
+                style={{ height: 'calc(100vh - 290px)', minHeight: '400px' }}
               >
               {noFilterResults ? (
                 <div className="bg-white rounded-2xl border border-gray-100 p-14 text-center shadow-sm">
@@ -399,7 +399,7 @@ export default function SearchResultsClient({
                 </div>
               ) : (
                 <>
-                  <div className="space-y-4">
+                  <div className="space-y-2.5">
                     {visibleHotels.map(hotel => (
                       <HotelListingCard
                         key={hotel.id}
