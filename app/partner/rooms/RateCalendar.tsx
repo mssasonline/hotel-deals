@@ -194,6 +194,11 @@ export default function RateCalendar({
   const today    = todayISO();
   const dayNames = getDayNames(language);
 
+  // ── Bulk fill state ────────────────────────────────────────────────────────
+  const [bulkPrices,   setBulkPrices]   = useState({ weekday: '', weekend: '' });
+  const [bulkApplying, setBulkApplying] = useState<'weekday' | 'weekend' | null>(null);
+  const [bulkMsg,      setBulkMsg]      = useState<{ type: 'weekday' | 'weekend'; text: string; ok: boolean } | null>(null);
+
   // ── Calendar state ─────────────────────────────────────────────────────────
   const [ratesMap, setRatesMap] = useState<Record<string, number | null>>({});
   const [loading,  setLoading]  = useState(true);
@@ -270,6 +275,46 @@ export default function RateCalendar({
       setPricingForm(prev => ({ ...prev, base_price: String(basePrice) }));
       setLiveBasePrice(basePrice);
     }
+  }
+
+  // ── Bulk fill weekday / weekend across both months ────────────────────────
+  async function applyBulk(type: 'weekday' | 'weekend') {
+    const price = Number(bulkPrices[type]);
+    if (!price || price <= 0) return;
+
+    const isTarget = (dow: number) =>
+      type === 'weekday' ? [1, 2, 3, 4].includes(dow) : [5, 6, 0].includes(dow);
+
+    const rates: RoomRate[] = [];
+    for (const [y, m] of [[curY, curM], [nextY, nextM]] as [number, number][]) {
+      const total = daysInMonth(y, m);
+      for (let d = 1; d <= total; d++) {
+        const iso = toISO(y, m, d);
+        if (iso < today) continue;
+        const dow = new Date(y, m - 1, d).getDay();
+        if (isTarget(dow)) rates.push({ date: iso, price });
+      }
+    }
+    if (!rates.length) return;
+
+    setBulkApplying(type);
+    const { error } = await upsertRoomRates(roomId, rates);
+    setBulkApplying(null);
+
+    if (!error) {
+      const patch: Record<string, number> = {};
+      for (const r of rates) patch[r.date] = r.price;
+      setRatesMap(prev => ({ ...prev, ...patch }));
+      // Sync Default Rate if today was updated
+      if (patch[today] != null) {
+        setPricingForm(prev => ({ ...prev, base_price: String(patch[today]) }));
+        setLiveBasePrice(patch[today]);
+      }
+      setBulkMsg({ type, text: `✓ ${rates.length} days updated`, ok: true });
+    } else {
+      setBulkMsg({ type, text: error, ok: false });
+    }
+    setTimeout(() => setBulkMsg(null), 3500);
   }
 
   // ── Save pricing settings ──────────────────────────────────────────────────
@@ -458,6 +503,71 @@ export default function RateCalendar({
                 {pricingMsg.text}
               </p>
             )}
+          </div>
+
+          {/* ── Bulk Fill ── */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Weekdays */}
+            <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-3">
+              <p className="text-xs font-bold text-blue-700 mb-2">Weekdays (Mon–Thu)</p>
+              <div className="flex gap-2">
+                <input
+                  type="number" min="1"
+                  value={bulkPrices.weekday}
+                  onChange={e => setBulkPrices(p => ({ ...p, weekday: e.target.value }))}
+                  placeholder={String(liveBasePrice)}
+                  className="flex-1 min-w-0 border border-blue-200 rounded-lg px-2.5 py-1.5 text-sm font-mono focus:outline-none focus:border-blue-400 bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => applyBulk('weekday')}
+                  disabled={bulkApplying === 'weekday' || !Number(bulkPrices.weekday)}
+                  className="shrink-0 text-xs font-semibold text-white px-3 py-1.5 rounded-lg disabled:opacity-50 flex items-center gap-1 transition-all hover:-translate-y-0.5"
+                  style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
+                >
+                  {bulkApplying === 'weekday'
+                    ? <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    : 'Apply'
+                  }
+                </button>
+              </div>
+              {bulkMsg?.type === 'weekday' && (
+                <p className={`text-[11px] mt-1.5 font-medium ${bulkMsg.ok ? 'text-green-600' : 'text-red-500'}`}>
+                  {bulkMsg.text}
+                </p>
+              )}
+            </div>
+
+            {/* Weekend */}
+            <div className="rounded-xl border border-purple-200 bg-purple-50/40 p-3">
+              <p className="text-xs font-bold text-purple-700 mb-2">Weekend (Fri–Sun)</p>
+              <div className="flex gap-2">
+                <input
+                  type="number" min="1"
+                  value={bulkPrices.weekend}
+                  onChange={e => setBulkPrices(p => ({ ...p, weekend: e.target.value }))}
+                  placeholder={String(liveBasePrice)}
+                  className="flex-1 min-w-0 border border-purple-200 rounded-lg px-2.5 py-1.5 text-sm font-mono focus:outline-none focus:border-purple-400 bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => applyBulk('weekend')}
+                  disabled={bulkApplying === 'weekend' || !Number(bulkPrices.weekend)}
+                  className="shrink-0 text-xs font-semibold text-white px-3 py-1.5 rounded-lg disabled:opacity-50 flex items-center gap-1 transition-all hover:-translate-y-0.5"
+                  style={{ background: 'linear-gradient(135deg, #6B21A8 0%, #9333EA 100%)' }}
+                >
+                  {bulkApplying === 'weekend'
+                    ? <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    : 'Apply'
+                  }
+                </button>
+              </div>
+              {bulkMsg?.type === 'weekend' && (
+                <p className={`text-[11px] mt-1.5 font-medium ${bulkMsg.ok ? 'text-green-600' : 'text-red-500'}`}>
+                  {bulkMsg.text}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* ── Calendars ── */}
