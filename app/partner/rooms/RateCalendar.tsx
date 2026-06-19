@@ -274,27 +274,24 @@ export default function RateCalendar({
 
   // ── Save pricing settings ──────────────────────────────────────────────────
   async function savePricing() {
-    const newBase       = parseFloat(pricingForm.base_price);
     const newMin        = parseFloat(pricingForm.min_price);
     const newMinWeekend = parseFloat(pricingForm.min_price_weekend);
+    const currentBase   = liveBasePrice;
 
-    if (!newBase || newBase <= 0)       { setPricingMsg({ text: 'Default rate must be a positive number', ok: false }); setTimeout(() => setPricingMsg(null), 3000); return; }
-    if (!newMin  || newMin  <= 0)       { setPricingMsg({ text: 'Weekday min floor must be a positive number', ok: false }); setTimeout(() => setPricingMsg(null), 3000); return; }
+    if (!newMin  || newMin  <= 0)            { setPricingMsg({ text: 'Weekday min floor must be a positive number', ok: false }); setTimeout(() => setPricingMsg(null), 3000); return; }
     if (!newMinWeekend || newMinWeekend <= 0) { setPricingMsg({ text: 'Weekend min floor must be a positive number', ok: false }); setTimeout(() => setPricingMsg(null), 3000); return; }
-    if (newMin > newBase)               { setPricingMsg({ text: 'Weekday min cannot exceed the default rate', ok: false }); setTimeout(() => setPricingMsg(null), 3000); return; }
-    if (newMinWeekend > newBase)        { setPricingMsg({ text: 'Weekend min cannot exceed the default rate', ok: false }); setTimeout(() => setPricingMsg(null), 3000); return; }
+    if (newMin > currentBase)                { setPricingMsg({ text: 'Weekday min cannot exceed today\'s rate', ok: false }); setTimeout(() => setPricingMsg(null), 3000); return; }
+    if (newMinWeekend > currentBase)         { setPricingMsg({ text: 'Weekend min cannot exceed today\'s rate', ok: false }); setTimeout(() => setPricingMsg(null), 3000); return; }
 
     setPricingSaving(true);
     const { error } = await updateMyRoom(roomId, {
-      base_price:        newBase,
       min_price:         newMin,
       min_price_weekend: newMinWeekend,
     });
     setPricingSaving(false);
 
     if (!error) {
-      setLiveBasePrice(newBase);
-      onPricingUpdate(newBase, newMin, newMinWeekend);
+      onPricingUpdate(currentBase, newMin, newMinWeekend);
       setPricingMsg({ text: '✓ Pricing saved', ok: true });
     } else {
       setPricingMsg({ text: error, ok: false });
@@ -391,13 +388,10 @@ export default function RateCalendar({
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">
                   Default Rate <span className="text-gray-400 font-normal">(AED / night)</span>
                 </label>
-                <input
-                  type="number" min="1"
-                  value={pricingForm.base_price}
-                  onChange={e => setPricingForm(p => ({ ...p, base_price: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-brand-blue bg-white"
-                />
-                <p className="text-[11px] text-gray-400 mt-1">Days with no custom rate</p>
+                <div className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono bg-gray-50 text-gray-700 select-none">
+                  {pricingForm.base_price}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1">Edit via calendar below</p>
               </div>
               {/* Weekday min */}
               <div>
