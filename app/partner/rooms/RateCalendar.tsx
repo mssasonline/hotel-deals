@@ -226,6 +226,14 @@ export default function RateCalendar({
     const map: Record<string, number> = {};
     for (const r of [...cur, ...nxt]) map[r.date] = r.price;
     setRatesMap(map);
+
+    // Sync Default Rate field to today's actual calendar rate
+    const key = todayISO();
+    if (map[key] != null) {
+      setPricingForm(prev => ({ ...prev, base_price: String(map[key]) }));
+      setLiveBasePrice(map[key] as number);
+    }
+
     setLoading(false);
     setDirty(false);
   }, [roomId, curY, curM, nextY, nextM]);
@@ -244,6 +252,11 @@ export default function RateCalendar({
     if (v > 0) {
       setRatesMap(prev => ({ ...prev, [iso]: v }));
       setDirty(true);
+      // If the edited day is today, sync the Default Rate field
+      if (iso === today) {
+        setPricingForm(prev => ({ ...prev, base_price: String(v) }));
+        setLiveBasePrice(v);
+      }
     }
     setEditCell(null);
   }
@@ -252,6 +265,11 @@ export default function RateCalendar({
     setRatesMap(prev => ({ ...prev, [iso]: null }));
     setDirty(true);
     setEditCell(null);
+    // If clearing today, revert Default Rate to the stored base price
+    if (iso === today) {
+      setPricingForm(prev => ({ ...prev, base_price: String(basePrice) }));
+      setLiveBasePrice(basePrice);
+    }
   }
 
   // ── Save pricing settings ──────────────────────────────────────────────────
