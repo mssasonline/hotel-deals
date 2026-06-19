@@ -939,9 +939,9 @@ export default function RoomsPage() {
                       <span className="font-semibold text-gray-800 text-sm"><AEDAmount amount={effectivePrice} /></span>
                       <span className="text-[10px] text-gray-400 block leading-tight">{t['partner.dash.perNight']}</span>
                     </td>
-                    {/* Min price */}
+                    {/* Min price — shows effective floor for today (weekday vs weekend) */}
                     <td className="px-3 py-3 text-gray-500 text-sm whitespace-nowrap">
-                      {minPrice > 0 ? <AEDAmount amount={minPrice} /> : <span className="text-gray-300">—</span>}
+                      {effectiveMinPrice > 0 ? <AEDAmount amount={effectiveMinPrice} /> : <span className="text-gray-300">—</span>}
                     </td>
                     {/* System / live price */}
                     <td className="px-3 py-3 whitespace-nowrap">
