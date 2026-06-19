@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/reset-availability",
-      "schedule": "0 0 * * *"
+      "schedule": "50 7 * * *"
     },
     {
       "path": "/api/cron/send-review-emails",
