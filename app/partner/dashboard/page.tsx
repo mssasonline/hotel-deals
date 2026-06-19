@@ -451,7 +451,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="text-right shrink-0">
                       <p className="text-sm font-bold text-brand-blue">
-                        ${(room.base_price ?? 0).toLocaleString()}
+                        <AEDAmount amount={room.base_price ?? 0} />
                         <span className="text-xs text-gray-400 font-normal">{t['partner.dash.perNight']}</span>
                       </p>
                       <p className={`text-xs font-medium mt-0.5 ${Number(room.available) <= 0 ? 'text-red-500' : 'text-green-600'}`}>
