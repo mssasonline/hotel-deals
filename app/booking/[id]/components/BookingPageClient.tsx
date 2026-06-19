@@ -307,18 +307,8 @@ export default function BookingPageClient({
           <div className="flex items-center justify-between mb-5 bg-gray-50 rounded-xl px-4 py-3">
             <div>
               <p className="text-gray-400 text-xs">{t['booking.totalDueAtCheckIn']}</p>
-              {roomPricing.discountPercent > 0 && (
-                <p className="text-red-500 text-xs line-through leading-none">
-                  <CurrencyAmount amount={Math.round(room.basePrice * nights * roomsCount * 1.15)} />
-                </p>
-              )}
               <p className="font-extrabold text-green-600 text-2xl leading-none"><CurrencyAmount amount={total} /></p>
             </div>
-            {roomPricing.discountPercent > 0 && (
-              <div className="bg-red-500 text-white text-xs font-extrabold px-2.5 py-1.5 rounded-lg">
-                -{roomPricing.discountPercent}%
-              </div>
-            )}
           </div>
 
           {/* Availability banner */}
