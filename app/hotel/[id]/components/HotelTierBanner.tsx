@@ -19,6 +19,13 @@ const TIER_TIME_KEYS: Partial<Record<number, TranslationKey>> = {
   50: 'how.tier4Time',
 };
 
+const TIER_COLORS: Record<number, { bg: string; ring: string }> = {
+  10: { bg: 'bg-blue-500',   ring: 'ring-blue-300'   },
+  15: { bg: 'bg-orange-500', ring: 'ring-orange-300' },
+  35: { bg: 'bg-red-500',    ring: 'ring-red-300'    },
+  50: { bg: 'bg-purple-700', ring: 'ring-purple-400' },
+};
+
 export default function HotelTierBanner({ baseNightPrice, minNightPrice = 0 }: Props) {
   const language = useAppSettingsStore((s) => s.language);
   const t = getTranslations(language);
@@ -33,7 +40,12 @@ export default function HotelTierBanner({ baseNightPrice, minNightPrice = 0 }: P
   const actualDiscount = calcActualDiscount(baseNightPrice, livePrice);
   const savings        = baseNightPrice > 0 ? baseNightPrice - livePrice : 0;
   const nextHigher     = tier.nextDiscountPercent > tier.discountPercent;
-  const allTiers       = getAllTiers(baseNightPrice, minNightPrice);
+  const allTiers = [...getAllTiers(baseNightPrice, minNightPrice)].sort((a, b) => {
+    // Treat hour 0 (midnight) as 24 so it appears last in the day schedule
+    const ha = a.hour === 0 ? 24 : a.hour;
+    const hb = b.hour === 0 ? 24 : b.hour;
+    return ha - hb;
+  });
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
@@ -82,22 +94,23 @@ export default function HotelTierBanner({ baseNightPrice, minNightPrice = 0 }: P
           {allTiers.map((dt) => {
             const isActive = dt.tierIndex === tier.tierIndex;
             const timeKey = TIER_TIME_KEYS[dt.tierDiscount];
+            const colors = TIER_COLORS[dt.tierDiscount];
             return (
               <div
                 key={dt.tierIndex}
                 className={`rounded-xl p-2.5 text-center border-2 transition-all ${
-                  isActive
-                    ? 'border-brand-gold bg-amber-50 shadow-md scale-105'
+                  isActive && colors
+                    ? `${colors.bg} ring-2 ${colors.ring} shadow-md scale-105 border-transparent`
                     : 'border-transparent bg-white'
                 }`}
               >
-                <div className={`font-extrabold text-lg leading-none ${isActive ? 'text-brand-gold' : 'text-gray-700'}`}>
+                <div className={`font-extrabold text-lg leading-none ${isActive ? 'text-white' : 'text-gray-700'}`}>
                   {dt.discountPercent}%
                 </div>
-                <div className="text-[10px] text-gray-400 mt-1">{timeKey ? t[timeKey] : ''}</div>
+                <div className={`text-[10px] mt-1 ${isActive ? 'text-white/80' : 'text-gray-400'}`}>{timeKey ? t[timeKey] : ''}</div>
                 {isActive && (
-                  <div className="mt-1 text-[10px] font-bold text-brand-gold flex items-center justify-center gap-0.5">
-                    <span className="w-1.5 h-1.5 bg-brand-gold rounded-full animate-pulse" />
+                  <div className="mt-1 text-[10px] font-bold text-white flex items-center justify-center gap-0.5">
+                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                     {t['how.tierNow']}
                   </div>
                 )}

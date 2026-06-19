@@ -274,8 +274,8 @@ function ReviewModal({ booking, onClose, onSubmitted }: ReviewModalProps) {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-5" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
           <div>
-            <h2 className="font-bold text-white text-lg">Leave a Review</h2>
-            <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            <h2 className="font-bold text-lg" style={{ color: '#ffffff' }}>Leave a Review</h2>
+            <p className="text-sm mt-0.5 text-white">
               {booking.hotelName} · {booking.bookingRef}
             </p>
           </div>
