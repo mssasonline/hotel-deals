@@ -33,8 +33,10 @@ export default function Header() {
   const { user, role, loading } = useAuth();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const settingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -50,15 +52,14 @@ export default function Header() {
   const t = getTranslations(language);
 
   useEffect(() => {
-    if (!dropdownOpen) return;
+    if (!dropdownOpen && !settingsOpen) return;
     function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(false);
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) setSettingsOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [dropdownOpen]);
+  }, [dropdownOpen, settingsOpen]);
 
   function handleLogout() {
     setDropdownOpen(false);
@@ -139,7 +140,9 @@ export default function Header() {
           </nav>
 
           {/* Right controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+
+            {/* Desktop: individual selects */}
             <select
               aria-label="Language"
               value={language}
@@ -171,6 +174,55 @@ export default function Header() {
                 </option>
               ))}
             </select>
+
+            {/* Mobile: globe button + dropdown */}
+            <div ref={settingsRef} className="relative sm:hidden">
+              <button
+                onClick={() => setSettingsOpen((v) => !v)}
+                className="flex items-center gap-1.5 text-white/85 text-xs rounded-lg px-2.5 py-1.5 transition-all"
+                style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}
+                aria-label="Language & Currency"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+                <span className="font-semibold">{currency.toUpperCase()}</span>
+              </button>
+
+              {settingsOpen && (
+                <div
+                  className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl overflow-hidden z-50"
+                  style={{ boxShadow: '0 16px 48px rgba(15,23,42,0.18)', border: '1px solid rgba(30,58,138,0.08)' }}
+                >
+                  <div className="p-3 space-y-3">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5 px-1">Language</p>
+                      <select
+                        value={language}
+                        onChange={(e) => { setLanguage(e.target.value as Language); setSettingsOpen(false); }}
+                        className="w-full text-sm text-gray-800 rounded-xl px-3 py-2 cursor-pointer focus:outline-none border border-gray-200 bg-gray-50"
+                      >
+                        {LANGUAGES.filter((l) => l.supported).map((lang) => (
+                          <option key={lang.code} value={lang.code}>{lang.nativeName}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5 px-1">Currency</p>
+                      <select
+                        value={currency}
+                        onChange={(e) => { setCurrency(e.target.value as CurrencyCode); setSettingsOpen(false); }}
+                        className="w-full text-sm text-gray-800 rounded-xl px-3 py-2 cursor-pointer focus:outline-none border border-gray-200 bg-gray-50"
+                      >
+                        {CURRENCIES.map((curr) => (
+                          <option key={curr.code} value={curr.code}>{curr.code.toUpperCase()} — {curr.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Notification Bell — visible only when logged in */}
             {!loading && user && <NotificationBell />}
