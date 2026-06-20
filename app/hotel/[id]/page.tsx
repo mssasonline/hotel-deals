@@ -496,8 +496,8 @@ export default async function HotelPage({ params }: Props) {
             {/* Tonight's Deals — live hourly pricing — blue track */}
             <section className="mt-8 bg-blue-50 rounded-2xl border border-blue-100 p-5">
               <div className="flex flex-wrap items-center gap-2 mb-5">
-                <div className="flex items-center gap-1.5 bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                <div className="flex items-center gap-1.5 bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-full animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white" />
                   <HotelClientLabel translationKey="sections.live" fallback="LIVE" />
                 </div>
                 <h2 className="font-bold text-gray-900 text-xl sm:text-2xl">
