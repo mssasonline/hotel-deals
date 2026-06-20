@@ -14,10 +14,10 @@ export default function LiveBadge() {
 
   return (
     <div
-      className="flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-opacity duration-500"
+      className="flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-full"
       style={{
         background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)',
-        opacity: bright ? 1 : 0.4,
+        opacity: bright ? 1 : 0,
       }}
     >
       <span className="w-1.5 h-1.5 rounded-full bg-white" />
