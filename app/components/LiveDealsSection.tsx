@@ -5,6 +5,7 @@ import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 import { getCurrentTier, type PriceTier } from '@/lib/pricingEngine';
 import TierTimeline from './TierTimeline';
+import LiveBadge from '@/app/hotel/[id]/components/LiveBadge';
 import HotelCarousel from './HotelCarousel';
 import CountdownTimer from './CountdownTimer';
 import type { Hotel } from './HotelCard';
@@ -37,10 +38,7 @@ export default function LiveDealsSection({ hotels }: Props) {
 
             {/* Track label */}
             <div className="flex items-center gap-2 mb-3">
-              <div className="flex items-center gap-1.5 bg-red-50 border border-red-100 text-red-600 text-xs font-bold px-2.5 py-1 rounded-full">
-                <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                {t['sections.live']}
-              </div>
+              <LiveBadge />
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-extrabold leading-tight" style={{ color: '#0F172A' }}>
