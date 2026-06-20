@@ -241,6 +241,13 @@ h3 {
 .delay-500 { animation-delay: 500ms; }
 .delay-600 { animation-delay: 600ms; }
 
+@keyframes live-ping {
+  75%, 100% { transform: scale(2.5); opacity: 0; }
+}
+.live-ping {
+  animation: live-ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
 /* Respect user motion preference */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -249,6 +256,11 @@ h3 {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  /* Keep live badge ping visible regardless of motion preference */
+  .live-ping {
+    animation: live-ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite !important;
+    animation-iteration-count: infinite !important;
   }
 }
 

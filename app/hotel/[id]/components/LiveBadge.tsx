@@ -21,7 +21,7 @@ export default function LiveBadge() {
       }}
     >
       <span className="relative flex items-center justify-center w-2 h-2">
-        <span className="absolute inline-flex w-full h-full rounded-full bg-white opacity-70 animate-ping" />
+        <span className="absolute inline-flex w-full h-full rounded-full bg-white opacity-70 live-ping" />
         <span className="relative w-1.5 h-1.5 rounded-full bg-white" />
       </span>
       {t['sections.live'] ?? 'LIVE'}
