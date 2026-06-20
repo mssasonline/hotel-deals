@@ -41,7 +41,6 @@ export default function LiveDealsSection({ hotels }: Props) {
                 <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                 {t['sections.live']}
               </div>
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">{t['sections.trackAutomatic']}</span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-extrabold leading-tight" style={{ color: '#0F172A' }}>

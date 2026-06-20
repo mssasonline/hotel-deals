@@ -503,9 +503,6 @@ export default async function HotelPage({ params }: Props) {
                 <h2 className="font-bold text-gray-900 text-xl sm:text-2xl">
                   <HotelClientLabel translationKey="nav.lastMinute" fallback="Tonight's Deals" />
                 </h2>
-                <span className="text-xs text-blue-500 bg-white border border-blue-100 px-2.5 py-1 rounded-full font-semibold">
-                  <HotelClientLabel translationKey="sections.trackAutomatic" fallback="Track 1 · Automatic" />
-                </span>
               </div>
               <RoomsGrid
                 rooms={(rooms ?? []) as Room[]}

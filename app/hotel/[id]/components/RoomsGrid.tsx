@@ -140,14 +140,28 @@ export default function RoomsGrid({ rooms, todayRates, hotelId, hotelName, city,
                 <div className="p-4 flex-1 flex flex-col justify-between gap-3">
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      {room.room_type && (
-                        <span className="text-xs font-semibold uppercase tracking-widest text-brand-blue bg-brand-blue-light px-2.5 py-0.5 rounded-full border border-brand-blue/15">
-                          {room.room_type}
-                        </span>
-                      )}
                       <span className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
                         {t['booking.nonRefundableBadge']}
                       </span>
+                      {quantityAvailable !== null && quantityAvailable <= 5 && (
+                        <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full border ${soldOut ? 'text-red-600 bg-red-50 border-red-200' : 'text-orange-600 bg-orange-50 border-orange-200'}`}>
+                          {soldOut ? (
+                            <>
+                              <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5} strokeLinecap="round">
+                                <path d="M18 6L6 18M6 6l12 12" />
+                              </svg>
+                              {t['hotel.soldOutTonight']}
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                              </svg>
+                              {t['hotel.leftTonight'].replace('{n}', String(quantityAvailable))}
+                            </>
+                          )}
+                        </span>
+                      )}
                     </div>
 
                     <h3 className="font-bold text-xl mb-1" style={{ color: '#B45309' }}>{room.name}</h3>
@@ -173,25 +187,6 @@ export default function RoomsGrid({ rooms, todayRates, hotelId, hotelName, city,
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                           </svg>
                           {room.bed_type}
-                        </span>
-                      )}
-                      {quantityAvailable !== null && quantityAvailable <= 5 && (
-                        <span className={`inline-flex items-center gap-1 font-semibold ${soldOut ? 'text-red-600' : 'text-orange-600'}`}>
-                          {soldOut ? (
-                            <>
-                              <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5} strokeLinecap="round">
-                                <path d="M18 6L6 18M6 6l12 12" />
-                              </svg>
-                              {t['hotel.soldOutTonight']}
-                            </>
-                          ) : (
-                            <>
-                              <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-                              </svg>
-                              {t['hotel.leftTonight'].replace('{n}', String(quantityAvailable))}
-                            </>
-                          )}
                         </span>
                       )}
                     </div>
