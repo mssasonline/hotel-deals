@@ -43,7 +43,7 @@ export default function StatsBar() {
       }}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-blue-900/[0.06]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 sm:divide-x divide-blue-900/[0.06]">
           {STAT_VALUES.map((value, i) => (
             <div key={labels[i]} className="flex items-center justify-center gap-4 py-6 px-4">
               <div

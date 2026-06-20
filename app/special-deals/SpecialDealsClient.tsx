@@ -92,7 +92,7 @@ function HotelDealCard({ hotel, index, checkIn, checkOut }: { hotel: SpecialDeal
       <div className="p-4 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2 mb-1">
           <div className="min-w-0">
-            <h3 className="font-bold text-gray-900 text-base truncate group-hover:text-brand-blue transition-colors">
+            <h3 className="font-bold text-xl truncate" style={{ color: '#B45309' }}>
               {hotel.name}
             </h3>
             <p className="text-xs text-gray-400 mt-0.5">{hotel.city}, {hotel.country}</p>

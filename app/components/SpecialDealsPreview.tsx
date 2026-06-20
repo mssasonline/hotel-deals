@@ -124,7 +124,7 @@ export default function SpecialDealsPreview({ deals }: Props) {
 
                   {/* Body */}
                   <div className="p-4">
-                    <h3 className="font-bold text-base truncate transition-colors group-hover:text-brand-gold" style={{ color: '#F1F5F9' }}>
+                    <h3 className="font-bold text-xl truncate transition-colors" style={{ color: '#fff' }}>
                       {deal.hotelName}
                     </h3>
                     <p className="text-xs mt-0.5 mb-3" style={{ color: 'rgba(255,255,255,0.55)' }}>{deal.city}</p>

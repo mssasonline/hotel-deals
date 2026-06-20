@@ -240,7 +240,7 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
           <Stars count={hotel.stars} />
 
           {/* Hotel name */}
-          <h2 className="font-bold text-gray-900 text-base sm:text-lg mt-1 mb-0.5 leading-tight line-clamp-1">
+          <h2 className="font-bold text-xl mt-1 mb-0.5 leading-tight line-clamp-1" style={{ color: '#B45309' }}>
             {hotel.name}
           </h2>
 

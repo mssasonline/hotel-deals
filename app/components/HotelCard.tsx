@@ -178,7 +178,7 @@ export default function HotelCard({ hotel, initialFavorited, onUnfavorite }: Hot
         </div>
 
         {/* Name */}
-        <h3 className="font-bold text-gray-900 text-base leading-snug mb-1 line-clamp-1">
+        <h3 className="font-bold text-xl leading-snug mb-1 line-clamp-1" style={{ color: '#B45309' }}>
           {hotel.name}
         </h3>
 

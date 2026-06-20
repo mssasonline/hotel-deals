@@ -146,11 +146,13 @@ export default function PartnerDealsSection({
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-gray-900 text-lg leading-snug">
-                    {deal.title ?? deal.room_name}
-                  </h3>
+                  {deal.title ? (
+                    <h3 className="font-bold text-lg leading-snug" style={{ color: '#15803d' }}>{deal.title}</h3>
+                  ) : (
+                    <h3 className="font-bold text-xl leading-snug" style={{ color: '#B45309' }}>{deal.room_name}</h3>
+                  )}
                   {deal.title && (
-                    <p className="text-sm text-gray-500 mt-0.5">{deal.room_name}</p>
+                    <p className="text-sm font-bold mt-0.5" style={{ color: '#B45309' }}>{deal.room_name}</p>
                   )}
 
                   <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-3">
@@ -221,11 +223,13 @@ export default function PartnerDealsSection({
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-gray-900 text-lg leading-snug">
-                    {deal.title ?? deal.room_name}
-                  </h3>
+                  {deal.title ? (
+                    <h3 className="font-bold text-lg leading-snug" style={{ color: '#15803d' }}>{deal.title}</h3>
+                  ) : (
+                    <h3 className="font-bold text-xl leading-snug" style={{ color: '#B45309' }}>{deal.room_name}</h3>
+                  )}
                   {deal.title && (
-                    <p className="text-sm text-gray-500 mt-0.5">{deal.room_name}</p>
+                    <p className="text-sm font-bold mt-0.5" style={{ color: '#B45309' }}>{deal.room_name}</p>
                   )}
 
                   <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-3">

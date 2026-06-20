@@ -150,7 +150,7 @@ export default function RoomsGrid({ rooms, todayRates, hotelId, hotelName, city,
                       </span>
                     </div>
 
-                    <h3 className="font-bold text-gray-900 text-base mb-1">{room.name}</h3>
+                    <h3 className="font-bold text-xl mb-1" style={{ color: '#B45309' }}>{room.name}</h3>
 
                     <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
                       <span className="flex items-center gap-1">

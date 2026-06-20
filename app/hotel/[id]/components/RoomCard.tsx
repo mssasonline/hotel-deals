@@ -59,7 +59,7 @@ export default function RoomCard({ room, isSelected, onSelect }: RoomCardProps) 
         <div className="flex-1 p-5 flex flex-col">
           {/* Header */}
           <div className="mb-3">
-            <h3 className="font-bold text-gray-900 text-lg leading-tight mb-1">{room.name}</h3>
+            <h3 className="font-bold text-xl leading-tight mb-1" style={{ color: '#B45309' }}>{room.name}</h3>
             <div className="flex items-center gap-3 text-gray-500 text-sm flex-wrap">
               <span className="flex items-center gap-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

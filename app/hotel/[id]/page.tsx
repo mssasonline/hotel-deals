@@ -373,7 +373,7 @@ export default async function HotelPage({ params }: Props) {
 
             {/* Name + Favorite */}
             <div className="flex items-start justify-between gap-3 mb-3">
-              <h1 className="font-bold text-gray-900 text-2xl sm:text-3xl">
+              <h1 className="font-bold text-2xl sm:text-3xl" style={{ color: '#B45309' }}>
                 {name}
               </h1>
               <div className="shrink-0 mt-1">
