@@ -43,10 +43,9 @@ export default function StatsBar() {
       }}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 sm:grid-cols-4 sm:divide-x divide-blue-900/[0.06]">
+        <div className="flex flex-wrap justify-center sm:grid sm:grid-cols-4 sm:divide-x divide-blue-900/[0.06]">
           {STAT_VALUES.map((value, i) => (
-            <div key={labels[i]} className="flex items-center justify-center py-6 px-4">
-              <div className="flex items-center gap-4 w-36">
+            <div key={labels[i]} className="flex items-center gap-4 py-6 px-6 w-1/2 sm:w-auto sm:justify-center">
               <div
                 className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-white transition-transform duration-300 hover:scale-110"
                 style={{
@@ -68,7 +67,6 @@ export default function StatsBar() {
                   {value}
                 </div>
                 <div className="text-xs mt-1 font-medium" style={{ color: '#64748B' }}>{labels[i]}</div>
-              </div>
               </div>
             </div>
           ))}
