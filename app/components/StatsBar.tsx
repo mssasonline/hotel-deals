@@ -43,7 +43,7 @@ export default function StatsBar() {
       }}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap justify-center sm:grid sm:grid-cols-4 sm:divide-x divide-blue-900/[0.06] pl-8 sm:pl-0">
+        <div className="flex flex-wrap justify-center sm:grid sm:grid-cols-4 sm:divide-x divide-blue-900/[0.06] pl-16 sm:pl-0">
           {STAT_VALUES.map((value, i) => (
             <div key={labels[i]} className="flex items-center gap-4 py-6 px-6 w-1/2 sm:w-auto sm:justify-center">
               <div
