@@ -72,7 +72,7 @@ export default function PricingPulseBar() {
         >
           {/* Pulse ring */}
           <div
-            className="absolute inset-0 rounded-full animate-ping opacity-60"
+            className="absolute inset-0 rounded-full live-ping opacity-60"
             style={{ background: activeSeg.color, scale: '2.2' }}
           />
           {/* Solid dot */}
