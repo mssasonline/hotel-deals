@@ -224,8 +224,8 @@ export default function Header() {
               )}
             </div>
 
-            {/* Notification Bell — visible only when logged in */}
-            {!loading && user && <NotificationBell />}
+            {/* Notification Bell — desktop only; mobile version lives inside the user dropdown */}
+            {!loading && user && <div className="hidden sm:block"><NotificationBell /></div>}
 
             {/* Auth section */}
             {!loading && (
@@ -302,6 +302,11 @@ export default function Header() {
                             <span className="group-hover:text-brand-blue transition-colors">{item.label}</span>
                           </Link>
                         ))}
+
+                        {/* Notifications — mobile only (desktop has the bell in the topbar) */}
+                        <div className="sm:hidden">
+                          <NotificationBell inDropdown={true} />
+                        </div>
 
                         <div className="h-px bg-gray-100 my-1.5 mx-1" />
 

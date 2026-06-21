@@ -25,7 +25,7 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
-export default function NotificationBell({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
+export default function NotificationBell({ variant = 'dark', inDropdown = false }: { variant?: 'dark' | 'light'; inDropdown?: boolean }) {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
@@ -98,6 +98,85 @@ export default function NotificationBell({ variant = 'dark' }: { variant?: 'dark
 
   if (!user) return null;
 
+  const bellIcon = (
+    <svg className={`w-5 h-5 ${inDropdown ? 'text-[#1E3A8A]' : variant === 'dark' ? 'text-white' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    </svg>
+  );
+
+  if (inDropdown) {
+    return (
+      <div ref={panelRef}>
+        {/* Dropdown row button */}
+        <button
+          onClick={handleOpen}
+          className="group flex items-center gap-3 px-2.5 py-2 rounded-xl text-sm font-medium text-slate-700 hover:bg-blue-50 transition-colors w-full"
+        >
+          <span className="relative w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#EEF4FF' }}>
+            {bellIcon}
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 leading-none">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </span>
+          <span className="group-hover:text-blue-700 transition-colors">Notifications</span>
+          {unreadCount > 0 && (
+            <span className="ml-auto bg-red-100 text-red-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+              {unreadCount} new
+            </span>
+          )}
+        </button>
+
+        {/* Inline panel — expands within the dropdown */}
+        {open && (
+          <div className="mt-1 mx-1 bg-white rounded-xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 16px rgba(15,23,42,0.10)' }}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+              <h3 className="font-bold text-gray-900 text-sm">Notifications</h3>
+              {notifications.some((n) => !n.is_read) && (
+                <button onClick={markAllRead} className="text-xs text-blue-700 hover:underline font-medium">
+                  Mark all read
+                </button>
+              )}
+            </div>
+            <div className="max-h-64 overflow-y-auto divide-y divide-gray-50">
+              {loading ? (
+                <div className="flex items-center justify-center py-6">
+                  <svg className="animate-spin w-5 h-5 text-blue-700" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center px-4">
+                  <p className="text-gray-500 text-sm font-medium">No notifications yet</p>
+                  <p className="text-gray-400 text-xs mt-1">We&apos;ll notify you about your bookings</p>
+                </div>
+              ) : (
+                notifications.map((n) => (
+                  <button
+                    key={n.id}
+                    onClick={() => markOneRead(n.id)}
+                    className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex gap-3 ${!n.is_read ? 'bg-blue-50/60' : ''}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs leading-snug ${!n.is_read ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}`}>
+                        {n.title}
+                        {!n.is_read && <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full ml-1.5 mb-0.5 align-middle" />}
+                      </p>
+                      <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed line-clamp-2">{n.message}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">{timeAgo(n.created_at)}</p>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div ref={panelRef} className="relative">
       {/* Bell button */}
@@ -110,19 +189,7 @@ export default function NotificationBell({ variant = 'dark' }: { variant?: 'dark
             : 'bg-gray-100 hover:bg-gray-200'
         }`}
       >
-        <svg
-          className={`w-5 h-5 ${variant === 'dark' ? 'text-white' : 'text-gray-600'}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-          />
-        </svg>
+        {bellIcon}
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
             {unreadCount > 99 ? '99+' : unreadCount}
