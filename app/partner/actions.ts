@@ -942,3 +942,120 @@ export async function deleteRoomRate(
 
   return { error: error?.message ?? null };
 }
+
+// ─── Payout Details ───────────────────────────────────────────────────────────
+
+export type PayoutDetails = {
+  bank_name:      string | null;
+  account_holder: string | null;
+  iban:           string | null;
+  swift_bic:      string | null;
+  bank_country:   string | null;
+};
+
+export async function getPayoutDetails(): Promise<PayoutDetails | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from('partner_payout_details')
+    .select('bank_name, account_holder, iban, swift_bic, bank_country')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  return data ?? null;
+}
+
+export async function savePayoutDetails(
+  fields: PayoutDetails,
+): Promise<{ error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authenticated' };
+
+  const { error } = await supabase
+    .from('partner_payout_details')
+    .upsert(
+      {
+        user_id:        user.id,
+        bank_name:      fields.bank_name      || null,
+        account_holder: fields.account_holder || null,
+        iban:           fields.iban           || null,
+        swift_bic:      fields.swift_bic      || null,
+        bank_country:   fields.bank_country   || null,
+      },
+      { onConflict: 'user_id' },
+    );
+
+  return { error: error?.message ?? null };
+}
+
+// ─── Monthly Payouts (partner read + confirm) ─────────────────────────────────
+
+export type MonthlyPayout = {
+  id:              number;
+  hotel_id:        number | null;
+  hotel_name:      string | null;
+  period_year:     number;
+  period_month:    number;
+  gross_amount:    number;
+  commission:      number;
+  net_amount:      number;
+  status:          'pending' | 'paid' | 'confirmed';
+  transfer_ref:    string | null;
+  paid_at:         string | null;
+  confirmed_at:    string | null;
+  notes:           string | null;
+};
+
+export async function getMyPayouts(): Promise<MonthlyPayout[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from('monthly_payouts')
+    .select(`
+      id, hotel_id, period_year, period_month,
+      gross_amount, commission, net_amount,
+      status, transfer_ref, paid_at, confirmed_at, notes,
+      hotels ( name )
+    `)
+    .eq('partner_user_id', user.id)
+    .order('period_year', { ascending: false })
+    .order('period_month', { ascending: false });
+
+  return (data ?? []).map((r: Record<string, unknown>) => ({
+    id:           r.id as number,
+    hotel_id:     r.hotel_id as number | null,
+    hotel_name:   (r.hotels as { name: string } | null)?.name ?? null,
+    period_year:  r.period_year as number,
+    period_month: r.period_month as number,
+    gross_amount: Number(r.gross_amount),
+    commission:   Number(r.commission),
+    net_amount:   Number(r.net_amount),
+    status:       r.status as MonthlyPayout['status'],
+    transfer_ref: r.transfer_ref as string | null,
+    paid_at:      r.paid_at as string | null,
+    confirmed_at: r.confirmed_at as string | null,
+    notes:        r.notes as string | null,
+  }));
+}
+
+export async function confirmPayoutReceipt(
+  payoutId: number,
+): Promise<{ error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authenticated' };
+
+  const { error } = await supabase
+    .from('monthly_payouts')
+    .update({ status: 'confirmed', confirmed_at: new Date().toISOString() })
+    .eq('id', payoutId)
+    .eq('partner_user_id', user.id)
+    .eq('status', 'paid');
+
+  return { error: error?.message ?? null };
+}

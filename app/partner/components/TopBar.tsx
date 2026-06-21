@@ -12,7 +12,7 @@ import { getTranslations } from '@/lib/i18n/translations';
 
 const PAGE_TITLES: Record<string, string> = {
   '/partner/dashboard': 'Dashboard',
-  '/partner/hotel':    'Hotels',
+  '/partner/hotel':    'Hotel',
   '/partner/rooms':     'Rooms',
   '/partner/deals':     'Deals',
   '/partner/bookings':  'Bookings',

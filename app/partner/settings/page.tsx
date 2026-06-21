@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/authContext';
-import { getMyProfile, type MyProfile as Profile } from '../actions';
+import { getMyProfile, getPayoutDetails, savePayoutDetails, type MyProfile as Profile, type PayoutDetails } from '../actions';
 
 function Spinner() {
   return (
@@ -57,9 +57,22 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [saveErr, setSaveErr] = useState<string | null>(null);
-  const [resetSent, setResetSent] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false);
-  const [resetError, setResetError] = useState<string | null>(null);
+
+  const [payoutForm, setPayoutForm] = useState<PayoutDetails>({
+    bank_name: '', account_holder: '', iban: '', swift_bic: '', bank_country: '',
+  });
+  const [payoutSaving, setPayoutSaving] = useState(false);
+  const [payoutMsg, setPayoutMsg]       = useState<string | null>(null);
+  const [payoutErr, setPayoutErr]       = useState<string | null>(null);
+
+  const [showChangePw, setShowChangePw]   = useState(false);
+  const [newPassword, setNewPassword]     = useState('');
+  const [confirmPw, setConfirmPw]         = useState('');
+  const [pwLoading, setPwLoading]         = useState(false);
+  const [pwMsg, setPwMsg]                 = useState<string | null>(null);
+  const [pwErr, setPwErr]                 = useState<string | null>(null);
+  const [showNewPw, setShowNewPw]         = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -67,7 +80,7 @@ export default function SettingsPage() {
 
     async function load() {
       try {
-        const p = await getMyProfile();
+        const [p, pd] = await Promise.all([getMyProfile(), getPayoutDetails()]);
         if (p) {
           setProfile(p);
           setForm({
@@ -75,6 +88,15 @@ export default function SettingsPage() {
             phone:        p.phone ?? '',
             addr_city:    p.addr_city ?? '',
             addr_country: p.addr_country ?? '',
+          });
+        }
+        if (pd) {
+          setPayoutForm({
+            bank_name:      pd.bank_name      ?? '',
+            account_holder: pd.account_holder ?? '',
+            iban:           pd.iban           ?? '',
+            swift_bic:      pd.swift_bic      ?? '',
+            bank_country:   pd.bank_country   ?? '',
           });
         }
       } catch (err) {
@@ -89,19 +111,6 @@ export default function SettingsPage() {
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
-  }
-
-  async function handlePasswordReset() {
-    if (!profile?.email) return;
-    setResetError(null);
-    setResetSent(false);
-    setResetLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(profile.email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setResetLoading(false);
-    if (error) { setResetError(error.message); return; }
-    setResetSent(true);
   }
 
   async function handleSave() {
@@ -127,6 +136,42 @@ export default function SettingsPage() {
       setProfile(prev => prev ? { ...prev, ...form } as Profile : null);
       setSaveMsg('Profile updated successfully');
       setTimeout(() => setSaveMsg(null), 3000);
+    }
+  }
+
+  async function handleChangePassword() {
+    setPwErr(null);
+    setPwMsg(null);
+    if (newPassword.length < 8) { setPwErr('Password must be at least 8 characters.'); return; }
+    if (newPassword !== confirmPw) { setPwErr('Passwords do not match.'); return; }
+    setPwLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setPwLoading(false);
+    if (error) { setPwErr(error.message); return; }
+    setPwMsg('Password changed successfully.');
+    setNewPassword('');
+    setConfirmPw('');
+    setShowChangePw(false);
+    setTimeout(() => setPwMsg(null), 4000);
+  }
+
+  async function handlePayoutSave() {
+    setPayoutErr(null);
+    setPayoutMsg(null);
+    setPayoutSaving(true);
+    const { error } = await savePayoutDetails({
+      bank_name:      payoutForm.bank_name      || null,
+      account_holder: payoutForm.account_holder || null,
+      iban:           payoutForm.iban           || null,
+      swift_bic:      payoutForm.swift_bic      || null,
+      bank_country:   payoutForm.bank_country   || null,
+    });
+    setPayoutSaving(false);
+    if (error) {
+      setPayoutErr('Failed to save: ' + error);
+    } else {
+      setPayoutMsg('Bank details saved successfully');
+      setTimeout(() => setPayoutMsg(null), 3000);
     }
   }
 
@@ -219,35 +264,204 @@ export default function SettingsPage() {
           </div>
         </Section>
 
+        {/* Payout Details */}
+        <Section title="Payout Details" description="Bank account where your monthly earnings will be transferred by the platform.">
+          <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl flex items-start gap-2.5">
+            <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-xs text-amber-700">
+              Make sure your bank details are correct. The platform uses this information to transfer your monthly net payout.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Bank Name">
+              <input
+                value={payoutForm.bank_name ?? ''}
+                onChange={e => setPayoutForm(p => ({ ...p, bank_name: e.target.value }))}
+                className={INPUT}
+                placeholder="e.g. Emirates NBD"
+              />
+            </Field>
+            <Field label="Account Holder Name">
+              <input
+                value={payoutForm.account_holder ?? ''}
+                onChange={e => setPayoutForm(p => ({ ...p, account_holder: e.target.value }))}
+                className={INPUT}
+                placeholder="Full name as on bank account"
+              />
+            </Field>
+            <Field label="IBAN">
+              <input
+                value={payoutForm.iban ?? ''}
+                onChange={e => setPayoutForm(p => ({ ...p, iban: e.target.value.toUpperCase() }))}
+                className={INPUT}
+                placeholder="AE07 0331 2345 6789 0123 456"
+              />
+            </Field>
+            <Field label="SWIFT / BIC Code">
+              <input
+                value={payoutForm.swift_bic ?? ''}
+                onChange={e => setPayoutForm(p => ({ ...p, swift_bic: e.target.value.toUpperCase() }))}
+                className={INPUT}
+                placeholder="e.g. EBILAEAD"
+              />
+            </Field>
+            <Field label="Bank Country">
+              <input
+                value={payoutForm.bank_country ?? ''}
+                onChange={e => setPayoutForm(p => ({ ...p, bank_country: e.target.value }))}
+                className={INPUT}
+                placeholder="e.g. United Arab Emirates"
+              />
+            </Field>
+          </div>
+
+          {(payoutMsg || payoutErr) && (
+            <div className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium ${
+              payoutMsg
+                ? 'bg-green-50 border border-green-100 text-green-700'
+                : 'bg-red-50 border border-red-100 text-red-600'
+            }`}>
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {payoutMsg
+                  ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                }
+              </svg>
+              {payoutMsg ?? payoutErr}
+            </div>
+          )}
+
+          <div className="flex justify-end">
+            <button
+              onClick={handlePayoutSave}
+              disabled={payoutSaving}
+              className="px-6 py-2.5 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60 flex items-center gap-2 hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
+            >
+              {payoutSaving && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+              {payoutSaving ? 'Saving…' : 'Save Bank Details'}
+            </button>
+          </div>
+        </Section>
+
         {/* Security */}
         <Section title="Security" description="Manage your login credentials.">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-            <div>
-              <p className="text-sm font-medium text-gray-900">Change Password</p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                We&apos;ll send a reset link to <span className="font-medium text-gray-600">{profile?.email}</span>
-              </p>
-            </div>
-            <button
-              onClick={handlePasswordReset}
-              disabled={resetLoading || resetSent}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl transition-colors disabled:opacity-50 shrink-0"
-            >
-              {resetLoading ? (
-                <span className="w-3.5 h-3.5 border-2 border-orange-400/30 border-t-orange-500 rounded-full animate-spin" />
-              ) : (
+
+          {/* Option 1: Change password directly */}
+          <div className="border border-gray-100 rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 bg-gray-50">
+              <div>
+                <p className="text-sm font-medium text-gray-900">Change Password</p>
+                <p className="text-xs text-gray-400 mt-0.5">Set a new password directly</p>
+              </div>
+              <button
+                onClick={() => { setShowChangePw(v => !v); setPwErr(null); setPwMsg(null); }}
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-brand-blue bg-brand-blue-light hover:bg-blue-100 border border-brand-blue/20 rounded-xl transition-colors shrink-0"
+              >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                 </svg>
-              )}
-              {resetLoading ? 'Sending…' : resetSent ? 'Email Sent!' : 'Send Reset Email'}
-            </button>
+                {showChangePw ? 'Cancel' : 'Change Password'}
+              </button>
+            </div>
+
+            {showChangePw && (
+              <div className="p-4 space-y-3 border-t border-gray-100">
+                {/* New password */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1.5">New Password</label>
+                  <div className="relative">
+                    <input
+                      type={showNewPw ? 'text' : 'password'}
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      placeholder="At least 8 characters"
+                      className={`${INPUT} pr-10`}
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPw(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showNewPw ? (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm password */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1.5">Confirm New Password</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPw ? 'text' : 'password'}
+                      value={confirmPw}
+                      onChange={e => setConfirmPw(e.target.value)}
+                      placeholder="Re-enter new password"
+                      className={`${INPUT} pr-10 ${confirmPw && confirmPw !== newPassword ? 'border-red-300 focus:ring-red-200 focus:border-red-400' : confirmPw && confirmPw === newPassword ? 'border-green-300 focus:ring-green-200 focus:border-green-400' : ''}`}
+                      onKeyDown={e => e.key === 'Enter' && handleChangePassword()}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPw(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showConfirmPw ? (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  {confirmPw && confirmPw !== newPassword && (
+                    <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+                  )}
+                  {confirmPw && confirmPw === newPassword && (
+                    <p className="text-xs text-green-600 mt-1">✓ Passwords match</p>
+                  )}
+                </div>
+
+                {pwErr && (
+                  <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">{pwErr}</p>
+                )}
+
+                <div className="flex justify-end pt-1">
+                  <button
+                    onClick={handleChangePassword}
+                    disabled={pwLoading}
+                    className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-60 flex items-center gap-2 hover:-translate-y-0.5"
+                    style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.25)' }}
+                  >
+                    {pwLoading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                    {pwLoading ? 'Updating…' : 'Update Password'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-          {resetError && (
-            <p className="text-xs text-red-600 px-1">{resetError}</p>
-          )}
-          {resetSent && (
-            <p className="text-xs text-green-600 px-1">Check your inbox — the link expires in 24 hours.</p>
+
+          {pwMsg && (
+            <div className="flex items-center gap-2 bg-green-50 border border-green-100 rounded-xl px-3 py-2.5 text-sm text-green-700">
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              {pwMsg}
+            </div>
           )}
         </Section>
 

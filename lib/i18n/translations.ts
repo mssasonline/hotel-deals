@@ -451,7 +451,7 @@ const en = {
   'hotel.tier.discountRisesWarning': 'Discount rises to {pct}% in the next period — rooms may sell out. Book now and lock your price!',
   // ── Partner portal ────────────────────────────────────────────────────────
   'partner.nav.dashboard': 'Dashboard',
-  'partner.nav.hotels':    'Hotels',
+  'partner.nav.hotels':    'Hotel',
   'partner.nav.rooms':     'Last Min Room',
   'partner.nav.deals':     'Hotel Deals',
   'partner.nav.bookings':  'Bookings',

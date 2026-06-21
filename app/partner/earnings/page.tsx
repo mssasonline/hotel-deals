@@ -4,6 +4,8 @@ import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
 import AEDAmount from '@/app/partner/components/AEDAmount';
 import { calcTaxBreakdown, UAE_FEE_DEFAULTS } from '@/lib/pricingEngine';
+import { getMyPayouts } from '../actions';
+import PayoutStatusPanel from './PayoutStatusPanel';
 
 export const metadata: Metadata = { title: 'Financial Summary — Partner Portal' };
 export const dynamic = 'force-dynamic';
@@ -47,6 +49,8 @@ export default async function EarningsPage() {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
+
+  const myPayouts = await getMyPayouts().catch(() => []);
 
   const { data: partnerData } = await supabase
     .from('hotel_partners')
@@ -218,11 +222,34 @@ export default async function EarningsPage() {
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                           In Progress
                         </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600">
-                          Pending Transfer
-                        </span>
-                      )}
+                      ) : (() => {
+                        const [yr, mo] = m.month.split('-').map(Number);
+                        const payout = myPayouts.find(p => p.period_year === yr && p.period_month === mo);
+                        if (!payout) return (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-400">
+                            Pending Transfer
+                          </span>
+                        );
+                        if (payout.status === 'confirmed') return (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Confirmed
+                          </span>
+                        );
+                        if (payout.status === 'paid') return (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            Transferred
+                          </span>
+                        );
+                        return (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700">
+                            Pending Transfer
+                          </span>
+                        );
+                      })()}
                     </td>
                   </tr>
                 ))}
@@ -253,6 +280,9 @@ export default async function EarningsPage() {
           </div>
         </div>
       )}
+
+      {/* Payout records with Confirm Receipt */}
+      <PayoutStatusPanel payouts={myPayouts} />
     </div>
   );
 }

@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { createAdminClient } from '@/lib/supabase-admin';
 import AEDAmount from '@/app/partner/components/AEDAmount';
 import { calcTaxBreakdown, UAE_FEE_DEFAULTS } from '@/lib/pricingEngine';
+import { getAdminPayouts } from '../actions';
+import PayoutManager from './PayoutManager';
 
 export const metadata: Metadata = { title: 'Financials — Admin Console' };
 export const dynamic = 'force-dynamic';
@@ -56,6 +58,7 @@ function monthLabel(ym: string): string {
 
 export default async function AdminFinancialsPage() {
   const admin = createAdminClient();
+  const existingPayouts = await getAdminPayouts().catch(() => []);
 
   // Step 1: All paid bookings with revenue split + hotel name
   const { data: bookings } = await admin
@@ -191,6 +194,38 @@ export default async function AdminFinancialsPage() {
 
   const partners = Array.from(byPartner.values()).sort((a, b) => b.grossCollected - a.grossCollected);
 
+  // ── Per-partner per-month summaries for PayoutManager ────────────────────────
+  type PartnerMonthKey = { partnerId: string; partnerName: string; hotelId: string; hotelName: string; year: number; month: number };
+  const pmMap = new Map<string, PartnerMonthKey & { gross: number; commission: number; net: number }>();
+  const partnerUserIdMap = new Map<string, string>(); // partnerName → userId
+
+  for (const b of rawRows) {
+    const uid = hotelToPartnerUser.get(b.hotel_id) ?? '';
+    partnerUserIdMap.set(b.partner_name, uid);
+    const ym = b.created_at.slice(0, 7);
+    const [yr, mo] = ym.split('-').map(Number);
+    const k = `${uid}|${b.hotel_id}|${yr}|${mo}`;
+    if (!pmMap.has(k)) pmMap.set(k, { partnerId: uid, partnerName: b.partner_name, hotelId: b.hotel_id, hotelName: b.hotel_name, year: yr, month: mo, gross: 0, commission: 0, net: 0 });
+    const e = pmMap.get(k)!;
+    e.gross      += b.total_price;
+    e.commission += b.admin_amount;
+    e.net        += b.partner_amount;
+  }
+
+  const partnerSummaries = Array.from(pmMap.values())
+    .sort((a, b) => b.year !== a.year ? b.year - a.year : b.month - a.month)
+    .map(e => ({
+      partnerId:   e.partnerId,
+      partnerName: e.partnerName,
+      hotelId:     e.hotelId ? Number(e.hotelId) : null,
+      hotelName:   e.hotelName,
+      periodYear:  e.year,
+      periodMonth: e.month,
+      gross:       e.gross,
+      commission:  e.commission,
+      net:         e.net,
+    }));
+
   return (
     <div className="p-6 lg:p-8 max-w-7xl">
       {/* Header */}
@@ -308,46 +343,11 @@ export default async function AdminFinancialsPage() {
         )}
       </div>
 
-      {/* ── Per-partner breakdown ─────────────────────────────────────────────── */}
-      {partners.length > 0 && (
-        <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
-          <div className="px-6 py-4 border-b border-gray-50">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Per-Partner Breakdown</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">
-                  <th className="px-4 py-3 text-left">Partner</th>
-                  <th className="px-4 py-3">Hotels</th>
-                  <th className="px-4 py-3">Bookings</th>
-                  <th className="px-4 py-3">Gross Collected</th>
-                  <th className="px-4 py-3 text-amber-600">Platform Rev</th>
-                  <th className="px-4 py-3 text-emerald-700">Net Payout</th>
-                  <th className="px-4 py-3 text-left">Payout Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {partners.map((p) => (
-                  <tr key={p.partnerId} className="hover:bg-gray-50/50 transition-colors text-right">
-                    <td className="px-4 py-3 font-medium text-gray-900 text-left max-w-[180px] truncate">{p.partnerName}</td>
-                    <td className="px-4 py-3 text-gray-600">{p.hotelCount}</td>
-                    <td className="px-4 py-3 text-gray-600">{p.bookingCount}</td>
-                    <td className="px-4 py-3 text-gray-900 font-semibold tabular-nums"><AEDAmount amount={p.grossCollected} /></td>
-                    <td className="px-4 py-3 text-amber-600 font-medium tabular-nums"><AEDAmount amount={p.platformCommission} /></td>
-                    <td className="px-4 py-3 text-emerald-700 font-bold tabular-nums"><AEDAmount amount={p.netPayout} /></td>
-                    <td className="px-4 py-3 text-left">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600">
-                        Pending Transfer
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      {/* ── Partner Payout Manager ────────────────────────────────────────────── */}
+      <PayoutManager
+        initialPayouts={existingPayouts}
+        partnerSummaries={partnerSummaries}
+      />
     </div>
   );
 }

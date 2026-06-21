@@ -21,6 +21,12 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<'google' | 'github' | null>(null);
 
+  const [forgotMode, setForgotMode]       = useState(false);
+  const [forgotEmail, setForgotEmail]     = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent]       = useState(false);
+  const [forgotError, setForgotError]     = useState('');
+
   useEffect(() => {
     if (!loading && user) {
       router.replace('/');
@@ -58,6 +64,22 @@ export default function LoginPage() {
 
     const redirect = consumeLoginRedirect('/');
     router.push(redirect);
+  }
+
+  async function handleForgotPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setForgotError('');
+    if (!forgotEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotEmail)) {
+      setForgotError('Please enter a valid email address.');
+      return;
+    }
+    setForgotLoading(true);
+    const { error: err } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setForgotLoading(false);
+    if (err) { setForgotError(err.message); return; }
+    setForgotSent(true);
   }
 
   async function handleOAuth(provider: 'google' | 'github') {
@@ -161,6 +183,55 @@ export default function LoginPage() {
                 <div className="flex-1 h-px bg-gray-100" />
               </div>
 
+              {/* Forgot password panel */}
+              {forgotMode && (
+                <div className="border border-blue-100 rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 bg-blue-50 flex items-center justify-between">
+                    <p className="text-sm font-semibold text-gray-800">Reset your password</p>
+                    <button
+                      type="button"
+                      onClick={() => { setForgotMode(false); setForgotSent(false); setForgotError(''); setForgotEmail(''); }}
+                      className="text-gray-400 hover:text-gray-600 text-xs"
+                    >
+                      ✕ Close
+                    </button>
+                  </div>
+                  {forgotSent ? (
+                    <div className="px-4 py-5 text-center space-y-2">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900">Reset link sent!</p>
+                      <p className="text-xs text-gray-500">Check your inbox at <span className="font-medium text-gray-700">{forgotEmail}</span></p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleForgotPassword} className="px-4 py-4 space-y-3">
+                      <p className="text-xs text-gray-500">Enter your email and we&apos;ll send you a link to reset your password.</p>
+                      <input
+                        type="email"
+                        value={forgotEmail}
+                        onChange={e => setForgotEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        autoFocus
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue"
+                      />
+                      {forgotError && <p className="text-xs text-red-600">{forgotError}</p>}
+                      <button
+                        type="submit"
+                        disabled={forgotLoading}
+                        className="w-full py-2.5 text-sm font-semibold text-white rounded-xl disabled:opacity-60 flex items-center justify-center gap-2"
+                        style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
+                      >
+                        {forgotLoading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                        {forgotLoading ? 'Sending…' : 'Send Reset Link'}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              )}
+
               {/* Email form */}
               <form onSubmit={handleSubmit} noValidate className="space-y-4">
                 {/* Email */}
@@ -224,6 +295,17 @@ export default function LoginPage() {
                       )}
                     </button>
                   </div>
+                </div>
+
+                {/* Forgot password link */}
+                <div className="flex justify-end -mt-1">
+                  <button
+                    type="button"
+                    onClick={() => { setForgotMode(v => !v); setForgotEmail(email); setForgotSent(false); setForgotError(''); }}
+                    className="text-xs text-brand-blue hover:underline"
+                  >
+                    Forgot password?
+                  </button>
                 </div>
 
                 {/* Submit */}
