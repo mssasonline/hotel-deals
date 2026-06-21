@@ -87,7 +87,7 @@ export default function TierTimeline({ compact = false }: Props) {
                 }`}
               >
                 {isActive && (
-                  <span className="absolute inset-0 rounded-full animate-ping opacity-25 bg-current" />
+                  <span className="absolute inset-0 rounded-full live-ping opacity-25 bg-current" />
                 )}
                 -{ti.discountPct}%
               </div>
