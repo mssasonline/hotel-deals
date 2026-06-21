@@ -10,6 +10,8 @@ import { sendBookingEmailAction } from '@/lib/actions/sendBookingEmail';
 import { createBooking } from '../actions';
 import type { HotelDetail } from '@/app/hotel/[id]/lib/hotelDetailData';
 import { useBookingStore } from '@/store/bookingStore';
+import { useAppSettingsStore } from '@/store/appSettingsStore';
+import { CURRENCY_MAP } from '@/lib/currencyData';
 import { calcRoomPrice, calcTaxBreakdown } from '@/lib/pricingEngine';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import BookingSummary from './BookingSummary';
@@ -64,6 +66,8 @@ export default function BookingPageClient({
   const [supabaseRoomId, setSupabaseRoomId] = useState<string | null>(null);
   const { selectedRoom: storeRoom, checkInDate, checkOutDate, guests, confirmBooking, breakfastIncluded, breakfastPricePerPerson } =
     useBookingStore();
+  const currency = useAppSettingsStore((s) => s.currency);
+  const currencyInfo = CURRENCY_MAP[currency];
 
   // Prefer the store room (has real Supabase prices set by HotelBookingPanel).
   // Fall back to mock only when navigating directly without going through hotel page.
@@ -224,6 +228,8 @@ export default function BookingPageClient({
         checkOutLabel:           checkOut,
         breakfastIncluded:       hasBreakfast,
         breakfastPricePerPerson: hasBreakfast ? breakfastPricePerPerson : 0,
+        chargedCurrency:         currency,
+        currencySymbol:          currencyInfo.symbol,
       });
 
       if (!result.ok) {

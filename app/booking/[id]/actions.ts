@@ -2,6 +2,9 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
+import { sendBookingConfirmation } from '@/lib/emailService';
+import { fromAEDTo } from '@/lib/currency';
+import type { CurrencyCode } from '@/lib/currencyData';
 
 export interface CreateBookingInput {
   hotelId: number;
@@ -30,6 +33,8 @@ export interface CreateBookingInput {
   checkOutLabel: string;
   breakfastIncluded: boolean;
   breakfastPricePerPerson: number;
+  chargedCurrency: CurrencyCode;
+  currencySymbol:  string;
 }
 
 export type CreateBookingResult =
@@ -135,6 +140,59 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         user_id: user.id,
         title:   'Booking Confirmed',
         message: `Your reservation at ${input.hotelName} (${input.roomName}) from ${input.checkInLabel} to ${input.checkOutLabel} is confirmed. Booking ref: SR-${bookingId.slice(0, 8).toUpperCase()}.`,
+      });
+
+      // Fetch hotel contact info + partner email for the confirmation email.
+      const { data: hotelRow } = await admin
+        .from('hotels')
+        .select('contact_phone, contact_email, contact_whatsapp, checkin_time, checkout_time')
+        .eq('id', input.hotelId)
+        .maybeSingle();
+
+      const { data: partnerLink } = await admin
+        .from('hotel_partners')
+        .select('user_id')
+        .eq('hotel_id', input.hotelId)
+        .maybeSingle();
+
+      let partnerEmail: string | undefined;
+      let partnerName: string | undefined;
+      if (partnerLink?.user_id) {
+        const { data: partnerProfile } = await admin
+          .from('profiles')
+          .select('full_name')
+          .eq('id', partnerLink.user_id)
+          .maybeSingle();
+        const { data: partnerAuthUser } = await admin.auth.admin.getUserById(partnerLink.user_id);
+        partnerEmail = partnerAuthUser?.user?.email ?? undefined;
+        partnerName  = partnerProfile?.full_name ?? undefined;
+      }
+
+      const nights = Math.round(
+        (new Date(input.checkOutISO).getTime() - new Date(input.checkInISO).getTime()) / 86_400_000
+      );
+
+      const displayTotal = fromAEDTo(input.total, input.chargedCurrency);
+
+      await sendBookingConfirmation({
+        guestName:           input.guest.fullName || (user.email ?? 'Guest'),
+        guestEmail:          user.email ?? '',
+        hotelName:           input.hotelName,
+        roomName:            input.roomName,
+        checkIn:             input.checkInLabel,
+        checkOut:            input.checkOutLabel,
+        nights,
+        totalPrice:          input.total,
+        displayTotal,
+        currencySymbol:      input.currencySymbol,
+        bookingRef:          bookingId.slice(0, 8).toUpperCase(),
+        partnerEmail,
+        partnerName,
+        hotelPhone:          hotelRow?.contact_phone     ?? undefined,
+        hotelEmail:          hotelRow?.contact_email     ?? undefined,
+        hotelWhatsapp:       hotelRow?.contact_whatsapp  ?? undefined,
+        hotelCheckinTime:    hotelRow?.checkin_time      ?? undefined,
+        hotelCheckoutTime:   hotelRow?.checkout_time     ?? undefined,
       });
     } catch (sideErr) {
       console.error('[createBooking] post-insert side effect failed (ignored):', sideErr);
