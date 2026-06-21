@@ -296,8 +296,8 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
               <div className="sm:text-right">
                 {displayDiscount > 0 ? (
                   <>
-                    <div className="text-xs font-medium leading-none" style={{ color: '#94A3B8', textDecoration: 'line-through', textDecorationColor: '#CBD5E1', textDecorationThickness: '1.5px' }}>
-                      <CurrencyAmount amount={displayOriginal} />{t['price.perNight']}
+                    <div className="text-base font-semibold leading-none text-red-500">
+                      <CurrencyAmount amount={displayOriginal} className="line-through decoration-2 decoration-red-500" />{t['price.perNight']}
                     </div>
                     <div className="flex sm:justify-end items-baseline gap-0.5 mt-0.5">
                       <span className="text-[10px] text-gray-500 font-medium mr-0.5">From</span>
