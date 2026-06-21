@@ -126,7 +126,14 @@ export default function OnboardingPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>
-                {step === 1 ? 'Welcome to SelectedRoom' : 'About your hotel'}
+                {step === 1 ? (
+                  <>
+                    Welcome to{' '}
+                    <span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                      <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
+                    </span>
+                  </>
+                ) : 'About your hotel'}
               </h1>
               <p className="text-white/50 text-xs mt-0.5">
                 {step === 1 ? "Let's set up your hotel — it only takes a minute." : 'Add more details to help guests find you.'}
