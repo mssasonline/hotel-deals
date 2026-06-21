@@ -173,12 +173,8 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
             </span>
           </div>
 
-          {/* Tonight Only badge — always true for SelectedRoom */}
+          {/* GPS badge only */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-            <div className="bg-brand-gold text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
-              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-              {t['hotel.tonightOnly']}
-            </div>
             {gpsDistanceKm !== undefined && isFinite(gpsDistanceKm) && (
               <div className="bg-white/90 backdrop-blur-sm text-green-700 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm border border-green-200/50">
                 <span className="relative flex items-center justify-center w-3 h-3 shrink-0">
@@ -219,8 +215,9 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
                 <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${urgency.dotColor}`} />
                 {urgency.label}
               </span>
-              <span className="inline-flex items-center gap-1.5 bg-brand-blue-light text-brand-blue text-xs font-semibold px-2.5 py-1 rounded-full border border-brand-blue/15">
-                {hotel.dealBadge}
+              <span className="inline-flex items-center gap-1.5 text-white text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: 'linear-gradient(135deg, #92400E 0%, #D97706 100%)' }}>
+                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse shrink-0" />
+                {t['hotel.tonightOnly']}
               </span>
             </div>
 
