@@ -131,7 +131,7 @@ export default function OnboardingPage() {
                     Welcome to{' '}
                     <span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                       <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
-                    </span>
+                    </span><span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '10px', letterSpacing: '0.05em', color: '#fff', verticalAlign: 'baseline', position: 'relative', top: '-2px' }}>.com</span>
                   </>
                 ) : 'About your hotel'}
               </h1>
