@@ -12,7 +12,7 @@ import { getTranslations } from '@/lib/i18n/translations';
 
 const PAGE_TITLES: Record<string, string> = {
   '/partner/dashboard': 'Dashboard',
-  '/partner/hotels':    'Hotels',
+  '/partner/hotel':    'Hotels',
   '/partner/rooms':     'Rooms',
   '/partner/deals':     'Deals',
   '/partner/bookings':  'Bookings',
@@ -64,7 +64,7 @@ export default function PartnerTopBar() {
 
   const PAGE_TITLE_KEYS: Record<string, keyof ReturnType<typeof getTranslations>> = {
     '/partner/dashboard': 'partner.nav.dashboard',
-    '/partner/hotels':    'partner.nav.hotels',
+    '/partner/hotel':    'partner.nav.hotels',
     '/partner/rooms':     'partner.nav.rooms',
     '/partner/deals':     'partner.nav.deals',
     '/partner/bookings':  'partner.nav.bookings',

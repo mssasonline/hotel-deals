@@ -24,7 +24,7 @@ const ITEMS: ChecklistItem[] = [
     key: 'hasImages',
     label: 'Add hotel photos',
     hint: 'Upload cover & gallery images to attract more guests.',
-    href: '/partner/hotels',
+    href: '/partner/hotel',
     icon: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -35,7 +35,7 @@ const ITEMS: ChecklistItem[] = [
     key: 'hasDescription',
     label: 'Write a hotel description',
     hint: 'Tell guests what makes your hotel special.',
-    href: '/partner/hotels',
+    href: '/partner/hotel',
     icon: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
@@ -57,7 +57,7 @@ const ITEMS: ChecklistItem[] = [
     key: 'hasLocation',
     label: 'Set your location on the map',
     hint: 'Help guests find you by pinning your exact coordinates.',
-    href: '/partner/hotels',
+    href: '/partner/hotel',
     icon: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -69,7 +69,7 @@ const ITEMS: ChecklistItem[] = [
     key: 'hasAmenities',
     label: 'Select your amenities',
     hint: 'Pool, gym, free Wi-Fi — help guests know what to expect.',
-    href: '/partner/hotels',
+    href: '/partner/hotel',
     icon: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />

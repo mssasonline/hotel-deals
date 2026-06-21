@@ -231,7 +231,7 @@ export default async function HotelPage({ params }: Props) {
   const locationParts = [address || null, city || null, country || null].filter(Boolean);
   const locationDisplay = locationParts.join(', ');
 
-  // ── Map coordinates — set by partner in /partner/hotels ──────
+  // ── Map coordinates — set by partner in /partner/hotel ──────
   const geoLat = row.latitude  != null ? Number(row.latitude)  : null;
   const geoLon = row.longitude != null ? Number(row.longitude) : null;
   const geoCoords = geoLat != null && geoLon != null && !isNaN(geoLat) && !isNaN(geoLon)
