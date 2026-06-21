@@ -400,12 +400,6 @@ export default async function HotelPage({ params }: Props) {
                   </div>
                   <div>
                     <HotelRatingLabel rating={rating} />
-                    {reviewCount > 0 && (
-                      <span className="text-gray-500 text-sm ml-1.5">
-                        · {reviewCount.toLocaleString()}{' '}
-                        <HotelClientLabel translationKey="hotel.reviews" fallback="reviews" />
-                      </span>
-                    )}
                   </div>
                 </div>
               )}

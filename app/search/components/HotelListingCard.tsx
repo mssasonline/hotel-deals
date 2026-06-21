@@ -232,9 +232,6 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
                 <div className="text-gray-900 text-xs font-semibold leading-tight">
                   {getRatingLabel(hotel.rating)}
                 </div>
-                <div className="text-gray-400 text-[10px]">
-                  {hotel.reviewCount.toLocaleString()} reviews
-                </div>
               </div>
             </div>
           </div>

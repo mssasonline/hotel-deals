@@ -158,9 +158,6 @@ export default function HotelCard({ hotel, initialFavorited, onUnfavorite }: Hot
             >
               {hotel.rating}
             </span>
-            <span className="text-gray-400 text-xs">
-              {hotel.reviewCount.toLocaleString()}
-            </span>
           </div>
         </div>
 
