@@ -369,6 +369,7 @@ export default function HotelsPage() {
   const [detailsSaving, setDetailsSaving] = useState(false);
   const [detailsMsg, setDetailsMsg]       = useState<string | null>(null);
   const [detailsError, setDetailsError]   = useState<string | null>(null);
+  const [detailsConfirmed, setDetailsConfirmed] = useState(false);
 
   // ── Breakfast
   const [breakfastEnabled, setBreakfastEnabled] = useState(false);
@@ -463,6 +464,7 @@ export default function HotelsPage() {
     if (!hotel) return;
     setDetailsError(null);
     if (!detailsForm.name.trim()) { setDetailsError(t['partner.hotels.nameRequired']); return; }
+    if (!detailsConfirmed) { setDetailsError('Please confirm that the information provided is accurate before saving.'); return; }
     setDetailsSaving(true);
     const { error } = await updateMyHotel(hotel.id, {
       name:        detailsForm.name.trim(),
@@ -737,6 +739,17 @@ export default function HotelsPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.hotels.descLabel']}</label>
               <textarea value={detailsForm.description} onChange={e => setDetailsForm(p => ({ ...p, description: e.target.value }))} rows={3} className={`${INPUT} resize-none`} />
             </div>
+            <label className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-colors ${detailsConfirmed ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200 hover:border-gray-300'}`}>
+              <input
+                type="checkbox"
+                checked={detailsConfirmed}
+                onChange={e => { setDetailsConfirmed(e.target.checked); setDetailsError(null); }}
+                className="mt-0.5 w-4 h-4 rounded accent-green-600 shrink-0 cursor-pointer"
+              />
+              <span className="text-xs text-gray-600 leading-relaxed">
+                I confirm that all information provided above is accurate and complete. I acknowledge that I am fully responsible for the accuracy of this data, and that any false or misleading information may result in suspension of my account.
+              </span>
+            </label>
             <ErrorMsg msg={detailsError} />
             <SuccessMsg msg={detailsMsg} />
             <div className="flex justify-end">
