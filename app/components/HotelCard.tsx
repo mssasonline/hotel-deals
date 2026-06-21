@@ -100,12 +100,8 @@ export default function HotelCard({ hotel, initialFavorited, onUnfavorite }: Hot
           alt={hotel.name}
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        {/* Category label at bottom of image */}
-        <div className="absolute inset-0 flex items-end p-3" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)' }}>
-          <span className="text-white/90 text-[11px] font-semibold uppercase tracking-widest">
-            {hotel.category}
-          </span>
-        </div>
+        {/* Gradient overlay */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)' }} />
 
         {/* Tonight Only badge */}
         {hotel.tonightOnly && (
@@ -126,9 +122,6 @@ export default function HotelCard({ hotel, initialFavorited, onUnfavorite }: Hot
               style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 2px 10px rgba(30,58,138,0.45)' }}
             >
               -{totalDiscount}%
-            </div>
-            <div className="bg-black/50 text-white/90 text-[10px] font-semibold px-2 py-0.5 rounded-md" style={{ backdropFilter: 'blur(8px)' }}>
-              {tier.label}
             </div>
           </div>
         )}
