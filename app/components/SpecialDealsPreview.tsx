@@ -117,9 +117,6 @@ export default function SpecialDealsPreview({ deals }: Props) {
                       </svg>
                       -{deal.discountPct}% FIXED
                     </div>
-                    <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                      {deal.dealCount} deal{deal.dealCount !== 1 ? 's' : ''}
-                    </div>
                   </div>
 
                   {/* Body */}
