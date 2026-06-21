@@ -2,6 +2,9 @@
 
 import { sendBookingConfirmation, type BookingEmailData } from '@/lib/emailService';
 import { createAdminClient } from '@/lib/supabase-admin';
+import { fromAEDTo } from '@/lib/currency';
+import { CURRENCY_MAP } from '@/lib/currencyData';
+import type { CurrencyCode } from '@/lib/currencyData';
 
 export async function sendBookingEmailAction(bookingId: string): Promise<void> {
   try {
@@ -17,6 +20,7 @@ export async function sendBookingEmailAction(bookingId: string): Promise<void> {
         check_in,
         check_out,
         total_price,
+        charged_currency,
         hotels (
           id,
           name,
@@ -50,6 +54,11 @@ export async function sendBookingEmailAction(bookingId: string): Promise<void> {
     );
 
     const h = hotel as Record<string, unknown>;
+    const totalPrice    = Number(booking.total_price ?? 0);
+    const currency      = (String(booking.charged_currency ?? 'aed')) as CurrencyCode;
+    const currencyInfo  = CURRENCY_MAP[currency] ?? CURRENCY_MAP['aed'];
+    const displayTotal  = fromAEDTo(totalPrice, currency);
+
     const data: BookingEmailData = {
       guestName:    String(booking.guest_name  ?? ''),
       guestEmail:   String(booking.guest_email ?? ''),
@@ -58,7 +67,9 @@ export async function sendBookingEmailAction(bookingId: string): Promise<void> {
       checkIn,
       checkOut,
       nights,
-      totalPrice:   Number(booking.total_price ?? 0),
+      totalPrice,
+      displayTotal,
+      currencySymbol: currencyInfo.symbol,
       bookingRef:   String(booking.id).slice(0, 8).toUpperCase(),
       partnerEmail: partner?.email,
       partnerName:  partner?.full_name,

@@ -96,7 +96,6 @@ function guestConfirmationHtml(d: BookingEmailData): string {
 }
 
 function partnerNotificationHtml(d: BookingEmailData): string {
-  const partnerRevenue = Math.round(d.totalPrice * 0.90 * 100) / 100;
   return `
     <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
       <div style="background:#1E3A8A;padding:24px 32px;border-radius:12px 12px 0 0">
