@@ -248,10 +248,14 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span>{hotel.location}</span>
-            <span className="text-gray-300 hidden sm:inline">·</span>
-            <span className="text-gray-400 text-xs hidden sm:inline">
-              {hotel.distanceKm} km from center
-            </span>
+            {hotel.distanceKm != null && (
+              <>
+                <span className="text-gray-300 hidden sm:inline">·</span>
+                <span className="text-gray-400 text-xs hidden sm:inline">
+                  {hotel.distanceKm.toFixed(1)} km from center
+                </span>
+              </>
+            )}
           </div>
 
           {/* Amenity pills */}

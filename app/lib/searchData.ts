@@ -1,4 +1,5 @@
 import { getUrgencyConfig } from '@/lib/dealsEngine';
+import { distanceFromCityCenter } from '@/lib/cityCenters';
 
 export interface SearchHotel {
   id: number;
@@ -18,7 +19,7 @@ export interface SearchHotel {
   tonightOnly: boolean;
   roomsLeft: number;
   amenities: string[];
-  distanceKm: number;
+  distanceKm: number | null;
   /** GPS coordinates for distance-based search */
   latitude: number | null;
   longitude: number | null;
@@ -114,9 +115,13 @@ export function mapRowToSearchHotel(
     tonightOnly: true,
     roomsLeft,
     amenities,
-    distanceKm: Number(row.distance_km ?? 0),
     latitude: row.latitude != null ? Number(row.latitude) : null,
     longitude: row.longitude != null ? Number(row.longitude) : null,
+    distanceKm: distanceFromCityCenter(
+      String(row.city ?? ''),
+      row.latitude != null ? Number(row.latitude) : null,
+      row.longitude != null ? Number(row.longitude) : null,
+    ),
     countdownHours,
     countdownMinutes,
     dealBadge: urgency.dealBadge,
