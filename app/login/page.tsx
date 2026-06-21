@@ -109,7 +109,9 @@ export default function LoginPage() {
                     <polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <span className="text-white font-bold text-base leading-none">SelectedRoom.com</span>
+                <span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, fontSize: '15px', lineHeight: 1 }}>
+                  <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span><span style={{ color: '#fff', fontSize: '10px', position: 'relative', top: '-2px', letterSpacing: '0.05em' }}>.com</span>
+                </span>
               </Link>
               <div className="flex items-center gap-3">
                 <div className="w-1 h-6 rounded-full shrink-0" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
