@@ -10,13 +10,6 @@ interface Feature {
   descKey: string;
 }
 
-const PRESS_NAMES = [
-  'Forbes Travel',
-  'Condé Nast',
-  'The Guardian',
-  'TripAdvisor',
-  'Lonely Planet',
-];
 
 const FEATURES: Feature[] = [
   {
@@ -72,14 +65,16 @@ export default function WhyChooseUs() {
 
         {/* Header */}
         <ScrollReveal className="text-center mb-14">
-          <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] mb-3 px-4 py-1.5 rounded-full" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #1E3A8A 100%)', color: '#fff' }}>
-            <span className="normal-case">Why</span>{' '}
-            <span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', letterSpacing: '0.08em' }}>
-              <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
-            </span>
-          </span>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold" style={{ color: '#0F172A' }}>
-            {t['why.heading']}
+          <h2 className="text-2xl sm:text-3xl font-bold" style={{ color: '#0F172A' }}>
+            {t['why.heading'].split('SelectedRoom').reduce<ReactNode[]>((acc, part, i, arr) => {
+              acc.push(part);
+              if (i < arr.length - 1) acc.push(
+                <span key={i} style={{ fontFamily: 'var(--font-montserrat, sans-serif)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  <span style={{ color: '#1E3A8A' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
+                </span>
+              );
+              return acc;
+            }, [])}
           </h2>
           <p className="mt-3 text-gray-500 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
             {t['why.subtitle']}
@@ -119,23 +114,6 @@ export default function WhyChooseUs() {
           ))}
         </div>
 
-        {/* Press / trust bar */}
-        <ScrollReveal delay={200} className="mt-16 pt-10 border-t border-gray-100">
-          <p className="text-center text-gray-400 text-xs uppercase tracking-[0.2em] mb-6 font-semibold">
-            {t['why.featuredIn']}
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-10">
-            {PRESS_NAMES.map((name) => (
-              <span
-                key={name}
-                className="font-bold text-base tracking-tight select-none transition-colors duration-200 hover:text-gray-500 cursor-default"
-                style={{ color: '#CBD5E1', fontFamily: 'var(--font-playfair), Georgia, serif', letterSpacing: '-0.01em' }}
-              >
-                {name}
-              </span>
-            ))}
-          </div>
-        </ScrollReveal>
 
       </div>
     </section>
