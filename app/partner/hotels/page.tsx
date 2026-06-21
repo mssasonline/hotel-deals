@@ -18,6 +18,15 @@ import { createHotelForPartner } from '../onboarding/actions';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
+const PROPERTY_CATEGORIES = [
+  'Hotel',
+  'Boutique Hotel',
+  'Resort',
+  'Villa',
+  'Apartment',
+  'Hostel',
+];
+
 const HOTEL_AMENITIES = [
   { key: 'pool',            label: 'Swimming Pool',   icon: '🏊', group: 'facilities' },
   { key: 'gym',             label: 'Gym / Fitness',   icon: '🏋️', group: 'facilities' },
@@ -250,7 +259,7 @@ function AddHotelModal({
   const language = useAppSettingsStore(s => s.language);
   const t = getTranslations(language);
 
-  const [form, setForm] = useState({ name: '', city: '', country: '', address: '', description: '', star_rating: '4' });
+  const [form, setForm] = useState({ name: '', city: '', country: '', address: '', description: '', star_rating: '4', category: 'Hotel' });
   const [saving, setSaving] = useState(false);
   const [error, setError]   = useState<string | null>(null);
 
@@ -264,6 +273,7 @@ function AddHotelModal({
       name: form.name.trim(), city: form.city.trim(), country: form.country.trim(),
       address: form.address.trim(), description: form.description.trim(),
       star_rating: form.star_rating ? parseInt(form.star_rating, 10) : null,
+      category: form.category || 'Hotel',
     });
     setSaving(false);
     if (err || !hotelId) { setError(err ?? 'Failed to create hotel.'); return; }
@@ -275,6 +285,7 @@ function AddHotelModal({
       breakfast_price_per_person: null,
       contact_phone: null, contact_email: null, contact_whatsapp: null,
       emergency_phone: null, checkin_time: '15:00', checkout_time: '12:00', parking_info: null,
+      category: form.category || 'Hotel',
     });
   }
 
@@ -304,12 +315,20 @@ function AddHotelModal({
               <input value={form.country} onChange={e => setForm(p => ({ ...p, country: e.target.value }))} className={INPUT} placeholder="UAE" />
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.hotels.starsLabel']}</label>
-            <select value={form.star_rating} onChange={e => setForm(p => ({ ...p, star_rating: e.target.value }))} className={`${INPUT} bg-white`}>
-              <option value="">— Select —</option>
-              {[3, 4, 5].map(s => <option key={s} value={s}>{s} ★</option>)}
-            </select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.hotels.starsLabel']}</label>
+              <select value={form.star_rating} onChange={e => setForm(p => ({ ...p, star_rating: e.target.value }))} className={`${INPUT} bg-white`}>
+                <option value="">— Select —</option>
+                {[3, 4, 5].map(s => <option key={s} value={s}>{s} ★</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Property Type</label>
+              <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} className={`${INPUT} bg-white`}>
+                {PROPERTY_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.hotels.addressLabel']}</label>
@@ -346,7 +365,7 @@ export default function HotelsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
 
   // ── Details section
-  const [detailsForm, setDetailsForm] = useState({ name: '', city: '', country: '', address: '', description: '', star_rating: '' });
+  const [detailsForm, setDetailsForm] = useState({ name: '', city: '', country: '', address: '', description: '', star_rating: '', category: 'Hotel' });
   const [detailsSaving, setDetailsSaving] = useState(false);
   const [detailsMsg, setDetailsMsg]       = useState<string | null>(null);
   const [detailsError, setDetailsError]   = useState<string | null>(null);
@@ -417,6 +436,7 @@ export default function HotelsPage() {
       name: h.name, city: h.city, country: h.country,
       address: h.address, description: h.description,
       star_rating: String(h.star_rating ?? ''),
+      category: h.category ?? 'Hotel',
     });
     setBreakfastEnabled(h.breakfast_price_per_person != null);
     setBreakfastPrice(String(h.breakfast_price_per_person ?? ''));
@@ -451,6 +471,7 @@ export default function HotelsPage() {
       address:     detailsForm.address.trim(),
       description: detailsForm.description.trim(),
       star_rating: detailsForm.star_rating ? parseInt(detailsForm.star_rating, 10) : null,
+      category:    detailsForm.category || 'Hotel',
     });
     setDetailsSaving(false);
     if (error) { setDetailsError(error); return; }
@@ -697,12 +718,20 @@ export default function HotelsPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.hotels.addressLabel']}</label>
               <input value={detailsForm.address} onChange={e => setDetailsForm(p => ({ ...p, address: e.target.value }))} className={INPUT} />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.hotels.starsLabel']}</label>
-              <select value={detailsForm.star_rating} onChange={e => setDetailsForm(p => ({ ...p, star_rating: e.target.value }))} className={`${INPUT} bg-white`}>
-                <option value="">— Select —</option>
-                {[3, 4, 5].map(s => <option key={s} value={s}>{s} ★</option>)}
-              </select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.hotels.starsLabel']}</label>
+                <select value={detailsForm.star_rating} onChange={e => setDetailsForm(p => ({ ...p, star_rating: e.target.value }))} className={`${INPUT} bg-white`}>
+                  <option value="">— Select —</option>
+                  {[3, 4, 5].map(s => <option key={s} value={s}>{s} ★</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Property Type</label>
+                <select value={detailsForm.category} onChange={e => setDetailsForm(p => ({ ...p, category: e.target.value }))} className={`${INPUT} bg-white`}>
+                  {PROPERTY_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.hotels.descLabel']}</label>

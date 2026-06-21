@@ -11,6 +11,7 @@ export async function createHotelForPartner(fields: {
   address: string;
   description: string;
   star_rating: number | null;
+  category?: string | null;
 }): Promise<{ hotelId: string | null; error: string | null }> {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -37,6 +38,7 @@ export async function createHotelForPartner(fields: {
       address:     fields.address.trim()     || null,
       description: fields.description.trim() || null,
       star_rating: fields.star_rating,
+      category:    fields.category ?? 'Hotel',
     })
     .select('id')
     .single();

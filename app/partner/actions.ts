@@ -23,6 +23,7 @@ export type PartnerHotel = {
   checkin_time: string | null;
   checkout_time: string | null;
   parking_info: string | null;
+  category: string | null;
 };
 
 export type HotelImage = {
@@ -260,7 +261,7 @@ export async function getMyHotels(): Promise<PartnerHotel[]> {
 
   const { data } = await supabase
     .from('hotel_partners')
-    .select('hotels(id, name, city, country, address, description, star_rating, amenities, latitude, longitude, airport_code, breakfast_price_per_person, contact_phone, contact_email, contact_whatsapp, emergency_phone, checkin_time, checkout_time, parking_info)')
+    .select('hotels(id, name, city, country, address, description, star_rating, amenities, latitude, longitude, airport_code, breakfast_price_per_person, contact_phone, contact_email, contact_whatsapp, emergency_phone, checkin_time, checkout_time, parking_info, category)')
     .eq('user_id', user.id);
 
   type RawHotel = {
@@ -283,6 +284,7 @@ export async function getMyHotels(): Promise<PartnerHotel[]> {
     checkin_time: string | null;
     checkout_time: string | null;
     parking_info: string | null;
+    category: string | null;
   };
   type Row = { hotels: RawHotel | RawHotel[] | null };
 
@@ -312,6 +314,7 @@ export async function getMyHotels(): Promise<PartnerHotel[]> {
         checkin_time:     h.checkin_time     ?? null,
         checkout_time:    h.checkout_time    ?? null,
         parking_info:     h.parking_info     ?? null,
+        category:         h.category         ?? null,
       };
     })
     .filter((h): h is PartnerHotel => h !== null);
@@ -669,6 +672,7 @@ export async function updateMyHotel(
     checkin_time?: string | null;
     checkout_time?: string | null;
     parking_info?: string | null;
+    category?: string | null;
   }
 ): Promise<{ error: string | null }> {
   const supabase = await createSupabaseServerClient();
