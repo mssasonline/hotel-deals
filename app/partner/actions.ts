@@ -800,6 +800,37 @@ export async function deleteHotelImage(
   return { error: error?.message ?? null };
 }
 
+// ── reorderHotelImages ────────────────────────────────────────────────────────
+// Saves a new sort_order for all images of a hotel the partner owns.
+
+export async function reorderHotelImages(
+  hotelId: string,
+  orderedIds: string[],
+): Promise<{ error: string | null }> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authenticated' };
+
+  const { data: hp } = await supabase
+    .from('hotel_partners')
+    .select('hotel_id')
+    .eq('user_id', user.id)
+    .eq('hotel_id', hotelId)
+    .maybeSingle();
+  if (!hp) return { error: 'Access denied' };
+
+  const admin = createAdminClient();
+  for (let i = 0; i < orderedIds.length; i++) {
+    const { error } = await admin
+      .from('hotel_images')
+      .update({ sort_order: i })
+      .eq('id', orderedIds[i])
+      .eq('hotel_id', Number(hotelId));
+    if (error) return { error: error.message };
+  }
+  return { error: null };
+}
+
 // ── Room rate calendar ─────────────────────────────────────────────────────────
 
 export type RoomRate = { date: string; price: number };

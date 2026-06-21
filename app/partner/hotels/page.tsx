@@ -10,6 +10,7 @@ import {
   getMyHotelImages,
   addHotelImage,
   deleteHotelImage,
+  reorderHotelImages,
   updateMyHotel,
   type PartnerHotel,
   type HotelImage,
@@ -407,6 +408,7 @@ export default function HotelsPage() {
   const [imgMsg, setImgMsg]         = useState<string | null>(null);
   const [addingImg, setAddingImg]   = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
 
   // ── Load ─────────────────────────────────────────────────────────────────────
 
@@ -604,6 +606,26 @@ export default function HotelsPage() {
     setImages(prev => prev.filter(i => i.id !== imageId));
     setDeletingId(null);
     setImgMsg(t['partner.hotels.imageDeleted']);
+    setTimeout(() => setImgMsg(null), 2000);
+  }
+
+  function moveImage(idx: number, dir: -1 | 1) {
+    const next = idx + dir;
+    if (next < 0 || next >= images.length) return;
+    setImages(prev => {
+      const arr = [...prev];
+      [arr[idx], arr[next]] = [arr[next], arr[idx]];
+      return arr;
+    });
+  }
+
+  async function saveImageOrder() {
+    if (!hotel) return;
+    setSavingOrder(true);
+    const { error } = await reorderHotelImages(hotel.id, images.map(i => i.id));
+    setSavingOrder(false);
+    if (error) { setImgMsg('Error: ' + error); return; }
+    setImgMsg('Image order saved.');
     setTimeout(() => setImgMsg(null), 2000);
   }
 
@@ -1056,31 +1078,67 @@ export default function HotelsPage() {
             ) : images.length === 0 ? (
               <p className="text-sm text-gray-400 italic text-center py-6">{t['partner.hotels.noImages']}</p>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {images.map((img, idx) => (
-                  <div key={img.id} className="relative group rounded-xl overflow-hidden border border-gray-200 aspect-video bg-gray-50">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img.image_url} alt={`hotel ${idx + 1}`} className="w-full h-full object-cover" />
-                    {idx === 0 && (
-                      <span className="absolute top-1.5 left-1.5 text-[10px] font-bold bg-brand-blue text-white px-1.5 py-0.5 rounded-full">
-                        Cover
-                      </span>
-                    )}
-                    <button
-                      onClick={() => handleDeleteImage(img.id)}
-                      disabled={deletingId === img.id}
-                      className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
-                    >
-                      {deletingId === img.id
-                        ? <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" />
-                        : <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                      }
-                    </button>
-                  </div>
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  {images.map((img, idx) => (
+                    <div key={img.id} className="relative group rounded-xl overflow-hidden border border-gray-200 aspect-video bg-gray-50">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img.image_url} alt={`hotel ${idx + 1}`} className="w-full h-full object-cover" />
+                      {idx === 0 && (
+                        <span className="absolute top-1.5 left-1.5 text-[10px] font-bold bg-brand-blue text-white px-1.5 py-0.5 rounded-full">
+                          Cover
+                        </span>
+                      )}
+                      {/* Reorder arrows */}
+                      <div className="absolute bottom-1.5 left-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button
+                          onClick={() => moveImage(idx, -1)}
+                          disabled={idx === 0}
+                          className="w-6 h-6 bg-black/60 hover:bg-brand-blue disabled:opacity-30 text-white rounded-full flex items-center justify-center"
+                          title="Move up"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+                        </button>
+                        <button
+                          onClick={() => moveImage(idx, 1)}
+                          disabled={idx === images.length - 1}
+                          className="w-6 h-6 bg-black/60 hover:bg-brand-blue disabled:opacity-30 text-white rounded-full flex items-center justify-center"
+                          title="Move down"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
+                        </button>
+                      </div>
+                      {/* Delete */}
+                      <button
+                        onClick={() => handleDeleteImage(img.id)}
+                        disabled={deletingId === img.id}
+                        className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        {deletingId === img.id
+                          ? <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" />
+                          : <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        }
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    onClick={saveImageOrder}
+                    disabled={savingOrder}
+                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                    style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
+                  >
+                    {savingOrder
+                      ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    }
+                    Save Images
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </SectionCard>
