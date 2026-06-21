@@ -181,10 +181,13 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
             </div>
             {gpsDistanceKm !== undefined && isFinite(gpsDistanceKm) && (
               <div className="bg-white/90 backdrop-blur-sm text-green-700 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm border border-green-200/50">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+                <span className="relative flex items-center justify-center w-3 h-3 shrink-0">
+                  <span className="absolute w-3 h-3 rounded-full live-ping opacity-40" style={{ background: '#15803d' }} />
+                  <svg className="w-3 h-3 relative" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </span>
                 {formatDistance(gpsDistanceKm)} {t['search.fromYou']}
               </div>
             )}
