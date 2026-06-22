@@ -499,11 +499,14 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between p-4 bg-red-50 rounded-xl border border-red-100">
             <div>
               <p className="text-sm font-medium text-red-800">Request Suspension</p>
-              <p className="text-xs text-red-400">Temporarily pause all your listings and bookings.</p>
+              <p className="text-xs text-red-400">Need to pause your listings? Send a request to the admin team.</p>
             </div>
-            <button className="px-4 py-2 text-xs font-semibold text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-xl transition-colors">
+            <a
+              href={`mailto:partners@selectedroom.com?subject=${encodeURIComponent('Account Suspension Request')}&body=${encodeURIComponent(`Hello SelectedRoom Team,\n\nI would like to request a temporary suspension of my partner account.\n\nAccount email: ${profile?.email ?? ''}\n\nReason:\n\n\nPlease confirm once the suspension has been applied.\n\nThank you.`)}`}
+              className="px-4 py-2 text-xs font-semibold text-red-600 bg-white border border-red-200 hover:bg-red-50 rounded-xl transition-colors whitespace-nowrap"
+            >
               Contact Admin
-            </button>
+            </a>
           </div>
         </Section>
 
