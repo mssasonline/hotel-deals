@@ -233,6 +233,81 @@ export async function sendReviewRequestEmail(data: ReviewRequestData): Promise<v
   );
 }
 
+// ── Partner Deal Confirmation (pending → active) ───────────────────────────────
+
+export interface DealApprovalData {
+  partnerEmail:  string;
+  partnerName:   string;
+  hotelName:     string;
+  hotelId:       number;
+  roomName:      string;
+  dealPrice:     number;
+  basePrice:     number;
+  discountPct:   number;
+  startDate:     string;
+  endDate:       string;
+  approvalUrl:   string;
+}
+
+function dealApprovalHtml(d: DealApprovalData): string {
+  const saving = Math.round(d.basePrice - d.dealPrice);
+  return `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      <div style="background:#1E3A8A;padding:24px 32px;border-radius:12px 12px 0 0">
+        ${LOGO_HTML}
+        <h1 style="color:white;margin:0;font-size:20px;font-weight:600;opacity:0.9">Review Your New Deal</h1>
+      </div>
+      <div style="background:#f8fafc;padding:32px;border-radius:0 0 12px 12px;border:1px solid #e2e8f0">
+        <p style="color:#374151">Hi <strong>${d.partnerName}</strong>,</p>
+        <p style="color:#374151">You've created a new deal for <strong>${d.hotelName}</strong>. Please review the details below and confirm to publish it live on the site.</p>
+
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin:20px 0">
+          <div style="background:linear-gradient(135deg,#1E3A8A,#2563EB);padding:18px 24px">
+            <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.6)">Deal Summary</p>
+            <h2 style="margin:6px 0 4px;color:#fff;font-size:19px;font-weight:800">${d.hotelName}</h2>
+            <p style="margin:0;color:rgba(255,255,255,0.7);font-size:13px">${d.roomName}</p>
+          </div>
+          <div style="padding:20px 24px">
+            <table style="width:100%;border-collapse:collapse">
+              <tr><td style="padding:7px 0;color:#6b7280;font-size:13px">Original price</td><td style="padding:7px 0;text-align:right;color:#ef4444;font-size:14px;text-decoration:line-through">AED ${d.basePrice.toLocaleString()}/night</td></tr>
+              <tr><td style="padding:7px 0;color:#6b7280;font-size:13px">Deal price</td><td style="padding:7px 0;text-align:right;font-weight:800;color:#059669;font-size:20px">AED ${d.dealPrice.toLocaleString()}/night</td></tr>
+              <tr><td style="padding:7px 0;color:#6b7280;font-size:13px">Guest saving</td><td style="padding:7px 0;text-align:right;font-weight:700;color:#D97706;font-size:14px">AED ${saving.toLocaleString()} (${d.discountPct}% off)</td></tr>
+              <tr><td style="padding:7px 0;color:#6b7280;font-size:13px">Available from</td><td style="padding:7px 0;text-align:right;font-weight:600;color:#374151;font-size:14px">${d.startDate}</td></tr>
+              <tr><td style="padding:7px 0;color:#6b7280;font-size:13px">Available until</td><td style="padding:7px 0;text-align:right;font-weight:600;color:#374151;font-size:14px">${d.endDate}</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:14px 18px;margin:0 0 24px">
+          <p style="margin:0;color:#92400e;font-size:13px">
+            ⚠️ <strong>This deal is not live yet.</strong> Click the button below to confirm and publish it. Once confirmed, it will appear on the site and subscribers will be notified.
+          </p>
+        </div>
+
+        <div style="text-align:center">
+          <a href="${d.approvalUrl}" style="display:inline-block;background:linear-gradient(135deg,#065F46,#059669);color:white;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:16px;letter-spacing:0.02em">
+            ✓ Confirm &amp; Publish Deal
+          </a>
+        </div>
+
+        <p style="color:#9ca3af;font-size:11px;margin-top:24px;text-align:center">
+          If you did not create this deal or want to cancel it, simply ignore this email. The deal will not go live.
+        </p>
+        ${FOOTER_HTML}
+      </div>
+    </div>
+  `;
+}
+
+export async function sendDealApprovalEmail(data: DealApprovalData): Promise<void> {
+  await sendEmail(
+    data.partnerEmail,
+    `Action Required: Confirm your deal at ${data.hotelName}`,
+    dealApprovalHtml(data),
+    'partners@selectedroom.com',
+  );
+}
+
 // ── New Deal Notification ──────────────────────────────────────────────────────
 
 export interface NewDealNotificationData {

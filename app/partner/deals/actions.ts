@@ -2,9 +2,9 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
-import { sendNewDealNotification, type NewDealNotificationData } from '@/lib/emailService';
+import { sendDealApprovalEmail, sendNewDealNotification, type NewDealNotificationData } from '@/lib/emailService';
 
-export type DealStatus = 'active' | 'paused' | 'ended';
+export type DealStatus = 'pending_approval' | 'active' | 'paused' | 'ended';
 
 export type PartnerDeal = {
   id: string;
@@ -113,6 +113,8 @@ export async function getMyRooms(): Promise<DealRoom[]> {
 }
 
 // ── createDeal ────────────────────────────────────────────────────────────────
+// Creates deal as pending_approval, then emails the partner to confirm.
+// Subscribers are NOT notified until the partner clicks "Confirm & Publish".
 
 export async function createDeal(
   data: CreateDealData,
@@ -132,63 +134,63 @@ export async function createDeal(
   if (!ownership) return { error: 'Hotel not found in your portfolio' };
 
   const admin = createAdminClient();
-  const { error } = await admin.from('partner_deals').insert({
-    partner_id: user.id,
-    hotel_id:   data.hotel_id,
-    room_id:    data.room_id,
-    deal_price: data.deal_price,
-    title:      data.title ?? null,
-    start_date: data.start_date,
-    end_date:   data.end_date,
-    status:     'active',
-  });
+
+  // Insert with pending_approval — not visible to guests yet
+  const { data: inserted, error } = await admin
+    .from('partner_deals')
+    .insert({
+      partner_id: user.id,
+      hotel_id:   data.hotel_id,
+      room_id:    data.room_id,
+      deal_price: data.deal_price,
+      title:      data.title ?? null,
+      start_date: data.start_date,
+      end_date:   data.end_date,
+      status:     'pending_approval',
+    })
+    .select('id')
+    .single();
 
   if (error) return { error: error.message };
 
-  // Fire-and-forget: notify all active newsletter subscribers
+  // Fire-and-forget: send confirmation email to partner
   void (async () => {
     try {
-      const { data: subs } = await admin
-        .from('newsletter_subscribers')
-        .select('email')
-        .eq('is_active', true);
+      const [roomRes, hotelRes, profileRes] = await Promise.all([
+        admin.from('rooms').select('name, base_price').eq('id', data.room_id).maybeSingle(),
+        admin.from('hotels').select('name').eq('id', data.hotel_id).maybeSingle(),
+        admin.from('profiles').select('full_name, email').eq('id', user.id).maybeSingle(),
+      ]);
 
-      if (!subs || subs.length === 0) return;
+      const room    = roomRes.data;
+      const hotel   = hotelRes.data;
+      const profile = profileRes.data;
+      if (!room || !hotel || !profile?.email) return;
 
-      const { data: room } = await admin
-        .from('rooms')
-        .select('name, base_price')
-        .eq('id', data.room_id)
-        .maybeSingle();
-
-      const { data: hotel } = await admin
-        .from('hotels')
-        .select('name')
-        .eq('id', data.hotel_id)
-        .maybeSingle();
-
-      if (!room || !hotel) return;
-
-      const basePrice  = Number(room.base_price ?? 0);
-      const dealPrice  = Number(data.deal_price);
+      const basePrice   = Number(room.base_price ?? 0);
+      const dealPrice   = Number(data.deal_price);
       const discountPct = basePrice > 0
         ? Math.round(((basePrice - dealPrice) / basePrice) * 100)
         : 0;
 
-      const notifications: NewDealNotificationData[] = subs.map((s) => ({
-        subscriberEmail: s.email,
-        hotelName:       String(hotel.name),
-        hotelId:         Number(data.hotel_id),
-        roomName:        String(room.name),
+      const siteUrl     = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://selectedroom.com';
+      const approvalUrl = `${siteUrl}/api/deals/approve?id=${inserted.id}&pid=${user.id}`;
+
+      await sendDealApprovalEmail({
+        partnerEmail: profile.email,
+        partnerName:  profile.full_name ?? 'Partner',
+        hotelName:    String(hotel.name),
+        hotelId:      Number(data.hotel_id),
+        roomName:     String(room.name),
         dealPrice,
         basePrice,
         discountPct,
-        endDate:         data.end_date,
-      }));
-
-      await sendNewDealNotification(notifications);
+        startDate:    data.start_date,
+        endDate:      data.end_date,
+        approvalUrl,
+      });
     } catch (err) {
-      console.error('[createDeal] subscriber notification error:', err);
+      console.error('[createDeal] approval email error:', err);
     }
   })();
 

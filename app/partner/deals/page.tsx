@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   getMyDeals,
   getMyRooms,
@@ -23,10 +24,11 @@ import { CURRENCY_MAP } from '@/lib/currencyData';
 import type { CurrencyCode } from '@/lib/currencyData';
 
 const STATUS_FILTERS: Array<{ label: string; value: DealStatus | 'all' }> = [
-  { label: 'All',    value: 'all'    },
-  { label: 'Active', value: 'active' },
-  { label: 'Paused', value: 'paused' },
-  { label: 'Ended',  value: 'ended'  },
+  { label: 'All',             value: 'all'              },
+  { label: 'Pending',         value: 'pending_approval' },
+  { label: 'Active',          value: 'active'           },
+  { label: 'Paused',          value: 'paused'           },
+  { label: 'Ended',           value: 'ended'            },
 ];
 
 type Action = 'activate' | 'pause' | 'end';
@@ -354,6 +356,38 @@ function AddDealModal({ rooms, onClose, onCreated }: AddDealModalProps) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
+function ApprovalBanner() {
+  const params = useSearchParams();
+  const approved = params.get('deal_approved');
+  const err      = params.get('deal_error');
+
+  if (approved === '1') return (
+    <div className="mb-6 flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-3.5">
+      <svg className="w-5 h-5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      </svg>
+      <p className="text-emerald-800 text-sm font-medium">Deal published! Subscribers have been notified by email.</p>
+    </div>
+  );
+  if (approved === 'already') return (
+    <div className="mb-6 flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-5 py-3.5">
+      <svg className="w-5 h-5 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <p className="text-blue-800 text-sm font-medium">This deal was already published.</p>
+    </div>
+  );
+  if (err) return (
+    <div className="mb-6 flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-3.5">
+      <svg className="w-5 h-5 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+      <p className="text-red-700 text-sm font-medium">Could not approve deal. The link may be invalid or expired.</p>
+    </div>
+  );
+  return null;
+}
+
 export default function PartnerDealsPage() {
   const [deals,         setDeals]         = useState<PartnerDeal[]>([]);
   const [rooms,         setRooms]         = useState<DealRoom[]>([]);
@@ -380,10 +414,11 @@ export default function PartnerDealsPage() {
   const filtered = filter === 'all' ? deals : deals.filter((d) => d.status === filter);
 
   const counts = {
-    all:    deals.length,
-    active: deals.filter((d) => d.status === 'active').length,
-    paused: deals.filter((d) => d.status === 'paused').length,
-    ended:  deals.filter((d) => d.status === 'ended').length,
+    all:              deals.length,
+    pending_approval: deals.filter((d) => d.status === 'pending_approval').length,
+    active:           deals.filter((d) => d.status === 'active').length,
+    paused:           deals.filter((d) => d.status === 'paused').length,
+    ended:            deals.filter((d) => d.status === 'ended').length,
   };
 
   function handleInventorySaved(roomId: number, newTotal: number, newAvailable: number) {
@@ -441,8 +476,9 @@ export default function PartnerDealsPage() {
   }
 
   function getRowActions(deal: PartnerDeal): Action[] {
-    if (deal.status === 'active') return ['pause', 'end'];
-    if (deal.status === 'paused') return ['activate', 'end'];
+    if (deal.status === 'active')           return ['pause', 'end'];
+    if (deal.status === 'paused')           return ['activate', 'end'];
+    if (deal.status === 'pending_approval') return ['end'];
     return [];
   }
 
@@ -459,6 +495,9 @@ export default function PartnerDealsPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-[1400px]">
+      <Suspense fallback={null}>
+        <ApprovalBanner />
+      </Suspense>
       {/* Page header */}
       <div className="mb-8 rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
         <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-4">
@@ -537,7 +576,7 @@ export default function PartnerDealsPage() {
           >
             {label}
             <span className={`ml-1.5 text-xs ${filter === value ? 'text-white/70' : 'text-gray-400'}`}>
-              {counts[value]}
+              {(counts as Record<string, number>)[value]}
             </span>
           </button>
         ))}

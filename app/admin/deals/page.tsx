@@ -8,10 +8,11 @@ import AEDAmount from '../../partner/components/AEDAmount';
 import type { DealStatus } from '@/app/partner/deals/actions';
 
 const STATUS_FILTERS: Array<{ label: string; value: DealStatus | 'all' }> = [
-  { label: 'All Deals', value: 'all'    },
-  { label: 'Active',    value: 'active' },
-  { label: 'Paused',    value: 'paused' },
-  { label: 'Ended',     value: 'ended'  },
+  { label: 'All Deals', value: 'all'              },
+  { label: 'Pending',   value: 'pending_approval' },
+  { label: 'Active',    value: 'active'           },
+  { label: 'Paused',    value: 'paused'           },
+  { label: 'Ended',     value: 'ended'            },
 ];
 
 type Action = 'activate' | 'pause' | 'end';
@@ -226,11 +227,12 @@ export default function DealsPage() {
   );
   const groups   = groupByHotel(filtered);
 
-  const counts = {
-    all:    deals.length,
-    active: deals.filter((d) => d.status === 'active').length,
-    paused: deals.filter((d) => d.status === 'paused').length,
-    ended:  deals.filter((d) => d.status === 'ended').length,
+  const counts: Record<string, number> = {
+    all:              deals.length,
+    pending_approval: deals.filter((d) => d.status === 'pending_approval').length,
+    active:           deals.filter((d) => d.status === 'active').length,
+    paused:           deals.filter((d) => d.status === 'paused').length,
+    ended:            deals.filter((d) => d.status === 'ended').length,
   };
 
   return (
