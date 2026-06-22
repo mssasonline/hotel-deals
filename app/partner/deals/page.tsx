@@ -631,15 +631,13 @@ export default function PartnerDealsPage() {
                     <tr key={deal.id} className="hover:bg-gray-50/40 transition-colors">
                       {/* Room + Hotel */}
                       <td className="px-5 py-3.5">
-                        <p className="font-semibold text-gray-900 truncate max-w-[180px]">{deal.room_name}</p>
-                        <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[180px]">
-                          {deal.hotel_name}
-                          {deal.title && (
-                            <span className="ml-1.5 bg-brand-gold/10 text-brand-gold px-1.5 py-0.5 rounded text-[10px] font-medium">
-                              {deal.title}
-                            </span>
-                          )}
-                        </p>
+                        {deal.title && (
+                          <p className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md mb-1 truncate max-w-[200px] inline-block">
+                            {deal.title}
+                          </p>
+                        )}
+                        <p className="font-semibold text-gray-900 truncate max-w-[200px]">{deal.room_name}</p>
+                        <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[200px]">{deal.hotel_name}</p>
                       </td>
                       {/* Base */}
                       <td className="px-4 py-3.5 text-right text-gray-400 line-through text-xs">
