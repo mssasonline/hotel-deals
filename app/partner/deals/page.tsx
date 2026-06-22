@@ -677,7 +677,15 @@ export default function PartnerDealsPage() {
                       </td>
                       {/* Actions */}
                       <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-1.5 justify-end">
+                        <div className="flex items-center gap-1.5 justify-end flex-wrap">
+                          {deal.status === 'pending_approval' && (
+                            <span className="flex items-center gap-1.5 text-orange-600 text-xs font-medium bg-orange-50 border border-orange-200 px-2.5 py-1.5 rounded-lg">
+                              <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                              Confirm via email
+                            </span>
+                          )}
                           {rowActions.map((action) => (
                             <button
                               key={action}

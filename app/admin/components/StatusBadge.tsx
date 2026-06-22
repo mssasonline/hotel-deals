@@ -20,9 +20,10 @@ const BOOKING_COLORS: ColorMap = {
 };
 
 const DEAL_COLORS: ColorMap = {
+  pending_approval: 'bg-orange-50 text-orange-700 ring-1 ring-orange-200',
   active: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
   paused: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
-  ended: 'bg-gray-100 text-gray-500 ring-1 ring-gray-200',
+  ended:  'bg-gray-100 text-gray-500 ring-1 ring-gray-200',
 };
 
 const PAYMENT_COLORS: ColorMap = {
@@ -44,8 +45,9 @@ const DOT_COLORS: ColorMap = {
   suspended: 'bg-red-500',
   cancelled: 'bg-red-500',
   failed:    'bg-red-500',
-  ended:     'bg-gray-400',
-  refunded:  'bg-purple-500',
+  ended:            'bg-gray-400',
+  pending_approval: 'bg-orange-500',
+  refunded:         'bg-purple-500',
 };
 
 function getColorClass(status: string, variant?: StatusBadgeProps['variant']): string {
