@@ -27,7 +27,7 @@ export default function DualTrackNav() {
           {/* Track 1 — Time-based */}
           <Link
             href="/search"
-            className="group flex items-center gap-4 bg-white rounded-2xl px-5 py-4 text-left transition-all hover:-translate-y-0.5"
+            className="group flex items-center gap-4 bg-white rounded-2xl px-5 py-4 text-start transition-all hover:-translate-y-0.5"
             style={{ border: '1px solid rgba(30,58,138,0.12)', boxShadow: '0 1px 4px rgba(30,58,138,0.06)', transition: 'all 0.2s ease' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 20px rgba(30,58,138,0.12)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(30,58,138,0.3)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(30,58,138,0.06)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(30,58,138,0.12)'; }}
@@ -57,7 +57,7 @@ export default function DualTrackNav() {
           {/* Track 2 — Partner deals */}
           <Link
             href="/special-deals"
-            className="group flex items-center gap-4 bg-white rounded-2xl px-5 py-4 text-left transition-all hover:-translate-y-0.5"
+            className="group flex items-center gap-4 bg-white rounded-2xl px-5 py-4 text-start transition-all hover:-translate-y-0.5"
             style={{ border: '1px solid rgba(180,83,9,0.15)', boxShadow: '0 1px 4px rgba(180,83,9,0.06)', transition: 'all 0.2s ease' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 20px rgba(180,83,9,0.12)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(180,83,9,0.3)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(180,83,9,0.06)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(180,83,9,0.15)'; }}
@@ -70,15 +70,13 @@ export default function DualTrackNav() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="font-extrabold text-gray-900 text-sm">Exclusive Hotel Offers</span>
+                <span className="font-extrabold text-gray-900 text-sm">{t['nav.specialDeals']}</span>
                 <span className="bg-brand-gold text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
                   {t['nav.fixedBadge']}
                 </span>
               </div>
               <p className="text-xs text-gray-500 leading-snug">
-                Special rates set directly by our partner hotels — fixed price, available for{' '}
-                <span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#111827' }}>Selected</span>{' '}
-                dates only.
+                {t['nav.partnerDescription']}
               </p>
             </div>
             <svg className="w-4 h-4 text-gray-300 group-hover:text-brand-gold transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

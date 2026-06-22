@@ -47,16 +47,16 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
             <p className="font-bold text-base text-white" style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
-              Get exclusive flash deals in your inbox
+              {t['footer.newsletterTitle']}
             </p>
-            <p className="text-white/45 text-sm mt-0.5">Up to 50% off tonight — delivered before 6 PM.</p>
+            <p className="text-white/45 text-sm mt-0.5">{t['footer.newsletterSubtitle']}</p>
           </div>
           {status === 'success' ? (
             <div className="flex items-center gap-2.5 bg-green-500/15 border border-green-500/30 px-5 py-3 rounded-xl">
               <svg className="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <p className="text-green-300 text-sm font-medium">You&apos;re subscribed! We&apos;ll notify you of new deals.</p>
+              <p className="text-green-300 text-sm font-medium">{t['footer.subscribed']}</p>
             </div>
           ) : (
             <form
@@ -81,7 +81,7 @@ export default function Footer() {
                   required
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); if (status === 'error') setStatus('idle'); }}
-                  placeholder="your@email.com"
+                  placeholder={t['footer.newsletterPlaceholder']}
                   className="sm:w-56 text-sm px-4 py-2.5 rounded-xl text-white placeholder-white/35 outline-none transition-all"
                   style={{
                     background: 'rgba(255,255,255,0.09)',
@@ -107,7 +107,7 @@ export default function Footer() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                ) : 'Notify Me'}
+                ) : t['footer.notifyMe']}
               </button>
             </form>
           )}

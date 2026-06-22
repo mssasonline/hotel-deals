@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import AEDAmount from '@/app/partner/components/AEDAmount';
+import { useAppSettingsStore } from '@/store/appSettingsStore';
+import { getTranslations } from '@/lib/i18n/translations';
 
 export interface SpecialDealPreviewItem {
   hotelId: number;
@@ -33,6 +35,9 @@ function fmtDate(iso: string) {
 }
 
 export default function SpecialDealsPreview({ deals }: Props) {
+  const language = useAppSettingsStore((s) => s.language);
+  const t = getTranslations(language);
+
   return (
     <section id="partner-deals" className="py-14 bg-brand-blue-dark scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,19 +53,17 @@ export default function SpecialDealsPreview({ deals }: Props) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
                     d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
                 </svg>
-                PARTNER OFFER
+                {t['hotel.partnerDealBadge']}
               </div>
-              <span className="text-xs font-bold text-white/30 uppercase tracking-wide">Fixed Price</span>
+              <span className="text-xs font-bold text-white/30 uppercase tracking-wide">{t['sections.trackFixed']}</span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-extrabold leading-tight" style={{ color: '#F8FAFC' }}>
-              Exclusive Hotel Offers
+              {t['nav.specialDeals']}
             </h2>
 
             <p className="text-sm mt-2 max-w-md leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              Special rates set directly by our partner hotels — <strong style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>fixed price</strong>, available for{' '}
-              <span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#fff' }}>Selected</span>{' '}
-              dates only.
+              {t['nav.partnerDescription']}
             </p>
 
             <div className="mt-3 h-0.5 w-14 rounded-full" style={{ background: 'linear-gradient(90deg, #B45309, #FCD34D)' }} />
@@ -70,7 +73,7 @@ export default function SpecialDealsPreview({ deals }: Props) {
             href="/special-deals"
             className="hidden sm:flex items-center gap-1.5 text-brand-gold hover:text-yellow-400 text-sm font-semibold transition-colors shrink-0 ml-4"
           >
-            Browse All
+            {t['sections.browseAll']}
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -84,8 +87,8 @@ export default function SpecialDealsPreview({ deals }: Props) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
             </svg>
-            <p className="text-white/40 text-sm font-medium mb-1">No partner deals active today</p>
-            <p className="text-white/25 text-xs">Partners publish new deals regularly — check back soon</p>
+            <p className="text-white/40 text-sm font-medium mb-1">{t['sections.noPartnerDeals']}</p>
+            <p className="text-white/25 text-xs">{t['sections.noPartnerDealsDesc']}</p>
           </div>
         ) : (
           <>
@@ -110,12 +113,12 @@ export default function SpecialDealsPreview({ deals }: Props) {
                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                     />
                     {/* Fixed price badge — contrasts with the "live" badge in Track 1 */}
-                    <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-brand-gold text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow">
+                    <div className="absolute top-3 start-3 flex items-center gap-1.5 bg-brand-gold text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
                           d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
                       </svg>
-                      -{deal.discountPct}% FIXED
+                      -{deal.discountPct}% {t['nav.fixedBadge']}
                     </div>
                   </div>
 
@@ -130,18 +133,18 @@ export default function SpecialDealsPreview({ deals }: Props) {
                       <div>
                         {deal.basePrice > deal.dealPrice && (
                           <p className="text-base font-semibold leading-none mb-1 text-red-400">
-                            <AEDAmount amount={deal.basePrice} className="line-through decoration-2 decoration-red-400" /><span className="text-xs font-normal text-white/30">/night</span>
+                            <AEDAmount amount={deal.basePrice} className="line-through decoration-2 decoration-red-400" /><span className="text-xs font-normal text-white/30">{t['price.perNight']}</span>
                           </p>
                         )}
                         <div className="flex items-baseline gap-1 mt-0.5">
                           <span className="font-extrabold text-xl" style={{ color: '#FCD34D' }}>
                             <AEDAmount amount={deal.dealPrice} />
                           </span>
-                          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>/night</span>
+                          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>{t['price.perNight']}</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.35)' }}>Until</p>
+                        <p className="text-[10px] uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.35)' }}>{t['sections.until']}</p>
                         <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.7)' }}>{fmtDate(deal.endDate)}</p>
                       </div>
                     </div>
@@ -156,7 +159,7 @@ export default function SpecialDealsPreview({ deals }: Props) {
                 href="/special-deals"
                 className="inline-flex items-center gap-1.5 text-brand-gold text-sm font-semibold"
               >
-                Browse All Partner Deals
+                {t['sections.browseAll']}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>

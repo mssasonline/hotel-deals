@@ -115,12 +115,12 @@ export default function HeroSection() {
 
           {/* Main headline */}
           <h1
-            className={`text-4xl sm:text-5xl lg:text-[3.75rem] xl:text-[4.25rem] font-extrabold mb-3 leading-[1.06] transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+            className={`text-4xl sm:text-5xl lg:text-[3.75rem] xl:text-[4.25rem] font-extrabold mb-3 leading-[1.06] rtl:leading-[1.75] rtl:text-[2.25rem] rtl:sm:text-[2.75rem] rtl:lg:text-[3.25rem] rtl:xl:text-[3.75rem] transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
             style={{ transitionDelay: mounted ? '80ms' : '0ms', color: '#ffffff', textShadow: '0 2px 32px rgba(0,0,0,0.35)', letterSpacing: '-0.035em' }}
           >
             {t['hero.titleLine1']}
             <span
-              className="block mt-1"
+              className="block mt-1 rtl:mt-4 pb-4"
               style={{
                 background: 'linear-gradient(135deg, #FDE68A 0%, #F59E0B 45%, #FCD34D 100%)',
                 WebkitBackgroundClip: 'text',
@@ -139,11 +139,18 @@ export default function HeroSection() {
           />
 
           <p
-            className={`text-base sm:text-lg lg:text-xl mb-9 max-w-2xl mx-auto leading-relaxed transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+            className={`text-base sm:text-lg lg:text-xl mb-9 max-w-2xl mx-auto leading-relaxed rtl:text-sm rtl:sm:text-base rtl:lg:text-base rtl:max-w-3xl rtl:sm:whitespace-nowrap transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
             style={{ color: 'rgba(255,255,255,0.78)', transitionDelay: mounted ? '180ms' : '0ms', fontWeight: 400, letterSpacing: '0.01em', fontFamily: 'var(--font-montserrat, sans-serif)' }}
           >
             {t['hero.heroSubtitle'].split('SelectedRoom').reduce<React.ReactNode[]>((acc, part, i, arr) => {
-              acc.push(part);
+              const highlight = t['hero.heroSubtitleHighlight'];
+              const segments = part.split(highlight);
+              segments.forEach((seg, j) => {
+                acc.push(seg);
+                if (j < segments.length - 1) acc.push(
+                  <span key={`h-${i}-${j}`} className="font-bold" style={{ color: '#FCD34D' }}>{highlight}</span>
+                );
+              });
               if (i < arr.length - 1) acc.push(
                 <span key={i} className="font-semibold" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}><span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span></span>
               );

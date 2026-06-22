@@ -64,7 +64,7 @@ export default function TierTimeline({ compact = false }: Props) {
   }
 
   return (
-    <div className="w-full">
+    <div dir="ltr" className="w-full">
       {/* Track */}
       <div className="relative flex items-start">
         {/* Connector line */}

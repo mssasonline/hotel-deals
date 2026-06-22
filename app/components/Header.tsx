@@ -84,7 +84,7 @@ export default function Header() {
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-[66px]">
+        <div dir="ltr" className="flex items-center justify-between h-[66px]">
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 group">
@@ -191,7 +191,7 @@ export default function Header() {
 
               {settingsOpen && (
                 <div
-                  className="absolute right-0 rtl:right-auto rtl:left-0 top-full mt-2 w-56 max-w-[calc(100vw-1rem)] bg-white rounded-2xl overflow-hidden z-50"
+                  className="absolute right-0 top-full mt-2 w-56 max-w-[calc(100vw-1rem)] bg-white rounded-2xl overflow-hidden z-50"
                   style={{ boxShadow: '0 16px 48px rgba(15,23,42,0.18)', border: '1px solid rgba(30,58,138,0.08)' }}
                 >
                   <div className="p-3 space-y-3">

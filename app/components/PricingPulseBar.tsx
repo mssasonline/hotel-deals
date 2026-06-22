@@ -33,6 +33,7 @@ export default function PricingPulseBar() {
 
   return (
     <div
+      dir="ltr"
       className="w-full max-w-xs mx-auto mb-7 opacity-0 animate-fade-in"
       style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}
     >
