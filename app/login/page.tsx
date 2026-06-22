@@ -12,7 +12,7 @@ import { useTranslation } from '@/lib/i18n/useTranslation';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading, role } = useAuth();
   const t = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,9 +29,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.replace('/');
+      if (role === 'partner') router.replace('/partner/dashboard');
+      else if (role === 'admin') router.replace('/admin/dashboard');
+      else router.replace('/');
     }
-  }, [user, loading, router]);
+  }, [user, loading, role, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,7 +53,7 @@ export default function LoginPage() {
     }
 
     setSubmitting(true);
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
@@ -62,8 +64,22 @@ export default function LoginPage() {
       return;
     }
 
-    const redirect = consumeLoginRedirect('/');
-    router.push(redirect);
+    // Fetch role to redirect partners/admins to their dashboards
+    const savedRedirect = consumeLoginRedirect('');
+    if (savedRedirect) {
+      router.push(savedRedirect);
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', authData.user?.id ?? '')
+      .maybeSingle();
+
+    if (profile?.role === 'partner') router.push('/partner/dashboard');
+    else if (profile?.role === 'admin') router.push('/admin/dashboard');
+    else router.push('/');
   }
 
   async function handleForgotPassword(e: React.FormEvent) {
