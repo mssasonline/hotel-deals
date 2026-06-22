@@ -233,6 +233,87 @@ export async function sendReviewRequestEmail(data: ReviewRequestData): Promise<v
   );
 }
 
+// ── New Deal Notification ──────────────────────────────────────────────────────
+
+export interface NewDealNotificationData {
+  subscriberEmail: string;
+  hotelName:       string;
+  hotelId:         number;
+  roomName:        string;
+  dealPrice:       number;
+  basePrice:       number;
+  discountPct:     number;
+  endDate:         string;
+}
+
+function newDealNotificationHtml(d: NewDealNotificationData): string {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://selectedroom.com';
+  const hotelUrl = `${siteUrl}/hotel/${d.hotelId}`;
+  const saving = Math.round(d.basePrice - d.dealPrice);
+
+  return `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      <div style="background:#1E3A8A;padding:24px 32px;border-radius:12px 12px 0 0">
+        ${LOGO_HTML}
+        <h1 style="color:white;margin:0;font-size:20px;font-weight:600;opacity:0.9">🔥 New Deal Just Dropped</h1>
+      </div>
+      <div style="background:#f8fafc;padding:32px;border-radius:0 0 12px 12px;border:1px solid #e2e8f0">
+        <p style="color:#374151">A partner hotel just published an exclusive deal — available for selected dates only.</p>
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin:20px 0">
+          <div style="background:linear-gradient(135deg,#1E3A8A,#2563EB);padding:20px 24px">
+            <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.6)">Partner Exclusive</p>
+            <h2 style="margin:6px 0 4px;color:#fff;font-size:20px;font-weight:800">${d.hotelName}</h2>
+            <p style="margin:0;color:rgba(255,255,255,0.7);font-size:13px">${d.roomName}</p>
+          </div>
+          <div style="padding:20px 24px">
+            <table style="width:100%;border-collapse:collapse">
+              <tr>
+                <td style="padding:6px 0;color:#6b7280;font-size:13px">Original price</td>
+                <td style="padding:6px 0;text-align:right;color:#ef4444;font-size:14px;text-decoration:line-through">AED ${d.basePrice.toLocaleString()}/night</td>
+              </tr>
+              <tr>
+                <td style="padding:6px 0;color:#6b7280;font-size:13px">Deal price</td>
+                <td style="padding:6px 0;text-align:right;font-weight:800;color:#059669;font-size:20px">AED ${d.dealPrice.toLocaleString()}/night</td>
+              </tr>
+              <tr>
+                <td style="padding:6px 0;color:#6b7280;font-size:13px">You save</td>
+                <td style="padding:6px 0;text-align:right;font-weight:700;color:#D97706;font-size:14px">AED ${saving.toLocaleString()} (${d.discountPct}% off)</td>
+              </tr>
+              <tr>
+                <td style="padding:6px 0;color:#6b7280;font-size:13px">Available until</td>
+                <td style="padding:6px 0;text-align:right;font-weight:600;color:#374151;font-size:14px">${d.endDate}</td>
+              </tr>
+            </table>
+            <div style="text-align:center;margin-top:20px">
+              <a href="${hotelUrl}" style="display:inline-block;background:linear-gradient(135deg,#92400E,#D97706);color:white;padding:13px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px">
+                View Deal →
+              </a>
+            </div>
+          </div>
+        </div>
+        <p style="color:#9ca3af;font-size:11px;margin-top:20px;text-align:center">
+          You are receiving this because you subscribed to deal alerts at selectedroom.com.
+        </p>
+        ${FOOTER_HTML}
+      </div>
+    </div>
+  `;
+}
+
+export async function sendNewDealNotification(deals: NewDealNotificationData[]): Promise<void> {
+  await Promise.allSettled(
+    deals.map((d) =>
+      sendEmail(
+        d.subscriberEmail,
+        `🔥 New Deal: ${d.discountPct}% off at ${d.hotelName} — Book before ${d.endDate}`,
+        newDealNotificationHtml(d),
+      )
+    )
+  );
+}
+
+// ── Booking Confirmation ───────────────────────────────────────────────────────
+
 export async function sendBookingConfirmation(data: BookingEmailData): Promise<void> {
   await Promise.allSettled([
     sendEmail(

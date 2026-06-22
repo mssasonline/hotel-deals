@@ -1,6 +1,8 @@
 ﻿'use client';
 
+import { useState } from 'react';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { subscribeNewsletter } from '@/app/actions/newsletter';
 
 const DESTINATIONS = [
   { city: 'Dubai',    href: '/search?city=Dubai' },
@@ -13,6 +15,9 @@ const DESTINATIONS = [
 
 export default function Footer() {
   const t = useTranslation();
+  const [email, setEmail]     = useState('');
+  const [status, setStatus]   = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errMsg, setErrMsg]   = useState('');
 
   const companyLinks = [
     { label: t['footer.aboutUs'],       href: '/about' },
@@ -46,25 +51,66 @@ export default function Footer() {
             </p>
             <p className="text-white/45 text-sm mt-0.5">Up to 50% off tonight — delivered before 6 PM.</p>
           </div>
-          <form className="flex gap-2 w-full sm:w-auto" onSubmit={e => e.preventDefault()}>
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="flex-1 sm:w-56 text-sm px-4 py-2.5 rounded-xl text-white placeholder-white/35 outline-none transition-all"
-              style={{ background: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.14)' }}
-              onFocus={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(217,119,6,0.6)'; }}
-              onBlur={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.14)'; }}
-            />
-            <button
-              type="submit"
-              className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-250 whitespace-nowrap"
-              style={{ background: 'linear-gradient(135deg, #92400E 0%, #D97706 100%)', boxShadow: '0 2px 12px rgba(180,83,9,0.35)' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(180,83,9,0.55)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 12px rgba(180,83,9,0.35)'; }}
+          {status === 'success' ? (
+            <div className="flex items-center gap-2.5 bg-green-500/15 border border-green-500/30 px-5 py-3 rounded-xl">
+              <svg className="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <p className="text-green-300 text-sm font-medium">You&apos;re subscribed! We&apos;ll notify you of new deals.</p>
+            </div>
+          ) : (
+            <form
+              className="flex gap-2 w-full sm:w-auto flex-col sm:flex-row"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setStatus('loading');
+                setErrMsg('');
+                const res = await subscribeNewsletter(email);
+                if (res.success) {
+                  setStatus('success');
+                  setEmail('');
+                } else {
+                  setStatus('error');
+                  setErrMsg(res.error ?? 'Something went wrong');
+                }
+              }}
             >
-              Notify Me
-            </button>
-          </form>
+              <div className="flex flex-col gap-1 flex-1 sm:flex-initial">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (status === 'error') setStatus('idle'); }}
+                  placeholder="your@email.com"
+                  className="sm:w-56 text-sm px-4 py-2.5 rounded-xl text-white placeholder-white/35 outline-none transition-all"
+                  style={{
+                    background: 'rgba(255,255,255,0.09)',
+                    border: `1px solid ${status === 'error' ? 'rgba(239,68,68,0.6)' : 'rgba(255,255,255,0.14)'}`,
+                  }}
+                  onFocus={e => { if (status !== 'error') (e.currentTarget as HTMLElement).style.borderColor = 'rgba(217,119,6,0.6)'; }}
+                  onBlur={e => { if (status !== 'error') (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.14)'; }}
+                />
+                {status === 'error' && (
+                  <p className="text-red-400 text-xs px-1">{errMsg}</p>
+                )}
+              </div>
+              <button
+                type="submit"
+                disabled={status === 'loading'}
+                className="text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-250 whitespace-nowrap disabled:opacity-60"
+                style={{ background: 'linear-gradient(135deg, #92400E 0%, #D97706 100%)', boxShadow: '0 2px 12px rgba(180,83,9,0.35)' }}
+                onMouseEnter={e => { if (status !== 'loading') (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(180,83,9,0.55)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 12px rgba(180,83,9,0.35)'; }}
+              >
+                {status === 'loading' ? (
+                  <svg className="animate-spin w-4 h-4 mx-auto" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : 'Notify Me'}
+              </button>
+            </form>
+          )}
         </div>
       </div>
 

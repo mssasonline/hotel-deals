@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
+import { sendNewDealNotification, type NewDealNotificationData } from '@/lib/emailService';
 
 export type DealStatus = 'active' | 'paused' | 'ended';
 
@@ -143,6 +144,54 @@ export async function createDeal(
   });
 
   if (error) return { error: error.message };
+
+  // Fire-and-forget: notify all active newsletter subscribers
+  void (async () => {
+    try {
+      const { data: subs } = await admin
+        .from('newsletter_subscribers')
+        .select('email')
+        .eq('is_active', true);
+
+      if (!subs || subs.length === 0) return;
+
+      const { data: room } = await admin
+        .from('rooms')
+        .select('name, base_price')
+        .eq('id', data.room_id)
+        .maybeSingle();
+
+      const { data: hotel } = await admin
+        .from('hotels')
+        .select('name')
+        .eq('id', data.hotel_id)
+        .maybeSingle();
+
+      if (!room || !hotel) return;
+
+      const basePrice  = Number(room.base_price ?? 0);
+      const dealPrice  = Number(data.deal_price);
+      const discountPct = basePrice > 0
+        ? Math.round(((basePrice - dealPrice) / basePrice) * 100)
+        : 0;
+
+      const notifications: NewDealNotificationData[] = subs.map((s) => ({
+        subscriberEmail: s.email,
+        hotelName:       String(hotel.name),
+        hotelId:         Number(data.hotel_id),
+        roomName:        String(room.name),
+        dealPrice,
+        basePrice,
+        discountPct,
+        endDate:         data.end_date,
+      }));
+
+      await sendNewDealNotification(notifications);
+    } catch (err) {
+      console.error('[createDeal] subscriber notification error:', err);
+    }
+  })();
+
   return {};
 }
 
