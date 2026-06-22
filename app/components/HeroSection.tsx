@@ -106,7 +106,7 @@ export default function HeroSection() {
               <svg className="w-3.5 h-3.5 text-yellow-300 fill-current" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
-              4.9 Rating
+              4.9 {t['hero.ratingLabel']}
             </span>
           </div>
 
@@ -115,7 +115,7 @@ export default function HeroSection() {
 
           {/* Main headline */}
           <h1
-            className={`text-4xl sm:text-5xl lg:text-[3.75rem] xl:text-[4.25rem] font-extrabold mb-3 leading-[1.06] rtl:leading-[1.75] rtl:text-[2.25rem] rtl:sm:text-[2.75rem] rtl:lg:text-[3.25rem] rtl:xl:text-[3.75rem] transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+            className={`text-4xl sm:text-5xl lg:text-[3.75rem] xl:text-[4.25rem] font-extrabold mb-3 leading-[1.06] rtl:leading-[1.75] rtl:text-[1.75rem] rtl:sm:text-[2.75rem] rtl:lg:text-[3.25rem] rtl:xl:text-[3.75rem] transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
             style={{ transitionDelay: mounted ? '80ms' : '0ms', color: '#ffffff', textShadow: '0 2px 32px rgba(0,0,0,0.35)', letterSpacing: '-0.035em' }}
           >
             {t['hero.titleLine1']}
@@ -219,7 +219,7 @@ export default function HeroSection() {
 
           {/* Popular cities */}
           <div className={`flex flex-wrap justify-center items-center gap-2 transition-all duration-700 ${mounted ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: mounted ? '380ms' : '0ms' }}>
-            <span className="text-white/45 text-xs font-medium mr-1">Popular:</span>
+            <span className="text-white/45 text-xs font-medium mr-1">{t['hero.popular']}</span>
             {(
               [
                 { query: 'Dubai',          label: 'Dubai'          },

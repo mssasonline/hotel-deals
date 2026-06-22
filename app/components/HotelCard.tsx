@@ -197,7 +197,7 @@ export default function HotelCard({ hotel, initialFavorited, onUnfavorite }: Hot
               </span>
             )}
             <div className="flex items-baseline gap-1">
-              <span className="text-[11px] text-gray-400 font-medium mr-0.5">From</span>
+              <span className="text-[11px] text-gray-400 font-medium mr-0.5">{t['price.from']}</span>
               <span className="font-extrabold text-[1.65rem] leading-none" style={{ color: '#B45309' }}>
                 <CurrencyAmount amount={livePrice} />
               </span>
