@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { getCurrentTier, type PriceTier } from '@/lib/pricingEngine';
+import { useAppSettingsStore } from '@/store/appSettingsStore';
+import { getTranslations } from '@/lib/i18n/translations';
 
 // Map tierIndex → deal intensity position (0 = weakest, 3 = strongest)
 // Midnight(0)=best(3), EarlyBird(1)=weakest(0), Afternoon(2)=mid(1), Evening(3)=strong(2)
@@ -17,6 +19,8 @@ const SEGMENTS = [
 export default function PricingPulseBar() {
   const [tier, setTier] = useState<PriceTier>(() => getCurrentTier());
   const [mounted, setMounted] = useState(false);
+  const language = useAppSettingsStore((s) => s.language);
+  const t = getTranslations(language);
 
   useEffect(() => {
     setMounted(true);
@@ -40,7 +44,7 @@ export default function PricingPulseBar() {
       {/* Live indicator label */}
       <div className="flex items-center justify-between mb-2 px-0.5">
         <span className="text-white/50 text-[10px] font-semibold uppercase tracking-[0.16em]">
-          Savings now
+          {t['pulse.savingsNow']}
         </span>
         <span
           className="text-[10px] font-bold px-2 py-0.5 rounded-full"
@@ -98,7 +102,7 @@ export default function PricingPulseBar() {
               flex: 1,
             }}
           >
-            {i === 0 ? 'Low' : i === 1 ? 'Mid' : i === 2 ? 'High' : 'Best'}
+            {i === 0 ? t['pulse.low'] : i === 1 ? t['pulse.mid'] : i === 2 ? t['pulse.high'] : t['pulse.best']}
           </span>
         ))}
       </div>

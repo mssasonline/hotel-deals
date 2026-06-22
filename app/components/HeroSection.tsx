@@ -101,7 +101,7 @@ export default function HeroSection() {
               style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.22)', boxShadow: '0 2px 16px rgba(0,0,0,0.15)' }}
             >
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" style={{ boxShadow: '0 0 6px #34d399', animation: 'pulse 2s ease-in-out infinite' }} />
-              Live pricing · Updated every few hours
+              {t['hero.trustBadge']}
               <span className="w-px h-3 bg-white/30" />
               <svg className="w-3.5 h-3.5 text-yellow-300 fill-current" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />

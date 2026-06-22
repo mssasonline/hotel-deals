@@ -74,6 +74,13 @@ export default function HotelCard({ hotel, initialFavorited, onUnfavorite }: Hot
   const language = useAppSettingsStore((s) => s.language);
   const t = getTranslations(language);
 
+  const URGENCY_LABEL: Record<string, string> = {
+    LOW_DEMAND:    t['urgency.lowDemand'],
+    MEDIUM_DEMAND: t['urgency.lastMinute'],
+    HIGH_DEMAND:   t['urgency.almostGone'],
+    CRITICAL:      t['urgency.almostGone'],
+  };
+
   const bookNowLabel = t['hotel.seeAvailability'];
 
   return (
@@ -164,7 +171,7 @@ export default function HotelCard({ hotel, initialFavorited, onUnfavorite }: Hot
         {/* Urgency label badge */}
         <div className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full mb-2 w-fit ${urgency.badgeBg} ${urgency.badgeText}`}>
           <span className={`w-1.5 h-1.5 rounded-full animate-pulse shrink-0 ${urgency.dotColor}`} />
-          {urgency.label}
+          {URGENCY_LABEL[urgency.status] ?? urgency.label}
         </div>
 
         {/* Name */}
