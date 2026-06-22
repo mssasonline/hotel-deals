@@ -152,6 +152,17 @@ export async function setPartnerStatus(
     .eq('id', userId);
 
   if (error) return { error: error.message };
+
+  // When suspending: pause all active deals so no new bookings can be made.
+  // Existing bookings are untouched — only future availability is blocked.
+  if (status === 'suspended') {
+    await adminClient
+      .from('partner_deals')
+      .update({ status: 'paused' })
+      .eq('partner_id', userId)
+      .eq('status', 'active');
+  }
+
   revalidatePath('/admin/partners');
   return { success: true };
 }
