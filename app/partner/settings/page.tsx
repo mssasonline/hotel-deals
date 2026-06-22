@@ -471,16 +471,18 @@ export default function SettingsPage() {
             <div>
               <p className="text-sm font-medium text-gray-900">Account Status</p>
               <p className="text-xs text-gray-400">
-                {profile?.status === 'active' ? 'Your partner account is active and verified.' : 'Your account has been suspended.'}
+                {profile?.status === 'suspended'
+                  ? 'Your account has been suspended. Please contact support.'
+                  : 'Your partner account is active and verified.'}
               </p>
             </div>
             <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
-              profile?.status === 'active'
-                ? 'bg-green-50 text-green-700'
-                : 'bg-red-50 text-red-600'
+              profile?.status === 'suspended'
+                ? 'bg-red-50 text-red-600'
+                : 'bg-green-50 text-green-700'
             }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${profile?.status === 'active' ? 'bg-green-500' : 'bg-red-400'}`} />
-              {profile?.status === 'active' ? 'Active' : 'Suspended'}
+              <span className={`w-1.5 h-1.5 rounded-full ${profile?.status === 'suspended' ? 'bg-red-400' : 'bg-green-500'}`} />
+              {profile?.status === 'suspended' ? 'Suspended' : 'Active'}
             </span>
           </div>
 
