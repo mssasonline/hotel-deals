@@ -18,6 +18,7 @@ async function fetchSearchHotels(): Promise<SearchHotel[]> {
   const { data, error } = await supabase
     .from('hotels')
     .select('*, hotel_images(image_url, sort_order), rooms(id, base_price, min_price, min_price_weekend, quantity_available, quantity_total)')
+    .eq('is_active', true)
     .order('id');
 
   if (error || !data) return [];

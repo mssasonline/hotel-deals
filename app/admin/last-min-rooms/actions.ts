@@ -29,7 +29,8 @@ export async function getLastMinRooms(): Promise<LastMinHotelGroup[]> {
 
   const { data, error } = await admin
     .from('rooms')
-    .select('id, name, base_price, min_price, hotels(id, name, city)')
+    .select('id, name, base_price, min_price, hotels!inner(id, name, city, is_active)')
+    .eq('hotels.is_active', true)
     .gt('base_price', 0)
     .order('name');
 

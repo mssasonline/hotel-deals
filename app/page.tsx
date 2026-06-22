@@ -92,6 +92,7 @@ async function fetchHotels(): Promise<Hotel[]> {
   const { data, error } = await supabase
     .from("hotels")
     .select("*, hotel_images(image_url, sort_order), rooms(id, base_price, min_price, min_price_weekend, quantity_available, quantity_total)")
+    .eq("is_active", true)
     .order("id");
 
   if (error || !data) return [];
@@ -138,8 +139,9 @@ async function fetchSpecialDealsPreview(): Promise<SpecialDealPreviewItem[]> {
 
   const { data, error } = await supabase
     .from("partner_deals")
-    .select("deal_price, end_date, hotels(id, name, city, hotel_images(image_url, sort_order)), rooms(base_price)")
+    .select("deal_price, end_date, hotels!inner(id, name, city, is_active, hotel_images(image_url, sort_order)), rooms(base_price)")
     .eq("status", "active")
+    .eq("hotels.is_active", true)
     .lte("start_date", today)
     .gte("end_date", today)
     .limit(6);

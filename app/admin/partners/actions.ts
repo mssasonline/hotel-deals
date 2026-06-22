@@ -153,14 +153,30 @@ export async function setPartnerStatus(
 
   if (error) return { error: error.message };
 
-  // When suspending: pause all active deals so no new bookings can be made.
-  // Existing bookings are untouched — only future availability is blocked.
-  if (status === 'suspended') {
+  // Get all hotels owned by this partner
+  const { data: hotelLinks } = await adminClient
+    .from('hotel_partners')
+    .select('hotel_id')
+    .eq('user_id', userId);
+
+  const hotelIds = (hotelLinks ?? []).map((h) => h.hotel_id);
+
+  if (hotelIds.length > 0) {
+    // Hide/show hotels on guest-facing pages
     await adminClient
-      .from('partner_deals')
-      .update({ status: 'paused' })
-      .eq('partner_id', userId)
-      .eq('status', 'active');
+      .from('hotels')
+      .update({ is_active: status === 'active' })
+      .in('id', hotelIds);
+
+    // When suspending: pause all active deals so no new bookings can be made.
+    // When reactivating: leave deals paused — partner re-activates them manually.
+    if (status === 'suspended') {
+      await adminClient
+        .from('partner_deals')
+        .update({ status: 'paused' })
+        .in('hotel_id', hotelIds)
+        .eq('status', 'active');
+    }
   }
 
   revalidatePath('/admin/partners');
