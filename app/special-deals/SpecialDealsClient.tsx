@@ -242,8 +242,15 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
     return hotels.filter(h => {
       // Text search
       if (query.trim()) {
-        const q = resolveQuery(query);
-        if (!normalize(h.name).includes(q) && !normalize(h.city).includes(q) && !normalize(h.country).includes(q)) return false;
+        const q   = resolveQuery(query);       // English-resolved (full word lookup)
+        const arQ = normalize(query);          // Raw typed query (supports Arabic prefix)
+        const cityAR    = normalize(translatePlace(h.city,    'ar'));
+        const countryAR = normalize(translatePlace(h.country, 'ar'));
+        const matched =
+          normalize(h.name).startsWith(q)     || normalize(h.name).startsWith(arQ) ||
+          normalize(h.city).startsWith(q)     || cityAR.startsWith(arQ) ||
+          normalize(h.country).startsWith(q)  || countryAR.startsWith(arQ);
+        if (!matched) return false;
       }
       // Date: hotel must have at least one deal overlapping the range
       if (checkIn && checkOut) {
