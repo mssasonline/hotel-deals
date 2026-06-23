@@ -9,6 +9,8 @@ import CurrencyAmount from '@/app/components/CurrencyAmount';
 import type { RoomCategory } from '@/lib/roomImages';
 import type { PartnerDeal } from './PartnerDealsSection';
 import { calcTaxBreakdown, type HotelFeeConfig, UAE_FEE_DEFAULTS } from '@/lib/pricingEngine';
+import { useAppSettingsStore } from '@/store/appSettingsStore';
+import { getTranslations } from '@/lib/i18n/translations';
 
 interface Props {
   deal: PartnerDeal;
@@ -66,6 +68,8 @@ export default function DealBookingModal({
   const router   = useRouter();
   const pathname = usePathname();
   const { setRoom, setSelectedHotel, setDates, setGuests, setBreakfast } = useBookingStore();
+  const language = useAppSettingsStore((s) => s.language);
+  const t = getTranslations(language);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -185,7 +189,7 @@ export default function DealBookingModal({
               <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-700 text-white">
                 -{disc}% FIXED
               </span>
-              <span className="text-xs text-white/55">Partner Deal</span>
+              <span className="text-xs text-white/55">{t['hotel.partnerDealBadge']}</span>
             </div>
             <h2 className="font-bold !text-white text-lg leading-tight">
               {deal.title ?? deal.room_name}
