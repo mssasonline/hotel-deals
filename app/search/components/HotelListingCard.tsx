@@ -233,13 +233,13 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
             </div>
           </div>
 
-          {/* Stars */}
-          <Stars count={hotel.stars} />
-
-          {/* Hotel name */}
-          <h2 className="font-bold text-xl mt-1 mb-0.5 leading-tight line-clamp-1" style={{ color: '#B45309' }}>
-            {hotel.name}
-          </h2>
+          {/* Hotel name + stars inline */}
+          <div className="flex items-center gap-2 mt-1 mb-0.5">
+            <h2 className="font-bold text-xl leading-tight line-clamp-1" style={{ color: '#B45309' }}>
+              {hotel.name}
+            </h2>
+            <Stars count={hotel.stars} />
+          </div>
 
           {/* Location */}
           <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-2 flex-wrap">
