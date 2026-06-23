@@ -8,7 +8,7 @@ import { mapRowToSearchHotel, type SearchRawRoom } from '@/app/lib/searchData';
 import type { SearchHotel } from '@/app/lib/searchData';
 
 export const metadata: Metadata = {
-  title: 'Search For Deals — SelectedRoom',
+  title: 'Search for Hotel — SelectedRoom',
   description:
     'Find last-minute luxury hotel deals with up to 50% off. Filter by price, stars, and discount.',
 };

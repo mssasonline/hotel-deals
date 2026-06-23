@@ -712,6 +712,7 @@ const en = {
   'hero.searchCityBtn': 'Search by City',
   'hero.searchPlaceholderText': 'City or hotel name…',
   // Search / GPS mode
+  'search.heading': 'Search for Hotel',
   'search.nearMe': 'Hotels Near You',
   'search.sortDistance': 'Closest First',
   'search.sortedByDistance': 'Sorted by proximity',
@@ -1516,6 +1517,7 @@ const ar: Partial<Record<TranslationKey, string>> = {
   'hero.searchCityBtn': 'ابحث بالمدينة',
   'hero.searchPlaceholderText': 'اسم المدينة أو الفندق…',
   // Search / GPS mode
+  'search.heading': 'ابحث عن الفندق',
   'search.nearMe': 'فنادق قريبة منك',
   'search.sortDistance': 'الأقرب أولاً',
   'search.sortedByDistance': 'مرتّبة بالقرب منك',

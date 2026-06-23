@@ -205,7 +205,7 @@ export default function SearchResultsClient({
       <div className="mb-6">
         <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-            {isGpsMode ? t['search.nearMe'] : 'Search For Deals'}
+            {isGpsMode ? t['search.nearMe'] : t['search.heading']}
           </h1>
 
           {isGpsMode ? (
