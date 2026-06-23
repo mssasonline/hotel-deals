@@ -9,6 +9,7 @@ import AEDAmount from '@/app/partner/components/AEDAmount';
 import FilterSidebar, { type FilterState, DEFAULT_FILTERS } from '@/app/search/components/FilterSidebar';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
+import type { Language } from '@/store/appSettingsStore';
 
 type SortOption = 'discount' | 'price' | 'rating' | 'recommended';
 
@@ -86,7 +87,7 @@ function dealOverlaps(deal: { start_date: string; end_date: string }, checkIn: s
   return deal.start_date <= checkOut && deal.end_date >= checkIn;
 }
 
-function HotelDealCard({ hotel, index, checkIn, checkOut, language }: { hotel: SpecialDealHotel; index: number; checkIn: string; checkOut: string; language: string }) {
+function HotelDealCard({ hotel, index, checkIn, checkOut, language }: { hotel: SpecialDealHotel; index: number; checkIn: string; checkOut: string; language: Language }) {
   const t = getTranslations(language);
   const gradient = DEFAULT_GRADIENTS[index % DEFAULT_GRADIENTS.length];
   const image    = hotel.imageUrl ?? FALLBACK_IMAGE;
