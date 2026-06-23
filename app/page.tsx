@@ -139,10 +139,8 @@ async function fetchSpecialDealsPreview(): Promise<SpecialDealPreviewItem[]> {
 
   const { data, error } = await supabase
     .from("partner_deals")
-    .select("deal_price, end_date, hotels!inner(id, name, city, stars, rating, is_active, hotel_images(image_url, sort_order)), rooms(base_price)")
+    .select("deal_price, end_date, hotels!inner(id, name, city, star_rating, rating, hotel_images(image_url, sort_order)), rooms(base_price)")
     .eq("status", "active")
-    .eq("hotels.is_active", true)
-    .lte("start_date", today)
     .gte("end_date", today)
     .limit(6);
 
@@ -184,7 +182,7 @@ async function fetchSpecialDealsPreview(): Promise<SpecialDealPreviewItem[]> {
         discountPct: discPct,
         dealCount:   1,
         endDate:     String(row.end_date),
-        stars:       Number((hotel as Record<string, unknown>).stars ?? 0),
+        stars:       Number((hotel as Record<string, unknown>).star_rating ?? 0),
         rating:      Number((hotel as Record<string, unknown>).rating ?? 0),
       });
     }
