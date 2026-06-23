@@ -226,7 +226,6 @@ export default function SharedSidebar({ variant }: Props) {
               <span className="font-bold block truncate" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '14px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
               </span>
-              <span className="text-[10px] font-semibold tracking-widest uppercase block mt-0.5" style={{ color: '#D97706' }}>{cfg.subtitle}</span>
             </div>
           </Link>
         ) : (

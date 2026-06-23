@@ -134,7 +134,6 @@ export default function Footer() {
                 <span className="font-bold block" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '18px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
                 </span>
-                <span className="text-[10px] font-semibold uppercase block mt-0.5" style={{ color: '#FCD34D', letterSpacing: '0.22em' }}>Premium Hotels</span>
               </div>
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-4 max-w-[220px]">
