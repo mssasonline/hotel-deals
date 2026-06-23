@@ -7,6 +7,8 @@ import Image from 'next/image';
 import type { SpecialDealHotel } from './page';
 import AEDAmount from '@/app/partner/components/AEDAmount';
 import FilterSidebar, { type FilterState, DEFAULT_FILTERS } from '@/app/search/components/FilterSidebar';
+import { useAppSettingsStore } from '@/store/appSettingsStore';
+import { getTranslations } from '@/lib/i18n/translations';
 
 type SortOption = 'discount' | 'price' | 'rating' | 'recommended';
 
@@ -146,6 +148,8 @@ interface Props {
 export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
   const router       = useRouter();
   const searchParams = useSearchParams();
+  const language = useAppSettingsStore((s) => s.language);
+  const t = getTranslations(language);
   const [query,    setQuery]    = useState(initialQuery);
   const [checkIn,  setCheckIn]  = useState('');
   const [checkOut, setCheckOut] = useState('');
@@ -243,7 +247,7 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Hotel or city…"
+                placeholder={t['hero.searchPlaceholderText']}
                 className="flex-1 outline-none text-gray-800 placeholder-gray-400 text-sm bg-transparent min-w-0"
               />
               {query && (
