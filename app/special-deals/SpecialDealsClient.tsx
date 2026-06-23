@@ -87,6 +87,7 @@ function dealOverlaps(deal: { start_date: string; end_date: string }, checkIn: s
 }
 
 function HotelDealCard({ hotel, index, checkIn, checkOut, language }: { hotel: SpecialDealHotel; index: number; checkIn: string; checkOut: string; language: string }) {
+  const t = getTranslations(language);
   const gradient = DEFAULT_GRADIENTS[index % DEFAULT_GRADIENTS.length];
   const image    = hotel.imageUrl ?? FALLBACK_IMAGE;
   const upcoming = hotel.isUpcoming;
@@ -157,20 +158,20 @@ function HotelDealCard({ hotel, index, checkIn, checkOut, language }: { hotel: S
 
         <div className="mt-3 flex items-end justify-between">
           <div>
-            <p className="text-xs text-gray-400">{upcoming ? 'Deal price from' : 'Special deal from'}</p>
+            <p className="text-xs text-gray-400">{t['price.from']}</p>
             <div className="flex items-baseline gap-1.5 mt-0.5">
               <span className={`text-xl font-extrabold ${upcoming ? 'text-amber-600' : 'text-brand-blue'}`}>
                 <AEDAmount amount={hotel.bestDealPrice} />
               </span>
-              <span className="text-xs text-gray-400">/night</span>
+              <span className="text-xs text-gray-400">{t['price.perNight']}</span>
             </div>
             {hotel.bestBasePrice > hotel.bestDealPrice && (
               <p className="text-base font-semibold leading-none mt-1 text-red-500">
-                <AEDAmount amount={hotel.bestBasePrice} className="line-through decoration-2 decoration-red-500" /><span className="text-xs font-normal text-gray-400">/night</span>
+                <AEDAmount amount={hotel.bestBasePrice} className="line-through decoration-2 decoration-red-500" /><span className="text-xs font-normal text-gray-400">{t['price.perNight']}</span>
               </p>
             )}
           </div>
-          <span className="text-xs text-brand-blue font-semibold group-hover:underline shrink-0">View Hotel →</span>
+          <span className="text-xs text-brand-blue font-semibold group-hover:underline shrink-0">{t['hotel.seeAvailability']} →</span>
         </div>
 
         {visibleDeals.length > 0 && (

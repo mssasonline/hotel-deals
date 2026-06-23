@@ -300,19 +300,19 @@ export default function HotelListingCard({ hotel, gpsDistanceKm }: HotelListingC
                       <CurrencyAmount amount={displayOriginal} className="line-through decoration-2 decoration-red-500" />{t['price.perNight']}
                     </div>
                     <div className="flex sm:justify-end items-baseline gap-0.5 mt-0.5">
-                      <span className="text-[10px] text-gray-500 font-medium mr-0.5">From</span>
+                      <span className="text-[10px] text-gray-500 font-medium mr-0.5">{t['price.from']}</span>
                       <span className="text-green-600 font-extrabold text-2xl leading-none">
                         <CurrencyAmount amount={displayPrice} />
                       </span>
                       <span className="text-gray-400 text-xs">{t['price.perNight']}</span>
                     </div>
                     <div className="text-green-600 text-[11px] font-medium">
-                      {t['price.youSave']} <CurrencyAmount amount={savings} /> tonight
+                      {t['price.youSave']} <CurrencyAmount amount={savings} /> {t['search.tonight'].toLowerCase()}
                     </div>
                   </>
                 ) : (
                   <div className="flex sm:justify-end items-baseline gap-0.5">
-                    <span className="text-[10px] text-gray-500 font-medium mr-0.5">From</span>
+                    <span className="text-[10px] text-gray-500 font-medium mr-0.5">{t['price.from']}</span>
                     <span className="text-green-600 font-extrabold text-2xl leading-none">
                       <CurrencyAmount amount={displayPrice} />
                     </span>
