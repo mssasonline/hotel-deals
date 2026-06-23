@@ -112,14 +112,42 @@ export default function SearchResultsClient({
   // ── Step 2: Inline name search ─────────────────────────────────────────
   const nameFilteredHotels = useMemo(() => {
     if (!nameQuery) return baseHotels;
-    const q = nameQuery.toLowerCase();
-    return baseHotels.filter(
-      h =>
-        h.name.toLowerCase().includes(q) ||
-        h.city.toLowerCase().includes(q) ||
-        h.location.toLowerCase().includes(q) ||
-        h.country.toLowerCase().includes(q),
-    );
+
+    const AR_EN: Record<string, string> = {
+      'دبي': 'dubai', 'أبوظبي': 'abu dhabi', 'أبو ظبي': 'abu dhabi',
+      'الشارقة': 'sharjah', 'شارقة': 'sharjah',
+      'عجمان': 'ajman', 'الفجيرة': 'fujairah', 'فجيرة': 'fujairah',
+      'رأس الخيمة': 'ras al khaimah', 'راس الخيمة': 'ras al khaimah',
+      'رأس الخيمه': 'ras al khaimah', 'راس الخيمه': 'ras al khaimah',
+      'أم القيوين': 'umm al quwain', 'ام القيوين': 'umm al quwain',
+      'الإمارات': 'united arab emirates',
+      'باريس': 'paris', 'فرنسا': 'france', 'لندن': 'london',
+      'المالديف': 'maldives', 'طوكيو': 'tokyo', 'نيويورك': 'new york',
+      'بانكوك': 'bangkok', 'سنغافورة': 'singapore',
+      'إسطنبول': 'istanbul', 'اسطنبول': 'istanbul',
+    };
+    const EN_AR: Record<string, string> = {
+      'dubai': 'دبي', 'abu dhabi': 'أبوظبي', 'sharjah': 'الشارقة',
+      'ajman': 'عجمان', 'fujairah': 'الفجيرة',
+      'ras al khaimah': 'رأس الخيمة', 'umm al quwain': 'أم القيوين',
+      'united arab emirates': 'الإمارات',
+      'france': 'فرنسا', 'paris': 'باريس', 'london': 'لندن',
+      'maldives': 'المالديف', 'tokyo': 'طوكيو', 'new york': 'نيويورك',
+      'bangkok': 'بانكوك', 'singapore': 'سنغافورة', 'istanbul': 'إسطنبول',
+    };
+    const normalize = (s: string) => s.toLowerCase().replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
+    const arQ = normalize(nameQuery);
+    const enQ = AR_EN[arQ] ?? arQ;
+
+    return baseHotels.filter(h => {
+      const cityAR    = normalize(EN_AR[normalize(h.city)]    ?? '');
+      const countryAR = normalize(EN_AR[normalize(h.country)] ?? '');
+      return (
+        normalize(h.name).startsWith(enQ)     || normalize(h.name).startsWith(arQ) ||
+        normalize(h.city).startsWith(enQ)     || cityAR.startsWith(arQ) ||
+        normalize(h.country).startsWith(enQ)  || countryAR.startsWith(arQ)
+      );
+    });
   }, [baseHotels, nameQuery]);
 
   // ── Step 3: Sidebar filters ────────────────────────────────────────────
