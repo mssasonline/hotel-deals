@@ -120,21 +120,10 @@ export default function Footer() {
 
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-3 mb-5">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: 'linear-gradient(135deg, #92400E 0%, #D97706 100%)', boxShadow: '0 3px 12px rgba(180,83,9,0.4)' }}
-              >
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <div className="leading-none">
-                <span className="font-bold block" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '18px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                  <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
-                </span>
-              </div>
+            <div className="mb-5">
+              <span className="font-bold" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '20px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
+              </span>
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-4 max-w-[220px]">
               {t['footer.tagline']}

@@ -215,26 +215,17 @@ export default function SharedSidebar({ variant }: Props) {
       {/* Logo */}
       <div className="relative flex items-center justify-between px-4 h-16" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         {!collapsed ? (
-          <Link href={cfg.dashboardHref} className="flex items-center gap-3 min-w-0">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)', boxShadow: '0 4px 12px rgba(180,83,9,0.4)' }}
-            >
-              {cfg.logo}
-            </div>
-            <div className="leading-none min-w-0">
-              <span className="font-bold block truncate" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '14px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
-              </span>
-            </div>
+          <Link href={cfg.dashboardHref} className="min-w-0">
+            <span className="font-bold block truncate" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '14px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
+            </span>
           </Link>
         ) : (
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center mx-auto"
-            style={{ background: 'linear-gradient(135deg, #B45309 0%, #D97706 100%)', boxShadow: '0 4px 12px rgba(180,83,9,0.4)' }}
-          >
-            {cfg.logoCollapsed}
-          </div>
+          <Link href={cfg.dashboardHref} className="mx-auto">
+            <span className="font-bold" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              <span style={{ color: '#fff' }}>SR</span>
+            </span>
+          </Link>
         )}
         <button
           onClick={() => setCollapsed((v) => !v)}

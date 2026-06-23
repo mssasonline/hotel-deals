@@ -87,23 +87,10 @@ export default function Header() {
         <div dir="ltr" className="flex items-center justify-between h-[66px]">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 group">
-            <div
-              className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
-              style={{ background: 'linear-gradient(135deg, #92400E 0%, #B45309 45%, #D97706 100%)', boxShadow: '0 3px 14px rgba(180,83,9,0.45)' }}
-            >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              {/* Premium ring glow */}
-              <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 0 0 3px rgba(217,119,6,0.35)' }} />
-            </div>
-            <div className="leading-none">
-              <span className="font-bold block" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: 'clamp(15px, 4.5vw, 21px)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
-              </span>
-            </div>
+          <Link href="/" className="shrink-0 group">
+            <span className="font-bold" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: 'clamp(16px, 4.5vw, 22px)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
+            </span>
           </Link>
 
           {/* Navigation */}
