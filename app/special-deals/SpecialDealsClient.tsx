@@ -12,6 +12,23 @@ import { getTranslations } from '@/lib/i18n/translations';
 
 type SortOption = 'discount' | 'price' | 'rating' | 'recommended';
 
+const AR_EN: Record<string, string> = {
+  'دبي': 'dubai', 'أبوظبي': 'abu dhabi', 'أبو ظبي': 'abu dhabi',
+  'الشارقة': 'sharjah', 'شارقة': 'sharjah',
+  'عجمان': 'ajman', 'الفجيرة': 'fujairah', 'فجيرة': 'fujairah',
+  'رأس الخيمة': 'ras al khaimah', 'أم القيوين': 'umm al quwain',
+  'الإمارات': 'united arab emirates', 'إمارات': 'emirates',
+  'باريس': 'paris', 'فرنسا': 'france', 'لندن': 'london',
+  'المالديف': 'maldives', 'مالديف': 'maldives',
+  'طوكيو': 'tokyo', 'نيويورك': 'new york', 'بانكوك': 'bangkok',
+  'سنغافورة': 'singapore', 'إسطنبول': 'istanbul', 'اسطنبول': 'istanbul',
+};
+
+function resolveQuery(q: string): string {
+  const lower = q.trim().toLowerCase();
+  return AR_EN[lower] ?? lower;
+}
+
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80';
 const NO_PRICE_LIMIT = 99999;
 
@@ -191,7 +208,7 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
     return hotels.filter(h => {
       // Text search
       if (query.trim()) {
-        const q = query.toLowerCase();
+        const q = resolveQuery(query);
         if (!h.name.toLowerCase().includes(q) && !h.city.toLowerCase().includes(q) && !h.country.toLowerCase().includes(q)) return false;
       }
       // Date: hotel must have at least one deal overlapping the range
