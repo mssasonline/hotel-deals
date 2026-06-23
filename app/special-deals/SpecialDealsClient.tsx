@@ -24,9 +24,36 @@ const AR_EN: Record<string, string> = {
   'سنغافورة': 'singapore', 'إسطنبول': 'istanbul', 'اسطنبول': 'istanbul',
 };
 
+const EN_AR: Record<string, string> = {
+  'dubai': 'دبي', 'abu dhabi': 'أبوظبي', 'sharjah': 'الشارقة',
+  'ajman': 'عجمان', 'fujairah': 'الفجيرة',
+  'ras al khaimah': 'رأس الخيمة', 'umm al quwain': 'أم القيوين',
+  'united arab emirates': 'الإمارات', 'uae': 'الإمارات',
+  'france': 'فرنسا', 'paris': 'باريس', 'london': 'لندن',
+  'united kingdom': 'المملكة المتحدة', 'uk': 'المملكة المتحدة',
+  'maldives': 'المالديف', 'tokyo': 'طوكيو', 'japan': 'اليابان',
+  'new york': 'نيويورك', 'usa': 'الولايات المتحدة',
+  'united states': 'الولايات المتحدة', 'bangkok': 'بانكوك',
+  'thailand': 'تايلاند', 'singapore': 'سنغافورة',
+  'istanbul': 'إسطنبول', 'turkey': 'تركيا',
+  'cairo': 'القاهرة', 'egypt': 'مصر',
+  'riyadh': 'الرياض', 'saudi arabia': 'السعودية',
+  'beirut': 'بيروت', 'lebanon': 'لبنان',
+  'amman': 'عمّان', 'jordan': 'الأردن',
+  'kuwait city': 'الكويت', 'kuwait': 'الكويت',
+  'doha': 'الدوحة', 'qatar': 'قطر',
+  'muscat': 'مسقط', 'oman': 'عُمان',
+  'manama': 'المنامة', 'bahrain': 'البحرين',
+};
+
 function resolveQuery(q: string): string {
   const lower = q.trim().toLowerCase();
   return AR_EN[lower] ?? lower;
+}
+
+function translatePlace(name: string, language: string): string {
+  if (language !== 'ar') return name;
+  return EN_AR[name.toLowerCase()] ?? name;
 }
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80';
@@ -52,7 +79,7 @@ function dealOverlaps(deal: { start_date: string; end_date: string }, checkIn: s
   return deal.start_date <= checkOut && deal.end_date >= checkIn;
 }
 
-function HotelDealCard({ hotel, index, checkIn, checkOut }: { hotel: SpecialDealHotel; index: number; checkIn: string; checkOut: string }) {
+function HotelDealCard({ hotel, index, checkIn, checkOut, language }: { hotel: SpecialDealHotel; index: number; checkIn: string; checkOut: string; language: string }) {
   const gradient = DEFAULT_GRADIENTS[index % DEFAULT_GRADIENTS.length];
   const image    = hotel.imageUrl ?? FALLBACK_IMAGE;
   const upcoming = hotel.isUpcoming;
@@ -108,7 +135,7 @@ function HotelDealCard({ hotel, index, checkIn, checkOut }: { hotel: SpecialDeal
                   </svg>
                 ))}
               </span>
-              <span className="text-xs text-gray-400">{hotel.city}, {hotel.country}</span>
+              <span className="text-xs text-gray-400">{translatePlace(hotel.city, language)}, {translatePlace(hotel.country, language)}</span>
             </div>
           </div>
           {hotel.rating > 0 && (
@@ -435,7 +462,7 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                       {activeNow.map((hotel, i) => (
-                        <HotelDealCard key={hotel.id} hotel={hotel} index={i} checkIn={checkIn} checkOut={checkOut} />
+                        <HotelDealCard key={hotel.id} hotel={hotel} index={i} checkIn={checkIn} checkOut={checkOut} language={language} />
                       ))}
                     </div>
                   </div>
@@ -454,7 +481,7 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                       {upcoming.map((hotel, i) => (
-                        <HotelDealCard key={hotel.id} hotel={hotel} index={activeNow.length + i} checkIn={checkIn} checkOut={checkOut} />
+                        <HotelDealCard key={hotel.id} hotel={hotel} index={activeNow.length + i} checkIn={checkIn} checkOut={checkOut} language={language} />
                       ))}
                     </div>
                   </div>
