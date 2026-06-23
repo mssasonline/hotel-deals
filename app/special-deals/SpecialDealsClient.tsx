@@ -16,7 +16,10 @@ const AR_EN: Record<string, string> = {
   'دبي': 'dubai', 'أبوظبي': 'abu dhabi', 'أبو ظبي': 'abu dhabi',
   'الشارقة': 'sharjah', 'شارقة': 'sharjah',
   'عجمان': 'ajman', 'الفجيرة': 'fujairah', 'فجيرة': 'fujairah',
-  'رأس الخيمة': 'ras al khaimah', 'أم القيوين': 'umm al quwain',
+  'رأس الخيمة': 'ras al khaimah', 'راس الخيمة': 'ras al khaimah',
+  'رأس الخيمه': 'ras al khaimah', 'راس الخيمه': 'ras al khaimah',
+  'ras al khaimah': 'ras al khaimah', 'rak': 'ras al khaimah',
+  'أم القيوين': 'umm al quwain', 'ام القيوين': 'umm al quwain',
   'الإمارات': 'united arab emirates', 'إمارات': 'emirates',
   'باريس': 'paris', 'فرنسا': 'france', 'لندن': 'london',
   'المالديف': 'maldives', 'مالديف': 'maldives',
@@ -46,8 +49,12 @@ const EN_AR: Record<string, string> = {
   'manama': 'المنامة', 'bahrain': 'البحرين',
 };
 
+function normalize(s: string): string {
+  return s.toLowerCase().replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 function resolveQuery(q: string): string {
-  const lower = q.trim().toLowerCase();
+  const lower = normalize(q);
   return AR_EN[lower] ?? lower;
 }
 
@@ -236,7 +243,7 @@ export default function SpecialDealsClient({ hotels, initialQuery }: Props) {
       // Text search
       if (query.trim()) {
         const q = resolveQuery(query);
-        if (!h.name.toLowerCase().includes(q) && !h.city.toLowerCase().includes(q) && !h.country.toLowerCase().includes(q)) return false;
+        if (!normalize(h.name).includes(q) && !normalize(h.city).includes(q) && !normalize(h.country).includes(q)) return false;
       }
       // Date: hotel must have at least one deal overlapping the range
       if (checkIn && checkOut) {
