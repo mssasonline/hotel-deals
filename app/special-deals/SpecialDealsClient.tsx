@@ -84,9 +84,6 @@ function HotelDealCard({ hotel, index, checkIn, checkOut }: { hotel: SpecialDeal
             </div>
           )
         )}
-        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-brand-blue font-semibold text-xs px-2.5 py-1 rounded-full">
-          {visibleDeals.length} deal{visibleDeals.length !== 1 ? 's' : ''}
-        </div>
       </div>
 
       <div className="p-4 flex flex-col flex-1">
