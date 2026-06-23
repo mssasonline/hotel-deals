@@ -215,10 +215,11 @@ export default function SharedSidebar({ variant }: Props) {
       {/* Logo */}
       <div className="relative flex items-center justify-between px-4 h-16" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         {!collapsed ? (
-          <Link href={cfg.dashboardHref} className="min-w-0">
+          <Link href={cfg.dashboardHref} className="min-w-0 leading-none">
             <span className="font-bold block truncate" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '14px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
             </span>
+            <span className="text-[10px] font-semibold tracking-widest uppercase block mt-0.5" style={{ color: '#D97706' }}>{cfg.subtitle}</span>
           </Link>
         ) : (
           <Link href={cfg.dashboardHref} className="mx-auto">

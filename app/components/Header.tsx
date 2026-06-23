@@ -87,9 +87,12 @@ export default function Header() {
         <div dir="ltr" className="flex items-center justify-between h-[66px]">
 
           {/* Logo */}
-          <Link href="/" className="shrink-0 group">
-            <span className="font-bold" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: 'clamp(16px, 4.5vw, 22px)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          <Link href="/" className="shrink-0 group leading-none">
+            <span className="font-bold block" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: 'clamp(15px, 4.5vw, 21px)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
+            </span>
+            <span className="hidden sm:block text-[10px] font-semibold uppercase mt-0.5" style={{ color: '#FCD34D', letterSpacing: '0.22em' }}>
+              Premium Hotels
             </span>
           </Link>
 
