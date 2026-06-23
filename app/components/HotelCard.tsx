@@ -155,9 +155,12 @@ export default function HotelCard({ hotel, initialFavorited, onUnfavorite }: Hot
       {/* Card body */}
       <div className="p-4 flex flex-col flex-1">
 
-        {/* Stars + score */}
+        {/* Score + urgency badge */}
         <div className="flex items-center justify-between mb-2.5">
-          <Stars count={hotel.stars} />
+          <div className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full w-fit ${urgency.badgeBg} ${urgency.badgeText}`}>
+            <span className={`w-1.5 h-1.5 rounded-full animate-pulse shrink-0 ${urgency.dotColor}`} />
+            {URGENCY_LABEL[urgency.status] ?? urgency.label}
+          </div>
           <div className="flex items-center gap-1.5">
             <span
               className="text-white text-xs font-bold px-2 py-0.5 rounded-md"
@@ -168,16 +171,15 @@ export default function HotelCard({ hotel, initialFavorited, onUnfavorite }: Hot
           </div>
         </div>
 
-        {/* Urgency label badge */}
-        <div className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full mb-2 w-fit ${urgency.badgeBg} ${urgency.badgeText}`}>
-          <span className={`w-1.5 h-1.5 rounded-full animate-pulse shrink-0 ${urgency.dotColor}`} />
-          {URGENCY_LABEL[urgency.status] ?? urgency.label}
-        </div>
-
         {/* Name */}
-        <h3 className="font-bold text-xl leading-snug mb-1 line-clamp-1" style={{ color: '#B45309' }}>
+        <h3 className="font-bold text-xl leading-snug mb-0.5 line-clamp-1" style={{ color: '#B45309' }}>
           {hotel.name}
         </h3>
+
+        {/* Stars below name */}
+        <div className="flex items-center mb-1">
+          <Stars count={hotel.stars} />
+        </div>
 
         {/* Location */}
         <div className="flex items-center gap-1 text-gray-500 text-sm mb-3">
