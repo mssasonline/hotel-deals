@@ -123,13 +123,14 @@ interface EditRoomModalProps {
 
 function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalProps) {
   const [form, setForm] = useState({
-    quantity_total: String(room.quantity_total ?? ''),
-    area_sqm:       String(room.area_sqm ?? ''),
-    bed_type:       room.bed_type ?? '',
-    room_type:      room.type ?? '',
-    image_url:      room.image_url   ?? '',
-    image_url_2:    room.image_url_2 ?? '',
-    image_url_3:    room.image_url_3 ?? '',
+    quantity_total:     String(room.quantity_total ?? ''),
+    quantity_available: String(room.quantity_available ?? room.quantity_total ?? ''),
+    area_sqm:           String(room.area_sqm ?? ''),
+    bed_type:           room.bed_type ?? '',
+    room_type:          room.type ?? '',
+    image_url:          room.image_url   ?? '',
+    image_url_2:        room.image_url_2 ?? '',
+    image_url_3:        room.image_url_3 ?? '',
   });
   const [features, setFeatures] = useState<string[]>(room.features ?? []);
   const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({});
@@ -144,17 +145,21 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
   async function handleSave() {
     setError(null);
     const qt = parseInt(form.quantity_total, 10);
+    const qa = parseInt(form.quantity_available, 10);
     if (isNaN(qt) || qt <= 0) { setError('Total quantity must be a positive number.'); return; }
+    if (isNaN(qa) || qa < 0)  { setError('Available Tonight must be 0 or more.'); return; }
+    if (qa > qt)               { setError('Available Tonight cannot exceed Total Rooms.'); return; }
 
     setSaving(true);
     onSave(room.id, {
-      quantity_total: qt,
-      type:           form.room_type,
-      area_sqm:       form.area_sqm ? parseFloat(form.area_sqm) : null,
-      bed_type:       form.bed_type || null,
-      image_url:      form.image_url.trim()   || null,
-      image_url_2:    form.image_url_2.trim() || null,
-      image_url_3:    form.image_url_3.trim() || null,
+      quantity_total:     qt,
+      quantity_available: qa,
+      type:               form.room_type,
+      area_sqm:           form.area_sqm ? parseFloat(form.area_sqm) : null,
+      bed_type:           form.bed_type || null,
+      image_url:          form.image_url.trim()   || null,
+      image_url_2:        form.image_url_2.trim() || null,
+      image_url_3:        form.image_url_3.trim() || null,
       features,
     });
   }
@@ -273,16 +278,18 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.rooms.totalLabel']}</label>
                 <input type="number" name="quantity_total" value={form.quantity_total} onChange={handleChange} min="1" step="1"
                   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
+                <p className="text-xs text-gray-400 mt-1">Max rooms on this platform</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.rooms.availLabel']}</label>
-                <div className="w-full border border-gray-100 rounded-xl px-3 py-2.5 text-sm bg-gray-50 text-gray-500 flex items-center justify-between">
-                  <span className="font-semibold text-gray-700">{room.quantity_available ?? room.available ?? 0}</span>
-                  <span className="text-[10px] text-gray-400">Auto</span>
-                </div>
+                <input type="number" name="quantity_available" value={form.quantity_available} onChange={handleChange} min="0" step="1"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
+                <p className="text-xs text-gray-400 mt-1">Resets to Total each morning</p>
               </div>
             </div>
-            <p className="text-xs text-gray-400 mt-2">Available rooms are recalculated automatically from actual bookings after saving.</p>
+            <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mt-1">
+              <p className="text-xs text-amber-700">Lower <strong>Available Tonight</strong> if some rooms are already booked through your own website or other channels.</p>
+            </div>
           </div>
 
           {error && (
@@ -666,22 +673,23 @@ export default function RoomsPage() {
 
   async function handleSaveRoom(id: string, fields: Partial<Room>) {
     const { error } = await updateMyRoom(id, {
-      base_price:     fields.base_price,
-      min_price:      fields.min_price,
-      quantity_total: fields.quantity_total,
-      image_url:      fields.image_url,
-      image_url_2:    fields.image_url_2,
-      image_url_3:    fields.image_url_3,
-      features:       fields.features,
-      type:           fields.type,
-      area_sqm:       fields.area_sqm,
-      bed_type:       fields.bed_type,
+      base_price:         fields.base_price,
+      min_price:          fields.min_price,
+      quantity_total:     fields.quantity_total,
+      quantity_available: fields.quantity_available,
+      image_url:          fields.image_url,
+      image_url_2:        fields.image_url_2,
+      image_url_3:        fields.image_url_3,
+      features:           fields.features,
+      type:               fields.type,
+      area_sqm:           fields.area_sqm,
+      bed_type:           fields.bed_type,
     });
 
     if (error) { alert('Failed to save: ' + error); setEditRoom(null); return; }
 
-    // Recompute quantity_available from actual bookings
-    const { available } = await syncRoomAvailability(id);
+    // Use the partner-set quantity_available directly (no auto-recompute)
+    const available = fields.quantity_available ?? 0;
 
     setRooms(prev => prev.map(r =>
       r.id === id

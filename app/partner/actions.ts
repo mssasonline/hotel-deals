@@ -465,6 +465,7 @@ export async function updateMyRoom(
     min_price?: number;
     min_price_weekend?: number;
     quantity_total?: number;
+    quantity_available?: number;
     available?: number;
     image_url?: string | null;
     image_url_2?: string | null;
@@ -507,8 +508,9 @@ export async function updateMyRoom(
   if (fields.base_price         !== undefined) update.base_price         = fields.base_price;
   if (fields.min_price          !== undefined) update.min_price          = fields.min_price;
   if (fields.min_price_weekend  !== undefined) update.min_price_weekend  = fields.min_price_weekend;
-  if (fields.quantity_total !== undefined) update.quantity_total = fields.quantity_total;
-  if (fields.available      !== undefined) update.available      = fields.available;
+  if (fields.quantity_total     !== undefined) update.quantity_total     = fields.quantity_total;
+  if (fields.quantity_available !== undefined) update.quantity_available = fields.quantity_available;
+  if (fields.available          !== undefined) update.available          = fields.available;
   if ('image_url'   in fields) update.image_url   = fields.image_url   ?? null;
   if ('image_url_2' in fields) update.image_url_2 = fields.image_url_2 ?? null;
   if ('image_url_3' in fields) update.image_url_3 = fields.image_url_3 ?? null;
