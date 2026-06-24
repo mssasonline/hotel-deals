@@ -18,18 +18,34 @@ function Spinner() {
   );
 }
 
-function AvailabilityBar({ available, total }: { available: number; total: number }) {
-  const pct   = total > 0 ? Math.round((available / total) * 100) : 0;
-  const color = pct <= 20 ? 'bg-red-400' : pct <= 50 ? 'bg-amber-400' : 'bg-green-400';
+function AvailabilityBadge({
+  available,
+  total,
+  onClick,
+}: {
+  available: number;
+  total: number;
+  onClick?: () => void;
+}) {
+  const pct = total > 0 ? available / total : 0;
+  const color =
+    pct > 0.5 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    : pct > 0   ? 'bg-amber-50 text-amber-700 border-amber-200'
+    :             'bg-red-50 text-red-600 border-red-200';
+
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
-      </div>
-      <span className={`text-xs font-semibold ${pct <= 20 ? 'text-red-500' : pct <= 50 ? 'text-amber-600' : 'text-green-600'}`}>
-        {available}/{total}
-      </span>
-    </div>
+    <button
+      onClick={onClick}
+      title="Click to edit inventory"
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-xs font-semibold transition-colors hover:brightness-95 ${color}`}
+    >
+      <span>{available}</span>
+      <span className="opacity-50">/</span>
+      <span>{total}</span>
+      <svg className="w-3 h-3 ml-0.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+      </svg>
+    </button>
   );
 }
 
@@ -298,7 +314,11 @@ export default function LastMinRoomPage() {
                   </div>
                 </div>
                 <div className="mb-3">
-                  <AvailabilityBar available={qtyAvailable} total={qtyTotal} />
+                  <AvailabilityBadge
+                    available={qtyAvailable}
+                    total={qtyTotal}
+                    onClick={() => setEditRoom(room)}
+                  />
                 </div>
                 <button
                   onClick={() => setEditRoom(room)}
@@ -329,7 +349,7 @@ export default function LastMinRoomPage() {
                   Current Price
                   <span className="block text-[10px] font-normal text-orange-400 normal-case leading-tight">-{tier.discountPercent}% now</span>
                 </th>
-                <th className="px-3 py-3 min-w-[180px]">Available Tonight</th>
+                <th className="px-3 py-3 text-center">Available Tonight</th>
                 <th className="px-3 py-3 text-right">{/* actions */}</th>
               </tr>
             </thead>
@@ -364,18 +384,12 @@ export default function LastMinRoomPage() {
                     <td className="px-3 py-3 text-right">
                       <span className="font-bold text-green-600"><AEDAmount amount={livePrice} /></span>
                     </td>
-                    <td className="px-3 py-3 min-w-[180px]">
-                      <AvailabilityBar available={qtyAvailable} total={qtyTotal} />
-                      {qtyAvailable === 0 && (
-                        <span className="inline-flex mt-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-500">
-                          {t['partner.rooms.soldOut']}
-                        </span>
-                      )}
-                      {qtyAvailable === 1 && (
-                        <span className="inline-flex mt-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-600">
-                          {t['partner.rooms.lastRoom']}
-                        </span>
-                      )}
+                    <td className="px-3 py-3">
+                      <AvailabilityBadge
+                        available={qtyAvailable}
+                        total={qtyTotal}
+                        onClick={() => setEditRoom(room)}
+                      />
                     </td>
                     <td className="px-3 py-3 text-right">
                       <button
