@@ -133,6 +133,7 @@ function EditDealModal({
 }) {
   const [price, setPrice]    = useState(String(deal.deal_price));
   const [qty, setQty]        = useState(String(deal.quantity_total));
+  const [qa, setQa]          = useState(String(deal.quantity_available ?? deal.quantity_total));
   const [saving, setSaving]  = useState(false);
   const [err, setErr]        = useState('');
 
@@ -141,16 +142,19 @@ function EditDealModal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const p = Number(price);
-    const q = Number(qty);
-    if (!p || p <= 0)  { setErr('Deal price must be greater than 0'); return; }
-    if (!q || q < 1)   { setErr('Quantity must be at least 1'); return; }
+    const p  = Number(price);
+    const q  = Number(qty);
+    const qa_ = Number(qa);
+    if (!p || p <= 0)     { setErr('Deal price must be greater than 0'); return; }
+    if (!q || q < 1)      { setErr('Total slots must be at least 1'); return; }
+    if (qa_ < 0)          { setErr('Available Tonight cannot be negative'); return; }
+    if (qa_ > q)          { setErr('Available Tonight cannot exceed Total Slots'); return; }
     setSaving(true); setErr('');
     const aedPrice = toAED(p, currency as CurrencyCode);
-    const result = await updateDeal(deal.id, { deal_price: aedPrice, quantity_total: q });
+    const result = await updateDeal(deal.id, { deal_price: aedPrice, quantity_total: q, quantity_available: qa_ });
     setSaving(false);
     if (result.error) { setErr(result.error); return; }
-    onSaved({ deal_price: aedPrice, quantity_total: q });
+    onSaved({ deal_price: aedPrice, quantity_total: q, quantity_available: qa_ });
     onClose();
   }
 
@@ -187,13 +191,22 @@ function EditDealModal({
             )}
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Available Slots (Quantity)</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Total Slots</label>
             <input
               type="number" min="1" step="1"
               value={qty} onChange={e => setQty(e.target.value)}
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
             />
-            <p className="text-xs text-gray-400 mt-1">Number of rooms available for this deal</p>
+            <p className="text-xs text-gray-400 mt-1">Max deal slots offered on the platform</p>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Available Tonight</label>
+            <input
+              type="number" min="0" step="1"
+              value={qa} onChange={e => setQa(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
+            />
+            <p className="text-xs text-amber-600 mt-1">Lower if some slots are already taken through other channels. Resets to Total each morning.</p>
           </div>
           {err && <p className="text-xs text-red-600">{err}</p>}
           <div className="flex gap-3 pt-1">

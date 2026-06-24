@@ -16,6 +16,7 @@ export type PartnerDeal = {
   base_price: number;
   deal_price: number;
   quantity_total: number;
+  quantity_available: number;
   title: string | null;
   start_date: string;
   end_date: string;
@@ -52,7 +53,7 @@ export async function getMyDeals(): Promise<PartnerDeal[]> {
 
   const { data, error } = await supabase
     .from('partner_deals')
-    .select('id, hotel_id, room_id, deal_price, quantity_total, title, start_date, end_date, status, created_at, rooms(name, base_price), hotels(name, city)')
+    .select('id, hotel_id, room_id, deal_price, quantity_total, quantity_available, title, start_date, end_date, status, created_at, rooms(name, base_price), hotels(name, city)')
     .eq('partner_id', user.id)
     .order('created_at', { ascending: false });
 
@@ -69,8 +70,9 @@ export async function getMyDeals(): Promise<PartnerDeal[]> {
       room_id:    Number(row.room_id),
       room_name:  String(room?.name ?? ''),
       base_price: Number(room?.base_price ?? 0),
-      deal_price:     Number(row.deal_price),
-      quantity_total: Number((row as unknown as { quantity_total?: number }).quantity_total ?? 1),
+      deal_price:         Number(row.deal_price),
+      quantity_total:     Number((row as unknown as { quantity_total?: number }).quantity_total ?? 1),
+      quantity_available: Number((row as unknown as { quantity_available?: number }).quantity_available ?? (row as unknown as { quantity_total?: number }).quantity_total ?? 1),
       title:      row.title ? String(row.title) : null,
       start_date: String(row.start_date),
       end_date:   String(row.end_date),
@@ -205,7 +207,7 @@ export async function createDeal(
 
 export async function updateDeal(
   id: string,
-  fields: { deal_price?: number; quantity_total?: number },
+  fields: { deal_price?: number; quantity_total?: number; quantity_available?: number },
 ): Promise<{ error?: string }> {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
