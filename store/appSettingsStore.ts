@@ -34,11 +34,9 @@ export type Language =
   | 'tr'     // Türkçe
   | 'bg'     // Български
   | 'ko'     // 한국어
-  | 'he'     // עברית
   | 'lv'     // Latviski
   | 'uk'     // Українська
   | 'hi'     // हिन्दी
-  | 'ur'     // اردو
   | 'id'     // Bahasa Indonesia
   | 'ms'     // Bahasa Malaysia
   | 'th'     // ภาษาไทย
