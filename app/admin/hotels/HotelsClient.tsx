@@ -7,6 +7,7 @@ import {
   createHotel, updateHotel, deleteHotel,
   type HotelCreateFields,
 } from './actions';
+import { setPartnerStatus } from '@/app/admin/partners/actions';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -20,7 +21,7 @@ export type AdminHotelRow = {
   star_rating: number | null;
   image_url: string | null;
   room_count: number;
-  partners: Array<{ id: string; full_name: string }>;
+  partners: Array<{ id: string; full_name: string; status: 'active' | 'suspended' }>;
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -236,6 +237,7 @@ export default function HotelsClient({ initialHotels }: HotelsClientProps) {
   const [showCreate, setShowCreate]     = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<AdminHotelRow | null>(null);
   const [toast, setToast]   = useState<string | null>(null);
+  const [suspendPending, setSuspendPending] = useState<string | null>(null);
 
   const filtered = initialHotels.filter(h => {
     if (!search) return true;
@@ -257,6 +259,19 @@ export default function HotelsClient({ initialHotels }: HotelsClientProps) {
     setShowCreate(false);
     setDeleteTarget(null);
     router.refresh();
+  }
+
+  async function handleToggleSuspend(partnerId: string, currentStatus: 'active' | 'suspended') {
+    setSuspendPending(partnerId);
+    const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
+    const result = await setPartnerStatus(partnerId, newStatus);
+    setSuspendPending(null);
+    if (result.error) {
+      showToast('Error: ' + result.error);
+    } else {
+      showToast(newStatus === 'suspended' ? 'Partner suspended.' : 'Partner activated.');
+      router.refresh();
+    }
   }
 
   return (
@@ -381,11 +396,31 @@ export default function HotelsClient({ initialHotels }: HotelsClientProps) {
                   </td>
                   <td className="px-5 py-4">
                     {hotel.partners.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {hotel.partners.map(p => (
-                          <StatusBadge key={p.id} status="approved" />
-                        )).slice(0, 1)}
-                        <span className="text-sm text-gray-600">{hotel.partners[0].full_name}</span>
+                      <div className="flex flex-col gap-1.5">
+                        {hotel.partners.slice(0, 1).map(p => (
+                          <div key={p.id} className="flex items-center gap-2">
+                            <span className="text-sm text-gray-700 font-medium">{p.full_name}</span>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                              p.status === 'suspended'
+                                ? 'bg-red-50 text-red-600'
+                                : 'bg-emerald-50 text-emerald-700'
+                            }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${p.status === 'suspended' ? 'bg-red-400' : 'bg-emerald-500'}`} />
+                              {p.status === 'suspended' ? 'Suspended' : 'Active'}
+                            </span>
+                            <button
+                              onClick={() => handleToggleSuspend(p.id, p.status)}
+                              disabled={suspendPending === p.id}
+                              className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold transition-colors disabled:opacity-50 ${
+                                p.status === 'active'
+                                  ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200'
+                                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                              }`}
+                            >
+                              {suspendPending === p.id ? '…' : p.status === 'active' ? 'Suspend' : 'Activate'}
+                            </button>
+                          </div>
+                        ))}
                         {hotel.partners.length > 1 && (
                           <span className="text-xs text-gray-400">+{hotel.partners.length - 1} more</span>
                         )}

@@ -19,24 +19,27 @@ export default async function HotelsPage() {
 
   // 3. Fetch profiles for those user_ids
   const userIds = [...new Set((hpRaw ?? []).map((r: { user_id: string }) => r.user_id))];
-  const profilesMap = new Map<string, string>();
+  const profilesMap = new Map<string, { full_name: string; status: 'active' | 'suspended' }>();
   if (userIds.length > 0) {
     const { data: profilesRaw } = await admin
       .from('profiles')
-      .select('id, full_name')
+      .select('id, full_name, status')
       .in('id', userIds);
-    for (const p of (profilesRaw ?? []) as { id: string; full_name: string | null }[]) {
-      profilesMap.set(p.id, p.full_name ?? 'Unknown');
+    for (const p of (profilesRaw ?? []) as { id: string; full_name: string | null; status: string | null }[]) {
+      profilesMap.set(p.id, {
+        full_name: p.full_name ?? 'Unknown',
+        status: (p.status === 'suspended' ? 'suspended' : 'active'),
+      });
     }
   }
 
   // 4. Build hotel_id → partners map
-  const partnersByHotel = new Map<number, Array<{ id: string; full_name: string }>>();
+  const partnersByHotel = new Map<number, Array<{ id: string; full_name: string; status: 'active' | 'suspended' }>>();
   for (const row of (hpRaw ?? []) as { hotel_id: number; user_id: string }[]) {
-    const name = profilesMap.get(row.user_id);
-    if (!name) continue;
+    const profile = profilesMap.get(row.user_id);
+    if (!profile) continue;
     const list = partnersByHotel.get(row.hotel_id) ?? [];
-    list.push({ id: row.user_id, full_name: name });
+    list.push({ id: row.user_id, full_name: profile.full_name, status: profile.status });
     partnersByHotel.set(row.hotel_id, list);
   }
 
