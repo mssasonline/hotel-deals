@@ -133,7 +133,7 @@ export default function Header() {
           {/* Right controls */}
           <div className="flex items-center gap-2 sm:gap-3">
 
-            {/* Desktop: custom language dropdown (flag emoji don't render in <select> on Windows) */}
+            {/* Desktop: custom language dropdown with real flag images (emoji unsupported on Windows) */}
             <div ref={langRef} className="relative hidden sm:block">
               <button
                 onClick={() => setLangOpen((v) => !v)}
@@ -142,7 +142,8 @@ export default function Header() {
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(217,119,6,0.6)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)'; }}
               >
-                <span>{currentLang.flag}</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`https://flagcdn.com/16x12/${currentLang.countryCode}.png`} width={16} height={12} alt={currentLang.englishName} className="rounded-[2px] shrink-0" />
                 <span>{currentLang.nativeName}</span>
                 <svg className={`w-3 h-3 opacity-60 transition-transform ${langOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -151,16 +152,17 @@ export default function Header() {
               {langOpen && (
                 <div
                   className="absolute right-0 top-full mt-1.5 bg-white rounded-xl z-50 overflow-hidden"
-                  style={{ boxShadow: '0 8px 32px rgba(15,23,42,0.18)', border: '1px solid rgba(30,58,138,0.08)', minWidth: '160px' }}
+                  style={{ boxShadow: '0 8px 32px rgba(15,23,42,0.18)', border: '1px solid rgba(30,58,138,0.08)', minWidth: '170px' }}
                 >
                   <div className="max-h-64 overflow-y-auto py-1">
                     {LANGUAGES.filter((l) => l.supported).map((lang) => (
                       <button
                         key={lang.code}
                         onClick={() => { setLanguage(lang.code); setLangOpen(false); }}
-                        className={`flex items-center gap-2 w-full px-3 py-2 text-xs text-left transition-colors ${lang.code === language ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-gray-50'}`}
+                        className={`flex items-center gap-2.5 w-full px-3 py-2 text-xs text-left transition-colors ${lang.code === language ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-gray-50'}`}
                       >
-                        <span className="text-base leading-none">{lang.flag}</span>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={`https://flagcdn.com/16x12/${lang.countryCode}.png`} width={16} height={12} alt={lang.englishName} className="rounded-[2px] shrink-0" />
                         <span>{lang.nativeName}</span>
                       </button>
                     ))}
@@ -207,15 +209,19 @@ export default function Header() {
                   <div className="p-3 space-y-3">
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5 px-1">Language</p>
-                      <select
-                        value={language}
-                        onChange={(e) => { setLanguage(e.target.value as Language); setSettingsOpen(false); }}
-                        className="w-full text-sm text-gray-800 rounded-xl px-3 py-2 cursor-pointer focus:outline-none border border-gray-200 bg-gray-50"
-                      >
+                      <div className="border border-gray-200 rounded-xl overflow-hidden bg-gray-50 max-h-44 overflow-y-auto">
                         {LANGUAGES.filter((l) => l.supported).map((lang) => (
-                          <option key={lang.code} value={lang.code}>{lang.flag} {lang.nativeName}</option>
+                          <button
+                            key={lang.code}
+                            onClick={() => { setLanguage(lang.code); setSettingsOpen(false); }}
+                            className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm text-left transition-colors border-b border-gray-100 last:border-0 ${lang.code === language ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-gray-800 hover:bg-gray-100'}`}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={`https://flagcdn.com/16x12/${lang.countryCode}.png`} width={16} height={12} alt={lang.englishName} className="rounded-[2px] shrink-0" />
+                            <span>{lang.nativeName}</span>
+                          </button>
                         ))}
-                      </select>
+                      </div>
                     </div>
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1.5 px-1">Currency</p>
