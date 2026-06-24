@@ -772,7 +772,96 @@ export default function PartnerDealsPage() {
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+
+          {/* Mobile cards */}
+          <div className="sm:hidden divide-y divide-gray-50">
+            {filtered.map((deal) => {
+              const disc = calcDiscount(deal.base_price, deal.deal_price);
+              const rowActions = getRowActions(deal);
+              return (
+                <div key={deal.id} className="px-4 py-4 space-y-3">
+                  {/* Title + Room + Hotel */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      {deal.title && (
+                        <p className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md mb-1 inline-block truncate max-w-full">
+                          {deal.title}
+                        </p>
+                      )}
+                      <p className="font-semibold text-gray-900 truncate">{deal.room_name}</p>
+                      <p className="text-xs text-gray-400 truncate">{deal.hotel_name}</p>
+                    </div>
+                    <StatusBadge status={deal.status} variant="deal" />
+                  </div>
+
+                  {/* Price row */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-base font-bold text-green-600">
+                        <AEDAmount amount={deal.deal_price} /><span className="text-xs font-normal text-gray-400">/night</span>
+                      </p>
+                      <p className="text-xs text-gray-400 line-through"><AEDAmount amount={deal.base_price} /></p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {disc > 0 && (
+                        <span className="bg-brand-gold text-white text-xs font-bold px-2 py-0.5 rounded-full">-{disc}%</span>
+                      )}
+                      <DealAvailabilityBadge deal={deal} />
+                    </div>
+                  </div>
+
+                  {/* Dates */}
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <svg className="w-3.5 h-3.5 shrink-0 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>{fmtDate(deal.start_date)}</span>
+                    <span className="text-gray-300">→</span>
+                    <span>{fmtDate(deal.end_date)}</span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={() => setEditingDeal(deal)}
+                      className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                    >
+                      Edit
+                    </button>
+                    {deal.status === 'pending_approval' && (
+                      <span className="flex items-center gap-1 text-orange-600 text-xs font-medium bg-orange-50 border border-orange-200 px-2.5 py-1.5 rounded-lg">
+                        <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        Confirm via email
+                      </span>
+                    )}
+                    {rowActions.map((action) => (
+                      <button
+                        key={action}
+                        disabled={actionLoading === deal.id}
+                        onClick={() => handleAction(deal, action)}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 ${actionStyles[action]}`}
+                      >
+                        {actionLabels[action]}
+                      </button>
+                    ))}
+                    {deal.status === 'ended' && (
+                      <button
+                        onClick={() => handleDelete(deal)}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/60">

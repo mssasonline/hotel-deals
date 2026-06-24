@@ -600,8 +600,64 @@ export default function PropertiesClient({ initialProperties }: Props) {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm bg-white">
+      {/* Mobile cards */}
+      <div className="sm:hidden space-y-3">
+        {filtered.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-12 text-center text-gray-400 text-sm">
+            {search ? 'No properties match your search.' : 'No properties yet.'}
+          </div>
+        ) : filtered.map(row => (
+          <div
+            key={row.hotel.id}
+            onClick={() => setSelected(row)}
+            className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-4 cursor-pointer active:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-gray-900 truncate">{row.hotel.name}</p>
+                <Stars rating={row.hotel.star_rating} />
+                {(row.hotel.city || row.hotel.country) && (
+                  <p className="text-xs text-gray-500 mt-0.5">{[row.hotel.city, row.hotel.country].filter(Boolean).join(', ')}</p>
+                )}
+              </div>
+              <div className="shrink-0 flex flex-col items-end gap-1">
+                {row.accounts.length === 0 ? (
+                  <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">Unassigned</span>
+                ) : row.accounts.some(a => a.status === 'active') ? (
+                  <StatusPill status="active" />
+                ) : (
+                  <StatusPill status="suspended" />
+                )}
+                {row.accounts.length > 0 && (
+                  <span className="text-xs text-gray-400">{row.accounts.length} account{row.accounts.length !== 1 ? 's' : ''}</span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-50">
+              <div>
+                <p className="text-xs text-gray-400">Rooms</p>
+                <p className="text-sm font-semibold text-gray-800">{row.hotel.room_count}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Bookings</p>
+                <p className="text-sm font-semibold text-gray-800">{row.booking_count.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Revenue</p>
+                <p className="text-sm font-semibold text-gray-800"><AEDAmount amount={row.total_revenue} /></p>
+              </div>
+              <div className="ml-auto text-gray-300">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden sm:block overflow-x-auto rounded-2xl border border-gray-100 shadow-sm bg-white">
         <table className="w-full text-sm min-w-[860px]">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
@@ -670,8 +726,7 @@ export default function PropertiesClient({ initialProperties }: Props) {
         </table>
       </div>
 
-      {/* Partner since col only shown in panel - mobile cards for future */}
-      <p className="text-xs text-gray-300 mt-3 text-right">Click any row to view full details</p>
+      <p className="text-xs text-gray-300 mt-3 text-right hidden sm:block">Click any row to view full details</p>
     </div>
   );
 }
