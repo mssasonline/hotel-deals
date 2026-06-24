@@ -21,15 +21,7 @@ async function requireAdmin(): Promise<void> {
 // ── Create Property (hotel + partner account in one step) ─────────────────────
 
 export interface PropertyCreateFields {
-  // Hotel
   name: string;
-  city: string;
-  country: string;
-  address: string;
-  description: string;
-  star_rating: number | null;
-  // Partner
-  partnerFullName: string;
   partnerEmail: string;
   partnerTempPassword: string;
 }
@@ -43,13 +35,8 @@ export async function createProperty(fields: PropertyCreateFields): Promise<Crea
   const { data: hotelData, error: hotelErr } = await admin
     .from('hotels')
     .insert({
-      name:        fields.name,
-      city:        fields.city,
-      country:     fields.country,
-      address:     fields.address,
-      description: fields.description,
-      star_rating: fields.star_rating,
-      email:       fields.partnerEmail,
+      name:  fields.name,
+      email: fields.partnerEmail,
     })
     .select('id')
     .single();
@@ -63,9 +50,9 @@ export async function createProperty(fields: PropertyCreateFields): Promise<Crea
     email:         fields.partnerEmail,
     password:      fields.partnerTempPassword,
     email_confirm: true,
-    user_metadata: { full_name: fields.partnerFullName },
   });
 
+  let isNewAccount = false;
   if (createErr) {
     if (createErr.message.toLowerCase().includes('already been registered') || createErr.code === 'email_exists') {
       const { data: listData, error: listErr } = await admin.auth.admin.listUsers();
@@ -80,15 +67,15 @@ export async function createProperty(fields: PropertyCreateFields): Promise<Crea
     }
   } else {
     userId = userData.user.id;
+    isNewAccount = true;
   }
 
   // 3. Upsert partner profile
   const { error: profileErr } = await admin.from('profiles').upsert({
-    id:        userId,
-    full_name: fields.partnerFullName,
-    email:     fields.partnerEmail,
-    role:      'partner',
-    status:    'active',
+    id:     userId,
+    email:  fields.partnerEmail,
+    role:   'partner',
+    status: 'active',
   });
   if (profileErr) return { error: profileErr.message };
 
@@ -98,15 +85,75 @@ export async function createProperty(fields: PropertyCreateFields): Promise<Crea
     .upsert({ user_id: userId, hotel_id: hotelId }, { onConflict: 'hotel_id' });
   if (linkErr) return { error: linkErr.message };
 
-  // 5. Send welcome email
-  const emailSent = process.env.NOTIFICATIONS_ENABLED === 'true';
-  await sendPartnerWelcome({
-    partnerName:  fields.partnerFullName,
-    partnerEmail: fields.partnerEmail,
-    tempPassword: fields.partnerTempPassword,
-    hotelName:    fields.name,
-    loginUrl:     `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/login`,
+  // 5. Send welcome email only for new accounts (existing accounts have their own password)
+  const emailSent = isNewAccount && process.env.NOTIFICATIONS_ENABLED === 'true';
+  if (isNewAccount) {
+    await sendPartnerWelcome({
+      partnerName:  fields.partnerEmail,
+      partnerEmail: fields.partnerEmail,
+      tempPassword: fields.partnerTempPassword,
+      hotelName:    fields.name,
+      loginUrl:     `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/login`,
+    });
+  }
+
+  revalidatePath('/admin/properties');
+  return { success: true, emailSent };
+}
+
+// ── Add Account to existing hotel ────────────────────────────────────────────
+
+export async function addPropertyAccount(
+  hotelId: number,
+  email: string,
+  tempPassword: string,
+): Promise<CreateResult> {
+  try { await requireAdmin(); } catch (e) { return { error: (e as Error).message }; }
+
+  const admin = createAdminClient();
+
+  // Create auth user
+  let userId: string;
+  const { data: userData, error: createErr } = await admin.auth.admin.createUser({
+    email, password: tempPassword, email_confirm: true,
   });
+
+  if (createErr) {
+    if (createErr.message.toLowerCase().includes('already been registered') || createErr.code === 'email_exists') {
+      const { data: listData } = await admin.auth.admin.listUsers();
+      const existing = listData?.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+      if (!existing) return { error: 'User exists but could not be retrieved.' };
+      userId = existing.id;
+    } else {
+      return { error: createErr.message };
+    }
+  } else {
+    userId = userData.user.id;
+  }
+
+  // Upsert profile with partner role
+  const { error: profileErr } = await admin.from('profiles').upsert({
+    id: userId, email, role: 'partner', status: 'active',
+  });
+  if (profileErr) return { error: profileErr.message };
+
+  // Link to hotel (user_id is unique — one hotel per account)
+  const { error: linkErr } = await admin
+    .from('hotel_partners')
+    .upsert({ user_id: userId, hotel_id: hotelId }, { onConflict: 'user_id' });
+  if (linkErr) return { error: linkErr.message };
+
+  const emailSent = process.env.NOTIFICATIONS_ENABLED === 'true';
+  if (emailSent) {
+    const { data: hotelRow } = await admin.from('hotels').select('name').eq('id', hotelId).maybeSingle();
+    await sendPartnerWelcome({
+      partnerName:  email,
+      partnerEmail: email,
+      tempPassword,
+      hotelName:    hotelRow?.name ?? '',
+      loginUrl:     `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/login`,
+    });
+  }
 
   revalidatePath('/admin/properties');
   return { success: true, emailSent };

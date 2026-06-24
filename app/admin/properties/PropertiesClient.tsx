@@ -6,15 +6,14 @@ import { useAdminDateFormat } from '../components/useAdminFormat';
 import AEDAmount from '../../partner/components/AEDAmount';
 import {
   createProperty, deleteProperty, setPropertyPartnerStatus,
-  generatePropertyPasswordReset, updatePropertyHotel,
-  type PropertyCreateFields, type HotelUpdateFields,
+  generatePropertyPasswordReset, addPropertyAccount,
+  type PropertyCreateFields,
 } from './actions';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type PropertyPartner = {
+export type PropertyAccount = {
   id: string;
-  full_name: string;
   email: string;
   status: 'active' | 'suspended';
   created_at: string;
@@ -35,7 +34,7 @@ export type PropertyHotel = {
 
 export type PropertyRow = {
   hotel: PropertyHotel;
-  partner: PropertyPartner | null;
+  accounts: PropertyAccount[];
   booking_count: number;
   total_revenue: number;
 };
@@ -80,13 +79,12 @@ function NewPropertyModal({ onClose, onCreated }: { onClose: () => void; onCreat
   const [error, setError] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState<boolean | null>(null);
   const [form, setForm] = useState<PropertyCreateFields>({
-    name: '', city: '', country: '', address: '', description: '',
-    star_rating: null, partnerFullName: '', partnerEmail: '', partnerTempPassword: '',
+    name: '', partnerEmail: '', partnerTempPassword: '',
   });
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: name === 'star_rating' ? (value ? Number(value) : null) : value }));
+    setForm(prev => ({ ...prev, [name]: value }));
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -121,57 +119,21 @@ function NewPropertyModal({ onClose, onCreated }: { onClose: () => void; onCreat
 
         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
           <div className="px-6 py-5 space-y-4">
-            {/* Hotel info */}
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Hotel Details</p>
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">Hotel Name <span className="text-red-400">*</span></label>
               <input name="name" value={form.name} onChange={handleChange} className={INPUT} placeholder="e.g. Cove Rotana Resort" required />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">City</label>
-                <input name="city" value={form.city} onChange={handleChange} className={INPUT} placeholder="e.g. Ras Al Khaimah" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Country</label>
-                <input name="country" value={form.country} onChange={handleChange} className={INPUT} placeholder="e.g. UAE" />
-              </div>
-            </div>
-
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Address</label>
-              <input name="address" value={form.address} onChange={handleChange} className={INPUT} placeholder="Full street address" />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Star Rating</label>
-              <select name="star_rating" value={form.star_rating ?? ''} onChange={handleChange} className={`${INPUT} bg-white`}>
-                <option value="">— Select —</option>
-                <option value="3">3 Stars</option>
-                <option value="4">4 Stars</option>
-                <option value="5">5 Stars</option>
-              </select>
-            </div>
-
-            {/* Partner info */}
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest pt-2 border-t border-gray-100">Partner Account</p>
-
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Full Name <span className="text-red-400">*</span></label>
-              <input name="partnerFullName" value={form.partnerFullName} onChange={handleChange} className={INPUT} placeholder="Ahmed Al Mansouri" required />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Email <span className="text-red-400">*</span></label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Partner Email <span className="text-red-400">*</span></label>
               <input name="partnerEmail" type="email" value={form.partnerEmail} onChange={handleChange} className={INPUT} placeholder="manager@hotel.com" required />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">Temporary Password <span className="text-red-400">*</span></label>
               <input name="partnerTempPassword" value={form.partnerTempPassword} onChange={handleChange} className={INPUT} placeholder="Min. 8 characters" />
-              <p className="text-xs text-gray-400 mt-1">Share with the partner — they can change it after first login.</p>
+              <p className="text-xs text-gray-400 mt-1">Share with the partner — they complete their profile after first login.</p>
             </div>
 
             {error && <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600">{error}</div>}
@@ -210,6 +172,128 @@ function NewPropertyModal({ onClose, onCreated }: { onClose: () => void; onCreat
   );
 }
 
+// ── Account Row (inside detail panel) ────────────────────────────────────────
+
+function AccountRow({
+  account,
+  hotelId,
+  onUpdate,
+}: {
+  account: PropertyAccount;
+  hotelId: number;
+  onUpdate: () => void;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [resetLink, setResetLink] = useState<string | null>(null);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const { fmtDate } = useAdminDateFormat();
+
+  function toggleStatus() {
+    const next = account.status === 'active' ? 'suspended' : 'active';
+    startTransition(async () => {
+      await setPropertyPartnerStatus(account.id, hotelId, next);
+      onUpdate();
+    });
+  }
+
+  async function handleReset() {
+    setResetLink(null); setResetLoading(true);
+    const result = await generatePropertyPasswordReset(account.id);
+    setResetLoading(false);
+    if (!result.error) setResetLink(result.link ?? null);
+  }
+
+  function handleCopy() {
+    if (!resetLink) return;
+    navigator.clipboard.writeText(resetLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="bg-gray-50 rounded-xl p-4 space-y-3 border border-gray-100">
+      {/* Identity row */}
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-xl bg-[#001E5A] flex items-center justify-center text-white text-xs font-bold shrink-0">
+          {account.email[0].toUpperCase()}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm text-gray-800 truncate font-medium">{account.email}</p>
+          <p className="text-xs text-gray-400 mt-0.5">Since {fmtDate(account.created_at)}</p>
+        </div>
+        <StatusPill status={account.status} />
+      </div>
+
+      {/* Actions row */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={toggleStatus}
+          disabled={isPending}
+          className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-colors disabled:opacity-50 ${
+            account.status === 'active'
+              ? 'border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100'
+              : 'border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
+          }`}
+        >
+          {account.status === 'active' ? 'Suspend' : 'Activate'}
+        </button>
+        <button
+          onClick={handleReset}
+          disabled={resetLoading}
+          className="flex-1 py-1.5 text-xs font-semibold rounded-lg border border-orange-200 text-orange-700 bg-orange-50 hover:bg-orange-100 transition-colors disabled:opacity-50"
+        >
+          {resetLoading ? 'Generating…' : 'Reset Password'}
+        </button>
+        <button
+          onClick={() => setConfirmRemove(true)}
+          className="py-1.5 px-3 text-xs font-semibold rounded-lg border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+        >
+          Remove
+        </button>
+      </div>
+
+      {/* Reset link */}
+      {resetLink && (
+        <div className="flex gap-2 items-center">
+          <input readOnly value={resetLink} dir="ltr"
+            className="flex-1 text-xs bg-white border border-gray-200 rounded-lg px-3 py-2 font-mono text-gray-600 truncate focus:outline-none" />
+          <button onClick={handleCopy}
+            className={`shrink-0 px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${copied ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'}`}>
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
+      )}
+
+      {/* Confirm remove */}
+      {confirmRemove && (
+        <div className="bg-white rounded-lg p-3 border border-red-100">
+          <p className="text-xs text-red-700 font-medium mb-2">Remove this account from the hotel?</p>
+          <div className="flex gap-2">
+            <button onClick={() => setConfirmRemove(false)}
+              className="flex-1 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-xs font-medium hover:bg-gray-50">
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                startTransition(async () => {
+                  await setPropertyPartnerStatus(account.id, hotelId, 'suspended');
+                  onUpdate();
+                });
+              }}
+              disabled={isPending}
+              className="flex-1 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
+            >
+              {isPending ? '…' : 'Remove'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Property Detail Panel ─────────────────────────────────────────────────────
 
 function PropertyDetailPanel({
@@ -224,50 +308,23 @@ function PropertyDetailPanel({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [resetLink, setResetLink] = useState<string | null>(null);
-  const [resetLoading, setResetLoading] = useState(false);
-  const [resetError, setResetError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [editHotel, setEditHotel] = useState(false);
-  const [hotelForm, setHotelForm] = useState<HotelUpdateFields>({
-    name:        row.hotel.name,
-    city:        row.hotel.city ?? '',
-    country:     row.hotel.country ?? '',
-    address:     row.hotel.address ?? '',
-    description: row.hotel.description ?? '',
-    star_rating: row.hotel.star_rating,
-  });
-  const { fmtDate } = useAdminDateFormat();
+  const [showAddAccount, setShowAddAccount] = useState(false);
+  const [addEmail, setAddEmail] = useState('');
+  const [addPassword, setAddPassword] = useState('');
+  const [addError, setAddError] = useState('');
 
-  function act(fn: () => Promise<{ error?: string; success?: boolean }>, closeAfter = false) {
-    setError(null);
+  function handleAddAccount(e: React.FormEvent) {
+    e.preventDefault();
+    if (!addEmail.trim()) { setAddError('Email is required'); return; }
+    if (addPassword.length < 8) { setAddError('Password must be at least 8 characters'); return; }
+    setAddError('');
     startTransition(async () => {
-      const result = await fn();
-      if (result.error) { setError(result.error); return; }
-      if (closeAfter) onClose();
+      const result = await addPropertyAccount(row.hotel.id, addEmail.trim(), addPassword);
+      if (result.error) { setAddError(result.error); return; }
+      setShowAddAccount(false);
+      setAddEmail(''); setAddPassword('');
       onUpdate();
     });
-  }
-
-  async function handleReset() {
-    if (!row.partner) return;
-    setResetError(null); setResetLink(null); setResetLoading(true);
-    const result = await generatePropertyPasswordReset(row.partner.id);
-    setResetLoading(false);
-    if (result.error) { setResetError(result.error); return; }
-    setResetLink(result.link ?? null);
-  }
-
-  function handleCopy() {
-    if (!resetLink) return;
-    navigator.clipboard.writeText(resetLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
-
-  function handleHotelChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-    const { name, value } = e.target;
-    setHotelForm(prev => ({ ...prev, [name]: name === 'star_rating' ? (value ? Number(value) : null) : value }));
   }
 
   return (
@@ -286,152 +343,59 @@ function PropertyDetailPanel({
 
         <div className="p-6 space-y-6 flex-1">
 
-          {/* Hotel section */}
+          {/* Accounts section */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Hotel</h3>
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                Accounts <span className="text-gray-300 font-normal">({row.accounts.length})</span>
+              </h3>
               <button
-                onClick={() => setEditHotel(v => !v)}
-                className="text-xs font-semibold text-brand-blue hover:underline"
+                onClick={() => setShowAddAccount(v => !v)}
+                className="flex items-center gap-1 text-xs font-semibold text-brand-blue hover:underline"
               >
-                {editHotel ? 'Cancel' : 'Edit'}
+                {showAddAccount ? 'Cancel' : (
+                  <>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Account
+                  </>
+                )}
               </button>
             </div>
 
-            {editHotel ? (
-              <div className="space-y-3">
+            {/* Add Account form */}
+            {showAddAccount && (
+              <form onSubmit={handleAddAccount} className="bg-blue-50 rounded-xl p-4 space-y-3 mb-3 border border-blue-100">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Hotel Name</label>
-                  <input name="name" value={hotelForm.name ?? ''} onChange={handleHotelChange} className={INPUT} />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">City</label>
-                    <input name="city" value={hotelForm.city ?? ''} onChange={handleHotelChange} className={INPUT} />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Country</label>
-                    <input name="country" value={hotelForm.country ?? ''} onChange={handleHotelChange} className={INPUT} />
-                  </div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                  <input type="email" value={addEmail} onChange={e => setAddEmail(e.target.value)}
+                    className={INPUT} placeholder="support@hotel.com" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Address</label>
-                  <input name="address" value={hotelForm.address ?? ''} onChange={handleHotelChange} className={INPUT} />
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Temporary Password</label>
+                  <input value={addPassword} onChange={e => setAddPassword(e.target.value)}
+                    className={INPUT} placeholder="Min. 8 characters" />
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Star Rating</label>
-                  <select name="star_rating" value={hotelForm.star_rating ?? ''} onChange={handleHotelChange} className={`${INPUT} bg-white`}>
-                    <option value="">—</option>
-                    <option value="3">3 Stars</option>
-                    <option value="4">4 Stars</option>
-                    <option value="5">5 Stars</option>
-                  </select>
-                </div>
-                <button
-                  onClick={() => act(async () => {
-                    const r = await updatePropertyHotel(row.hotel.id, hotelForm);
-                    if (!r.error) setEditHotel(false);
-                    return r;
-                  })}
-                  disabled={isPending}
-                  className="w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 transition-all"
-                  style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
-                >
-                  {isPending ? 'Saving…' : 'Save Hotel Changes'}
+                {addError && <p className="text-xs text-red-600">{addError}</p>}
+                <button type="submit" disabled={isPending}
+                  className="w-full py-2 rounded-xl text-white text-xs font-semibold disabled:opacity-50"
+                  style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
+                  {isPending ? 'Creating…' : 'Create Account'}
                 </button>
-              </div>
-            ) : (
-              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                <p className="font-semibold text-gray-900">{row.hotel.name}</p>
-                {(row.hotel.city || row.hotel.country) && (
-                  <p className="text-sm text-gray-500">{[row.hotel.city, row.hotel.country].filter(Boolean).join(', ')}</p>
-                )}
-                {row.hotel.address && <p className="text-xs text-gray-400">{row.hotel.address}</p>}
-                <div className="flex items-center gap-3 pt-1">
-                  <Stars rating={row.hotel.star_rating} />
-                  <span className="text-xs text-gray-400">{row.hotel.room_count} room{row.hotel.room_count !== 1 ? 's' : ''}</span>
-                  <a href={`/hotel/${row.hotel.id}`} target="_blank" rel="noopener noreferrer"
-                    className="text-xs text-brand-blue hover:underline ml-auto">View →</a>
-                </div>
-              </div>
+              </form>
             )}
-          </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-50 rounded-xl p-3 text-center">
-              <p className="text-lg font-bold text-gray-900">{row.booking_count.toLocaleString()}</p>
-              <p className="text-xs text-gray-400 mt-0.5">Bookings</p>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-3 text-center">
-              <p className="text-lg font-bold text-gray-900"><AEDAmount amount={row.total_revenue} /></p>
-              <p className="text-xs text-gray-400 mt-0.5">Revenue</p>
-            </div>
-          </div>
-
-          {/* Partner section */}
-          <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Partner Account</h3>
-
-            {row.partner ? (
-              <div className="space-y-4">
-                {/* Identity */}
-                <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-4">
-                  <div className="w-10 h-10 rounded-xl bg-[#001E5A] flex items-center justify-center text-white text-sm font-bold shrink-0">
-                    {getInitials(row.partner.full_name)}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm truncate">{row.partner.full_name}</p>
-                    <p className="text-xs text-gray-400 truncate">{row.partner.email}</p>
-                    <div className="mt-1"><StatusPill status={row.partner.status} /></div>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 rounded-xl px-4 py-3 flex items-center justify-between">
-                  <span className="text-xs text-gray-500 font-medium">Partner since</span>
-                  <span className="text-xs font-semibold text-gray-800">{fmtDate(row.partner.created_at)}</span>
-                </div>
-
-                {/* Password Reset */}
-                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                  <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <div>
-                      <p className="text-xs font-semibold text-gray-700">Password Reset</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Generate a one-time link to share</p>
-                    </div>
-                    <button
-                      onClick={handleReset}
-                      disabled={resetLoading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg transition-colors disabled:opacity-50 shrink-0"
-                    >
-                      {resetLoading
-                        ? <span className="w-3.5 h-3.5 border-2 border-orange-400/30 border-t-orange-500 rounded-full animate-spin" />
-                        : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                          </svg>
-                      }
-                      {resetLoading ? 'Generating…' : 'Generate Reset Link'}
-                    </button>
-                  </div>
-                  {resetError && <p className="text-xs text-red-600 mt-2">{resetError}</p>}
-                  {resetLink && (
-                    <>
-                      <div className="mt-2.5 flex gap-2 items-center">
-                        <input readOnly value={resetLink} dir="ltr"
-                          className="flex-1 text-xs bg-white border border-gray-200 rounded-lg px-3 py-2 font-mono text-gray-600 truncate focus:outline-none" />
-                        <button onClick={handleCopy}
-                          className={`shrink-0 px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${copied ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'}`}>
-                          {copied ? 'Copied!' : 'Copy'}
-                        </button>
-                      </div>
-                      <p className="text-[10px] text-gray-400 mt-1.5">Link expires in 24 hours.</p>
-                    </>
-                  )}
-                </div>
+            {/* Accounts list */}
+            {row.accounts.length > 0 ? (
+              <div className="space-y-3">
+                {row.accounts.map(acc => (
+                  <AccountRow key={acc.id} account={acc} hotelId={row.hotel.id} onUpdate={onUpdate} />
+                ))}
               </div>
             ) : (
               <div className="bg-gray-50 rounded-xl p-5 text-center">
-                <p className="text-sm text-gray-400">No partner account assigned</p>
+                <p className="text-sm text-gray-400">No accounts yet — add one above</p>
               </div>
             )}
           </div>
@@ -440,28 +404,8 @@ function PropertyDetailPanel({
             <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600">{error}</div>
           )}
 
-          {/* Actions */}
-          <div className="space-y-2 pt-2 border-t border-gray-100">
-            {row.partner && (
-              row.partner.status === 'active' ? (
-                <button
-                  onClick={() => act(() => setPropertyPartnerStatus(row.partner!.id, row.hotel.id, 'suspended'))}
-                  disabled={isPending}
-                  className="w-full py-2.5 rounded-xl border border-amber-200 text-amber-700 bg-amber-50 hover:bg-amber-100 text-sm font-semibold transition-colors disabled:opacity-50"
-                >
-                  Suspend Partner Account
-                </button>
-              ) : (
-                <button
-                  onClick={() => act(() => setPropertyPartnerStatus(row.partner!.id, row.hotel.id, 'active'))}
-                  disabled={isPending}
-                  className="w-full py-2.5 rounded-xl border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 text-sm font-semibold transition-colors disabled:opacity-50"
-                >
-                  Activate Partner Account
-                </button>
-              )
-            )}
-
+          {/* Delete property */}
+          <div className="pt-2 border-t border-gray-100">
             {!confirmDelete ? (
               <button
                 onClick={() => setConfirmDelete(true)}
@@ -472,14 +416,21 @@ function PropertyDetailPanel({
             ) : (
               <div className="bg-red-50 rounded-xl p-4 border border-red-100">
                 <p className="text-sm text-red-700 font-medium mb-1">Delete property permanently?</p>
-                <p className="text-xs text-red-400 mb-3">This removes the hotel, all rooms, and the partner account. Cannot be undone.</p>
+                <p className="text-xs text-red-400 mb-3">This removes the hotel, all rooms, and all partner accounts. Cannot be undone.</p>
                 <div className="flex gap-2">
                   <button onClick={() => setConfirmDelete(false)}
                     className="flex-1 py-2 rounded-lg border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors">
                     Cancel
                   </button>
                   <button
-                    onClick={() => act(() => deleteProperty(row.hotel.id, row.partner?.id ?? null), true)}
+                    onClick={() => {
+                      setError(null);
+                      startTransition(async () => {
+                        const result = await deleteProperty(row.hotel.id, row.accounts[0]?.id ?? null);
+                        if (result.error) { setError(result.error); return; }
+                        onClose(); onUpdate();
+                      });
+                    }}
                     disabled={isPending}
                     className="flex-1 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
                   >
@@ -521,26 +472,27 @@ export default function PropertiesClient({ initialProperties }: Props) {
 
   const filtered = useMemo(() => {
     return initialProperties.filter(row => {
-      if (filter === 'active' && row.partner?.status !== 'active') return false;
-      if (filter === 'suspended' && row.partner?.status !== 'suspended') return false;
-      if (filter === 'unassigned' && row.partner !== null) return false;
+      const hasActive    = row.accounts.some(a => a.status === 'active');
+      const hasAccounts  = row.accounts.length > 0;
+      if (filter === 'active'     && !hasActive) return false;
+      if (filter === 'suspended'  && (!hasAccounts || hasActive)) return false;
+      if (filter === 'unassigned' && hasAccounts) return false;
       if (!search) return true;
       const q = search.toLowerCase();
       return (
         row.hotel.name.toLowerCase().includes(q) ||
         (row.hotel.city ?? '').toLowerCase().includes(q) ||
         (row.hotel.country ?? '').toLowerCase().includes(q) ||
-        (row.partner?.full_name ?? '').toLowerCase().includes(q) ||
-        (row.partner?.email ?? '').toLowerCase().includes(q)
+        row.accounts.some(a => a.email.toLowerCase().includes(q))
       );
     });
   }, [initialProperties, filter, search]);
 
   const counts = {
     all:        initialProperties.length,
-    active:     initialProperties.filter(r => r.partner?.status === 'active').length,
-    suspended:  initialProperties.filter(r => r.partner?.status === 'suspended').length,
-    unassigned: initialProperties.filter(r => r.partner === null).length,
+    active:     initialProperties.filter(r => r.accounts.some(a => a.status === 'active')).length,
+    suspended:  initialProperties.filter(r => r.accounts.length > 0 && r.accounts.every(a => a.status === 'suspended')).length,
+    unassigned: initialProperties.filter(r => r.accounts.length === 0).length,
   };
 
   return (
@@ -654,8 +606,7 @@ export default function PropertiesClient({ initialProperties }: Props) {
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Hotel</th>
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Stars / Rooms</th>
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Partner</th>
+              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Rooms</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Bookings</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Revenue</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
@@ -665,7 +616,7 @@ export default function PropertiesClient({ initialProperties }: Props) {
           <tbody className="divide-y divide-gray-50">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-5 py-16 text-center text-gray-400 text-sm">
+                <td colSpan={6} className="px-5 py-16 text-center text-gray-400 text-sm">
                   {search ? 'No properties match your search.' : 'No properties yet.'}
                 </td>
               </tr>
@@ -677,32 +628,31 @@ export default function PropertiesClient({ initialProperties }: Props) {
               >
                 <td className="px-5 py-4">
                   <p className="font-semibold text-gray-900">{row.hotel.name}</p>
+                  <Stars rating={row.hotel.star_rating} />
                   {(row.hotel.city || row.hotel.country) && (
                     <p className="text-xs text-gray-500 mt-0.5">{[row.hotel.city, row.hotel.country].filter(Boolean).join(', ')}</p>
                   )}
                   {row.hotel.address && <p className="text-xs text-gray-400 mt-0.5 max-w-[200px] truncate">{row.hotel.address}</p>}
                 </td>
                 <td className="px-5 py-4">
-                  <Stars rating={row.hotel.star_rating} />
-                  <p className="text-xs text-gray-400 mt-0.5">{row.hotel.room_count} room{row.hotel.room_count !== 1 ? 's' : ''}</p>
-                </td>
-                <td className="px-5 py-4">
-                  {row.partner ? (
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">{row.partner.full_name}</p>
-                      <p className="text-xs text-gray-400">{row.partner.email}</p>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">Unassigned</span>
-                  )}
+                  <p className="text-sm font-semibold text-gray-900">{row.hotel.room_count} room{row.hotel.room_count !== 1 ? 's' : ''}</p>
                 </td>
                 <td className="px-5 py-4 font-semibold text-gray-900">{row.booking_count.toLocaleString()}</td>
                 <td className="px-5 py-4 font-semibold text-gray-900"><AEDAmount amount={row.total_revenue} /></td>
                 <td className="px-5 py-4">
-                  {row.partner
-                    ? <StatusPill status={row.partner.status} />
-                    : <span className="text-xs text-gray-300 italic">—</span>
-                  }
+                  {row.accounts.length === 0 ? (
+                    <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">Unassigned</span>
+                  ) : row.accounts.some(a => a.status === 'active') ? (
+                    <div className="flex flex-col gap-1">
+                      <StatusPill status="active" />
+                      <span className="text-xs text-gray-400">{row.accounts.length} account{row.accounts.length !== 1 ? 's' : ''}</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      <StatusPill status="suspended" />
+                      <span className="text-xs text-gray-400">{row.accounts.length} account{row.accounts.length !== 1 ? 's' : ''}</span>
+                    </div>
+                  )}
                 </td>
                 <td className="px-5 py-4">
                   <button

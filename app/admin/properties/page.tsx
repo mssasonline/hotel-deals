@@ -12,19 +12,19 @@ export default async function PropertiesPage() {
     .select('id, name, city, country, address, description, star_rating, image_url, is_active, rooms(id, quantity_total)')
     .order('name');
 
-  // 2. hotel_partners links
+  // 2. All hotel_partners links (many accounts per hotel)
   const { data: hpRaw } = await admin
     .from('hotel_partners')
     .select('hotel_id, user_id');
 
-  // 3. Profiles for those partners
+  // 3. Profiles for all linked partners
   const userIds = [...new Set((hpRaw ?? []).map((r: { user_id: string }) => r.user_id))];
-  type ProfileRow = { id: string; full_name: string | null; email: string | null; status: string | null; created_at: string };
+  type ProfileRow = { id: string; email: string | null; status: string | null; created_at: string };
   const profilesMap = new Map<string, ProfileRow>();
   if (userIds.length > 0) {
     const { data: profilesRaw } = await admin
       .from('profiles')
-      .select('id, full_name, email, status, created_at')
+      .select('id, email, status, created_at')
       .in('id', userIds);
     for (const p of (profilesRaw ?? []) as ProfileRow[]) {
       profilesMap.set(p.id, p);
@@ -53,18 +53,19 @@ export default async function PropertiesPage() {
     }
   }
 
-  // 5. hotel_id → partner map (one-to-one after migration 071)
-  const partnerByHotel = new Map<number, { id: string; full_name: string; email: string; status: 'active' | 'suspended'; created_at: string }>();
+  // 5. hotel_id → accounts[] (many accounts per hotel)
+  const accountsByHotel = new Map<number, { id: string; email: string; status: 'active' | 'suspended'; created_at: string }[]>();
   for (const row of (hpRaw ?? []) as { hotel_id: number; user_id: string }[]) {
     const p = profilesMap.get(row.user_id);
     if (!p) continue;
-    partnerByHotel.set(row.hotel_id, {
+    const list = accountsByHotel.get(row.hotel_id) ?? [];
+    list.push({
       id:         p.id,
-      full_name:  p.full_name ?? 'Unknown',
       email:      p.email ?? '',
       status:     p.status === 'suspended' ? 'suspended' : 'active',
       created_at: p.created_at,
     });
+    accountsByHotel.set(row.hotel_id, list);
   }
 
   type RawHotel = {
@@ -75,8 +76,8 @@ export default async function PropertiesPage() {
   };
 
   const properties: PropertyRow[] = ((hotelsRaw ?? []) as unknown as RawHotel[]).map(h => {
-    const partner = partnerByHotel.get(h.id) ?? null;
-    const stats   = statsMap.get(h.id) ?? { total: 0, revenue: 0 };
+    const accounts = accountsByHotel.get(h.id) ?? [];
+    const stats    = statsMap.get(h.id) ?? { total: 0, revenue: 0 };
     return {
       hotel: {
         id:          h.id,
@@ -89,10 +90,10 @@ export default async function PropertiesPage() {
         image_url:   h.image_url,
         is_active:   h.is_active ?? true,
         room_count:  Array.isArray(h.rooms)
-        ? h.rooms.reduce((sum, r) => sum + (r.quantity_total ?? 1), 0)
-        : 0,
+          ? h.rooms.reduce((sum, r) => sum + (r.quantity_total ?? 1), 0)
+          : 0,
       },
-      partner,
+      accounts,
       booking_count: stats.total,
       total_revenue: stats.revenue,
     };
