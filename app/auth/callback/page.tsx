@@ -24,25 +24,9 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      // Otherwise redirect based on role
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (profile?.role === 'partner') {
-          router.replace('/partner/dashboard');
-        } else if (profile?.role === 'admin') {
-          router.replace('/admin/dashboard');
-        } else {
-          router.replace('/');
-        }
-      } else {
-        router.replace('/');
-      }
+      // Redirect to login — it detects role client-side and sends
+      // partner → /partner/dashboard, admin → /admin/dashboard, user → /
+      router.replace('/login');
     }
 
     handleCallback();
