@@ -11,14 +11,15 @@ import { CURRENCIES } from '@/lib/currencyData';
 import { getTranslations } from '@/lib/i18n/translations';
 
 const PAGE_TITLES: Record<string, string> = {
-  '/partner/dashboard': 'Dashboard',
-  '/partner/hotel':    'Hotel',
-  '/partner/rooms':     'Rooms',
-  '/partner/deals':     'Deals',
-  '/partner/bookings':  'Bookings',
-  '/partner/tasks':     'Tasks',
-  '/partner/analytics': 'Analytics',
-  '/partner/settings':  'Settings',
+  '/partner/dashboard':      'Dashboard',
+  '/partner/hotel':          'Hotel',
+  '/partner/rooms':          'Rooms',
+  '/partner/last-min-room':  'Last Min Room',
+  '/partner/deals':          'Deals',
+  '/partner/bookings':       'Bookings',
+  '/partner/tasks':          'Tasks',
+  '/partner/analytics':      'Analytics',
+  '/partner/settings':       'Settings',
 };
 
 function getInitials(name: string) {
@@ -62,14 +63,15 @@ export default function PartnerTopBar() {
   const initials    = getInitials(displayName);
 
   const PAGE_TITLE_KEYS: Record<string, keyof ReturnType<typeof getTranslations>> = {
-    '/partner/dashboard': 'partner.nav.dashboard',
-    '/partner/hotel':    'partner.nav.hotels',
-    '/partner/rooms':     'partner.nav.rooms',
-    '/partner/deals':     'partner.nav.deals',
-    '/partner/bookings':  'partner.nav.bookings',
-    '/partner/tasks':     'partner.nav.tasks',
-    '/partner/analytics': 'partner.nav.analytics',
-    '/partner/settings':  'partner.nav.settings',
+    '/partner/dashboard':      'partner.nav.dashboard',
+    '/partner/hotel':          'partner.nav.hotels',
+    '/partner/rooms':          'partner.nav.rooms',
+    '/partner/last-min-room':  'partner.nav.lastMinRoom',
+    '/partner/deals':          'partner.nav.deals',
+    '/partner/bookings':       'partner.nav.bookings',
+    '/partner/tasks':          'partner.nav.tasks',
+    '/partner/analytics':      'partner.nav.analytics',
+    '/partner/settings':       'partner.nav.settings',
   };
   const pageTitle = t[PAGE_TITLE_KEYS[pathname] ?? 'partner.nav.dashboard'] ?? PAGE_TITLES[pathname] ?? 'Partner Portal';
 

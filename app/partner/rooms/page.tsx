@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import { getCurrentTier, calcLivePrice, calcActualDiscount, type PriceTier } from '@/lib/pricingEngine';
 import CountdownTimer from '@/app/components/CountdownTimer';
-import { getMyHotels, getMyRooms, updateMyRoom, syncRoomAvailability, addRoom, deleteRoom, getTodayRoomRates, type PartnerRoom } from '../actions';
+import { getMyHotels, getMyRooms, updateMyRoom, addRoom, deleteRoom, getTodayRoomRates, type PartnerRoom } from '../actions';
 import RateCalendar from './RateCalendar';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
@@ -96,21 +96,6 @@ function Spinner() {
   );
 }
 
-function AvailabilityBar({ available, total }: { available: number; total: number }) {
-  const pct   = total > 0 ? Math.round((available / total) * 100) : 0;
-  const color = pct <= 20 ? 'bg-red-400' : pct <= 50 ? 'bg-amber-400' : 'bg-green-400';
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
-      </div>
-      <span className={`text-xs font-semibold ${pct <= 20 ? 'text-red-500' : pct <= 50 ? 'text-amber-600' : 'text-green-600'}`}>
-        {available}
-      </span>
-    </div>
-  );
-}
-
 // ── Edit Room Modal ────────────────────────────────────────────────────────────
 
 interface EditRoomModalProps {
@@ -123,14 +108,12 @@ interface EditRoomModalProps {
 
 function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalProps) {
   const [form, setForm] = useState({
-    quantity_total:     String(room.quantity_total ?? ''),
-    quantity_available: String(room.quantity_available ?? room.quantity_total ?? ''),
-    area_sqm:           String(room.area_sqm ?? ''),
-    bed_type:           room.bed_type ?? '',
-    room_type:          room.type ?? '',
-    image_url:          room.image_url   ?? '',
-    image_url_2:        room.image_url_2 ?? '',
-    image_url_3:        room.image_url_3 ?? '',
+    area_sqm:    String(room.area_sqm ?? ''),
+    bed_type:    room.bed_type ?? '',
+    room_type:   room.type ?? '',
+    image_url:   room.image_url   ?? '',
+    image_url_2: room.image_url_2 ?? '',
+    image_url_3: room.image_url_3 ?? '',
   });
   const [features, setFeatures] = useState<string[]>(room.features ?? []);
   const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({});
@@ -144,22 +127,14 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
 
   async function handleSave() {
     setError(null);
-    const qt = parseInt(form.quantity_total, 10);
-    const qa = parseInt(form.quantity_available, 10);
-    if (isNaN(qt) || qt <= 0) { setError('Total quantity must be a positive number.'); return; }
-    if (isNaN(qa) || qa < 0)  { setError('Available Tonight must be 0 or more.'); return; }
-    if (qa > qt)               { setError('Available Tonight cannot exceed Total Slots.'); return; }
-
     setSaving(true);
     onSave(room.id, {
-      quantity_total:     qt,
-      quantity_available: qa,
-      type:               form.room_type,
-      area_sqm:           form.area_sqm ? parseFloat(form.area_sqm) : null,
-      bed_type:           form.bed_type || null,
-      image_url:          form.image_url.trim()   || null,
-      image_url_2:        form.image_url_2.trim() || null,
-      image_url_3:        form.image_url_3.trim() || null,
+      type:        form.room_type,
+      area_sqm:    form.area_sqm ? parseFloat(form.area_sqm) : null,
+      bed_type:    form.bed_type || null,
+      image_url:   form.image_url.trim()   || null,
+      image_url_2: form.image_url_2.trim() || null,
+      image_url_3: form.image_url_3.trim() || null,
       features,
     });
   }
@@ -267,28 +242,6 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
                   </div>
                 );
               })}
-            </div>
-          </div>
-
-          {/* Inventory */}
-          <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{t['partner.rooms.inventory']}</p>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.rooms.totalLabel']}</label>
-                <input type="number" name="quantity_total" value={form.quantity_total} onChange={handleChange} min="1" step="1"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
-                <p className="text-xs text-gray-400 mt-1">Max rooms on this platform</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">{t['partner.rooms.availLabel']}</label>
-                <input type="number" name="quantity_available" value={form.quantity_available} onChange={handleChange} min="0" step="1"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue" />
-                <p className="text-xs text-gray-400 mt-1">Resets to Total each morning</p>
-              </div>
-            </div>
-            <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mt-1">
-              <p className="text-xs text-amber-700">Lower <strong>Available Tonight</strong> if some rooms are already booked through your own website or other channels.</p>
             </div>
           </div>
 
@@ -673,36 +626,29 @@ export default function RoomsPage() {
 
   async function handleSaveRoom(id: string, fields: Partial<Room>) {
     const { error } = await updateMyRoom(id, {
-      base_price:         fields.base_price,
-      min_price:          fields.min_price,
-      quantity_total:     fields.quantity_total,
-      quantity_available: fields.quantity_available,
-      image_url:          fields.image_url,
-      image_url_2:        fields.image_url_2,
-      image_url_3:        fields.image_url_3,
-      features:           fields.features,
-      type:               fields.type,
-      area_sqm:           fields.area_sqm,
-      bed_type:           fields.bed_type,
+      base_price:  fields.base_price,
+      min_price:   fields.min_price,
+      image_url:   fields.image_url,
+      image_url_2: fields.image_url_2,
+      image_url_3: fields.image_url_3,
+      features:    fields.features,
+      type:        fields.type,
+      area_sqm:    fields.area_sqm,
+      bed_type:    fields.bed_type,
     });
 
     if (error) { alert('Failed to save: ' + error); setEditRoom(null); return; }
-
-    // Use the partner-set quantity_available directly (no auto-recompute)
-    const available = fields.quantity_available ?? 0;
 
     setRooms(prev => prev.map(r =>
       r.id === id
         ? {
             ...r,
             ...fields,
-            type:               fields.type      ?? r.type,
-            area_sqm:           fields.area_sqm  ?? r.area_sqm,
-            bed_type:           fields.bed_type  ?? r.bed_type,
-            image_url:          'image_url' in fields ? fields.image_url ?? null : r.image_url,
-            features:           fields.features  ?? r.features,
-            quantity_available: available,
-            available:          available > 0 ? 1 : 0,
+            type:      fields.type     ?? r.type,
+            area_sqm:  fields.area_sqm ?? r.area_sqm,
+            bed_type:  fields.bed_type ?? r.bed_type,
+            image_url: 'image_url' in fields ? fields.image_url ?? null : r.image_url,
+            features:  fields.features ?? r.features,
           }
         : r
     ));
@@ -739,9 +685,6 @@ export default function RoomsPage() {
     const matchType  = typeFilter  === 'all' || r.type === typeFilter;
     return matchHotel && matchType;
   });
-
-  const totalAvailable = filtered.reduce((s, r) => s + (r.quantity_available ?? r.available ?? 0), 0);
-  const lowAvailRooms  = filtered.filter(r => (r.quantity_available ?? r.available ?? 0) <= 1).length;
 
   if (loading) return <Spinner />;
 
@@ -819,18 +762,10 @@ export default function RoomsPage() {
 
       {/* Summary bar */}
       {filtered.length > 0 && (
-        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+        <div className="grid grid-cols-1 gap-2 sm:gap-4 mb-6 sm:grid-cols-1 max-w-xs">
           <div className="bg-white rounded-2xl p-4 text-center" style={{ border: '1px solid rgba(30,58,138,0.09)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
             <p className="text-2xl font-bold text-gray-900">{filtered.length}</p>
             <p className="text-xs text-gray-500 mt-0.5 font-medium">{t['partner.rooms.totalRooms']}</p>
-          </div>
-          <div className="bg-white rounded-2xl p-4 text-center" style={{ border: '1px solid rgba(30,58,138,0.09)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
-            <p className="text-2xl font-bold text-green-600">{totalAvailable}</p>
-            <p className="text-xs text-gray-500 mt-0.5 font-medium">{t['partner.rooms.availTonight']}</p>
-          </div>
-          <div className="bg-white rounded-2xl p-4 text-center" style={{ border: '1px solid rgba(30,58,138,0.09)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
-            <p className={`text-2xl font-bold ${lowAvailRooms > 0 ? 'text-red-500' : 'text-gray-900'}`}>{lowAvailRooms}</p>
-            <p className="text-xs text-gray-500 mt-0.5 font-medium">{t['partner.rooms.lowAvail']}</p>
           </div>
         </div>
       )}
@@ -849,8 +784,6 @@ export default function RoomsPage() {
             const isTodayWeekend    = todayDow === 5 || todayDow === 6 || todayDow === 0;
             const effectiveMinPrice = isTodayWeekend ? minPriceWeekend : minPrice;
             const livePrice         = calcLivePrice(effectivePrice, effectiveMinPrice, tier);
-            const qtyAvailable  = room.quantity_available ?? room.available ?? 0;
-            const qtyTotal      = room.quantity_total ?? room.capacity ?? 1;
             const isDeleting    = deleting === room.id;
             const isConfirming  = confirmDelete === room.id;
             return (
@@ -887,7 +820,6 @@ export default function RoomsPage() {
                     <p className="text-sm font-bold text-green-600"><AEDAmount amount={livePrice} /></p>
                     <p className="text-xs text-gray-400">{t['partner.dash.perNight']}</p>
                   </div>
-                  <AvailabilityBar available={qtyAvailable} total={qtyTotal} />
                 </div>
                 <div className="flex items-center gap-2">
                   {isConfirming ? (
@@ -945,7 +877,6 @@ export default function RoomsPage() {
                   <span>{t['partner.rooms.colSystem']}</span>
                   <span className="block text-[10px] font-normal text-orange-400 normal-case leading-tight">{t['partner.rooms.guestSees']}</span>
                 </th>
-                <th className="px-3 py-3 min-w-[130px]">{t['partner.rooms.colAvailable']}</th>
                 <th className="px-3 py-3 text-right">{/* actions */}</th>
               </tr>
             </thead>
@@ -959,8 +890,6 @@ export default function RoomsPage() {
                 const isTodayWeekend    = todayDow === 5 || todayDow === 6 || todayDow === 0;
                 const effectiveMinPrice = isTodayWeekend ? minPriceWeekend : minPrice;
                 const livePrice         = calcLivePrice(effectivePrice, effectiveMinPrice, tier);
-                const qtyAvailable  = room.quantity_available ?? room.available ?? 0;
-                const qtyTotal      = room.quantity_total ?? room.capacity ?? 1;
                 const isDeleting    = deleting === room.id;
                 const isConfirming  = confirmDelete === room.id;
 
@@ -1050,15 +979,6 @@ export default function RoomsPage() {
                         </span>
                       </div>
                     </td>
-                    {/* Availability */}
-                    <td className="px-3 py-3 min-w-[130px]">
-                      <AvailabilityBar available={qtyAvailable} total={qtyTotal} />
-                      {qtyAvailable <= 1 && (
-                        <span className="inline-flex mt-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-500">
-                          {qtyAvailable === 0 ? t['partner.rooms.soldOut'] : t['partner.rooms.lastRoom']}
-                        </span>
-                      )}
-                    </td>
                     <td className="px-3 py-3">
                       {isConfirming ? (
                         <div className="flex items-center gap-1">
@@ -1115,7 +1035,7 @@ export default function RoomsPage() {
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={multiHotel ? 12 : 11} className="px-6 py-12 text-center text-gray-400 text-sm">
+                  <td colSpan={multiHotel ? 11 : 10} className="px-6 py-12 text-center text-gray-400 text-sm">
                     {t['partner.rooms.noRooms']}
                   </td>
                 </tr>

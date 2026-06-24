@@ -88,6 +88,11 @@ const PARTNER_NAV: Array<{ href: string; key: TranslationKey; icon: React.ReactN
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7v5l3 3" /></svg>,
   },
   {
+    href: '/partner/last-min-room',
+    key: 'partner.nav.lastMinRoom',
+    icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+  },
+  {
     href: '/partner/deals',
     key: 'partner.nav.deals',
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 10V7a1 1 0 011-1h16a1 1 0 011 1v3M3 10v8a1 1 0 001 1h16a1 1 0 001-1v-8" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 10V8a2 2 0 012-2h6a2 2 0 012 2v2" /></svg>,
