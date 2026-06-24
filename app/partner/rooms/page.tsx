@@ -148,7 +148,7 @@ function EditRoomModal({ room, hotelName, onSave, onClose, t }: EditRoomModalPro
     const qa = parseInt(form.quantity_available, 10);
     if (isNaN(qt) || qt <= 0) { setError('Total quantity must be a positive number.'); return; }
     if (isNaN(qa) || qa < 0)  { setError('Available Tonight must be 0 or more.'); return; }
-    if (qa > qt)               { setError('Available Tonight cannot exceed Total Rooms.'); return; }
+    if (qa > qt)               { setError('Available Tonight cannot exceed Total Slots.'); return; }
 
     setSaving(true);
     onSave(room.id, {

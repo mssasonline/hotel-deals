@@ -528,7 +528,7 @@ const en = {
   'partner.rooms.sellingPrice':  '(selling price)',
   'partner.rooms.previewLabel':  'System price preview:',
   'partner.rooms.inventory':     'Room Inventory',
-  'partner.rooms.totalLabel':    'Total Rooms',
+  'partner.rooms.totalLabel':    'Total Slots',
   'partner.rooms.availLabel':    'Available Tonight',
   'partner.rooms.soldOut':       'Sold out',
   'partner.rooms.lastRoom':      'Last room',
