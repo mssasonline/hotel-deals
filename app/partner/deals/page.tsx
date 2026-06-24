@@ -148,7 +148,7 @@ function EditDealModal({
     if (!p || p <= 0)     { setErr('Deal price must be greater than 0'); return; }
     if (!q || q < 1)      { setErr('Total slots must be at least 1'); return; }
     if (qa_ < 0)          { setErr('Available Tonight cannot be negative'); return; }
-    if (qa_ > q)          { setErr('Available Tonight cannot exceed Total Slots'); return; }
+    if (qa_ > q)          { setErr('Available Rooms cannot exceed Total Slots'); return; }
     setSaving(true); setErr('');
     const aedPrice = toAED(p, currency as CurrencyCode);
     const result = await updateDeal(deal.id, { deal_price: aedPrice, quantity_total: q, quantity_available: qa_ });
@@ -200,13 +200,13 @@ function EditDealModal({
             <p className="text-xs text-gray-400 mt-1">Max deal slots offered on the platform</p>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Available Tonight</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Available Rooms</label>
             <input
               type="number" min="0" step="1"
               value={qa} onChange={e => setQa(e.target.value)}
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
             />
-            <p className="text-xs text-amber-600 mt-1">Lower if some slots are already taken through other channels. Resets to Total each morning.</p>
+            <p className="text-xs text-amber-600 mt-1">Lower if some rooms are already taken through other channels. Resets to Total each morning.</p>
           </div>
           {err && <p className="text-xs text-red-600">{err}</p>}
           <div className="flex gap-3 pt-1">
