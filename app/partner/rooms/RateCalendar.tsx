@@ -217,9 +217,6 @@ export default function RateCalendar({
   const [pricingSaving, setPricingSaving] = useState(false);
   const [pricingMsg,    setPricingMsg]    = useState<{ text: string; ok: boolean } | null>(null);
 
-  // Today's effective rate from the calendar (or base price as fallback)
-  const todayRate = (ratesMap[today] != null ? ratesMap[today] : liveBasePrice) as number;
-
   // ── Load both months ───────────────────────────────────────────────────────
   const loadRates = useCallback(async () => {
     setLoading(true);
@@ -415,46 +412,9 @@ export default function RateCalendar({
 
         <div className="p-6 space-y-6">
 
-          {/* ── Pricing Settings ── */}
+          {/* ── Min Price Floors ── */}
           <div className="rounded-xl border border-amber-200/70 bg-gradient-to-br from-amber-50/60 to-orange-50/30 p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">💰 Pricing Settings</p>
-                {!loading && (
-                  <p className="text-xs text-gray-400 mt-1">
-                    Today&apos;s rate:&nbsp;
-                    <strong className="text-gray-700">{fmt(todayRate)}</strong>
-                    <span className="ml-1 text-[11px]">
-                      {ratesMap[today] != null ? '(custom rate from calendar)' : '(default rate)'}
-                    </span>
-                  </p>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={savePricing}
-                disabled={pricingSaving}
-                className="text-xs font-semibold text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 disabled:opacity-50 transition-all hover:-translate-y-0.5 shrink-0"
-                style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
-              >
-                {pricingSaving
-                  ? <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  : 'Save Min Prices'
-                }
-              </button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              {/* Default rate */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                  Default Rate <span className="text-gray-400 font-normal">(AED / night)</span>
-                </label>
-                <div className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono bg-gray-50 text-gray-700 select-none">
-                  {pricingForm.base_price}
-                </div>
-                <p className="text-[11px] text-gray-400 mt-1">Edit via calendar below</p>
-              </div>
+            <div className="grid grid-cols-2 gap-3">
               {/* Weekday min */}
               <div>
                 <label className="block text-xs font-semibold text-blue-700 mb-1.5">
@@ -485,11 +445,25 @@ export default function RateCalendar({
               </div>
             </div>
 
-            {pricingMsg && (
-              <p className={`text-[11px] mt-2 font-medium ${pricingMsg.ok ? 'text-green-600' : 'text-red-500'}`}>
-                {pricingMsg.text}
-              </p>
-            )}
+            <div className="flex items-center justify-between mt-3">
+              {pricingMsg ? (
+                <p className={`text-[11px] font-medium ${pricingMsg.ok ? 'text-green-600' : 'text-red-500'}`}>
+                  {pricingMsg.text}
+                </p>
+              ) : <span />}
+              <button
+                type="button"
+                onClick={savePricing}
+                disabled={pricingSaving}
+                className="text-xs font-semibold text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 disabled:opacity-50 transition-all hover:-translate-y-0.5 shrink-0"
+                style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}
+              >
+                {pricingSaving
+                  ? <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  : 'Save Min Prices'
+                }
+              </button>
+            </div>
           </div>
 
           {/* ── Bulk Fill ── */}
