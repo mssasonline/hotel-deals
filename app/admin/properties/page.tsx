@@ -9,7 +9,7 @@ export default async function PropertiesPage() {
   // 1. Hotels + room counts
   const { data: hotelsRaw } = await admin
     .from('hotels')
-    .select('id, name, city, country, address, description, star_rating, image_url, is_active, rooms(id)')
+    .select('id, name, city, country, address, description, star_rating, image_url, is_active, rooms(id, quantity_total)')
     .order('name');
 
   // 2. hotel_partners links
@@ -71,7 +71,7 @@ export default async function PropertiesPage() {
     id: number; name: string; city: string | null; country: string | null;
     address: string | null; description: string | null;
     star_rating: number | null; image_url: string | null;
-    is_active: boolean | null; rooms: { id: number }[];
+    is_active: boolean | null; rooms: { id: number; quantity_total: number | null }[];
   };
 
   const properties: PropertyRow[] = ((hotelsRaw ?? []) as unknown as RawHotel[]).map(h => {
@@ -88,7 +88,9 @@ export default async function PropertiesPage() {
         star_rating: h.star_rating,
         image_url:   h.image_url,
         is_active:   h.is_active ?? true,
-        room_count:  Array.isArray(h.rooms) ? h.rooms.length : 0,
+        room_count:  Array.isArray(h.rooms)
+        ? h.rooms.reduce((sum, r) => sum + (r.quantity_total ?? 1), 0)
+        : 0,
       },
       partner,
       booking_count: stats.total,
