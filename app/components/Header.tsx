@@ -249,7 +249,7 @@ export default function Header() {
 
                   {dropdownOpen && (
                     <div
-                      className="absolute right-0 rtl:right-auto rtl:left-0 top-full mt-2.5 w-72 max-w-[calc(100vw-1rem)] bg-white rounded-2xl overflow-hidden z-50 animate-fade-in-up"
+                      className="absolute right-0 top-full mt-2.5 w-72 max-w-[calc(100vw-1rem)] bg-white rounded-2xl overflow-hidden z-50 animate-fade-in-up"
                       style={{ boxShadow: '0 16px 48px rgba(15,23,42,0.18), 0 2px 8px rgba(15,23,42,0.08)', border: '1px solid rgba(30,58,138,0.08)' }}
                     >
                       {/* Gradient profile header */}
