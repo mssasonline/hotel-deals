@@ -654,7 +654,6 @@ export default function PropertiesClient({ initialProperties }: Props) {
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Hotel</th>
-              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Location</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Stars / Rooms</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Partner</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Bookings</th>
@@ -666,7 +665,7 @@ export default function PropertiesClient({ initialProperties }: Props) {
           <tbody className="divide-y divide-gray-50">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-5 py-16 text-center text-gray-400 text-sm">
+                <td colSpan={7} className="px-5 py-16 text-center text-gray-400 text-sm">
                   {search ? 'No properties match your search.' : 'No properties yet.'}
                 </td>
               </tr>
@@ -678,10 +677,10 @@ export default function PropertiesClient({ initialProperties }: Props) {
               >
                 <td className="px-5 py-4">
                   <p className="font-semibold text-gray-900">{row.hotel.name}</p>
+                  {(row.hotel.city || row.hotel.country) && (
+                    <p className="text-xs text-gray-500 mt-0.5">{[row.hotel.city, row.hotel.country].filter(Boolean).join(', ')}</p>
+                  )}
                   {row.hotel.address && <p className="text-xs text-gray-400 mt-0.5 max-w-[200px] truncate">{row.hotel.address}</p>}
-                </td>
-                <td className="px-5 py-4 text-gray-600 text-sm">
-                  {[row.hotel.city, row.hotel.country].filter(Boolean).join(', ') || <span className="text-gray-300">—</span>}
                 </td>
                 <td className="px-5 py-4">
                   <Stars rating={row.hotel.star_rating} />
