@@ -389,6 +389,57 @@ export async function sendNewDealNotification(deals: NewDealNotificationData[]):
 
 // ── Booking Confirmation ───────────────────────────────────────────────────────
 
+// ── Low Inventory Alert ───────────────────────────────────────────────────────
+
+export interface LowInventoryAlertData {
+  partnerEmail: string;
+  hotelName:    string;
+  itemName:     string;       // room name or deal title
+  itemType:     'room' | 'deal';
+  remaining:    number;
+  total:        number;
+  loginUrl:     string;
+}
+
+function lowInventoryHtml(d: LowInventoryAlertData): string {
+  const link = `${d.loginUrl}${d.itemType === 'deal' ? '/deals' : '/rooms'}`;
+  const pct  = d.total > 0 ? Math.round((d.remaining / d.total) * 100) : 0;
+  const urgencyColor = d.remaining <= 1 ? '#dc2626' : '#d97706';
+  return `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      <div style="background:#1E3A8A;padding:24px 32px;border-radius:12px 12px 0 0">
+        ${LOGO_HTML}
+        <h1 style="color:white;margin:0;font-size:20px;font-weight:600;opacity:0.9">Low Inventory Alert</h1>
+      </div>
+      <div style="background:#f8fafc;padding:32px;border-radius:0 0 12px 12px;border:1px solid #e2e8f0">
+        <div style="background:${urgencyColor}15;border:1px solid ${urgencyColor}40;border-radius:10px;padding:20px;margin-bottom:24px">
+          <p style="margin:0 0 4px;color:${urgencyColor};font-weight:700;font-size:16px">
+            ⚠️ Only ${d.remaining} of ${d.total} slot${d.remaining !== 1 ? 's' : ''} remaining (${pct}%)
+          </p>
+          <p style="margin:0;color:#374151;font-size:14px">
+            <strong>${d.hotelName}</strong> — ${d.itemName}
+            <span style="color:#6b7280;margin-left:8px">(${d.itemType === 'deal' ? 'Special Deal' : 'Last-Minute Room'})</span>
+          </p>
+        </div>
+        <p style="color:#374151">Would you like to increase the available slots to capture more bookings tonight?</p>
+        <a href="${link}" style="display:inline-block;background:#001E5A;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;margin:8px 0">
+          Increase Availability →
+        </a>
+        ${FOOTER_HTML}
+      </div>
+    </div>
+  `;
+}
+
+export async function sendLowInventoryAlert(data: LowInventoryAlertData): Promise<void> {
+  await sendEmail(
+    data.partnerEmail,
+    `⚠️ Low Inventory — ${data.hotelName}: ${data.itemName} (${data.remaining} left)`,
+    lowInventoryHtml(data),
+    'partners@selectedroom.com',
+  );
+}
+
 export async function sendBookingConfirmation(data: BookingEmailData): Promise<void> {
   await Promise.allSettled([
     sendEmail(

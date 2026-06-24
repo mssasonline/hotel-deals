@@ -2,7 +2,7 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
-import { sendBookingConfirmation } from '@/lib/emailService';
+import { sendBookingConfirmation, sendLowInventoryAlert } from '@/lib/emailService';
 import { fromAEDTo } from '@/lib/currency';
 import type { CurrencyCode } from '@/lib/currencyData';
 
@@ -196,6 +196,68 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         hotelCheckinTime:    hotelRow?.checkin_time      ?? undefined,
         hotelCheckoutTime:   hotelRow?.checkout_time     ?? undefined,
       });
+
+      // Low inventory alert — fire if remaining slots ≤ 1
+      if (partnerEmail) {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+        const loginUrl = `${siteUrl}/partner`;
+
+        if (input.dealId) {
+          // Deal booking — check deal availability
+          const today    = new Date().toISOString().split('T')[0];
+          const tomorrow = new Date(Date.now() + 86_400_000).toISOString().split('T')[0];
+          const { data: dealData } = await admin
+            .from('partner_deals')
+            .select('quantity_total, title, rooms(name)')
+            .eq('id', input.dealId)
+            .maybeSingle();
+          const { data: dealAvail } = await admin.rpc('get_deal_availability', {
+            p_deal_id:   input.dealId,
+            p_check_in:  today,
+            p_check_out: tomorrow,
+          });
+          const remaining = Number(dealAvail ?? 0);
+          const total     = Number(dealData?.quantity_total ?? 0);
+          if (total > 0 && remaining <= 1) {
+            const roomArr = Array.isArray(dealData?.rooms) ? dealData?.rooms : [dealData?.rooms];
+            const roomName = roomArr?.[0]?.name ?? input.roomName;
+            await sendLowInventoryAlert({
+              partnerEmail,
+              hotelName: input.hotelName,
+              itemName:  dealData?.title ?? roomName,
+              itemType:  'deal',
+              remaining,
+              total,
+              loginUrl,
+            });
+          }
+        } else if (roomId) {
+          // Room booking — check room availability
+          const { data: roomAvail } = await admin.rpc('get_room_availability', {
+            p_room_id:   String(roomId),
+            p_check_in:  input.checkInISO,
+            p_check_out: input.checkOutISO,
+          });
+          const { data: roomData } = await admin
+            .from('rooms')
+            .select('quantity_total')
+            .eq('id', roomId)
+            .maybeSingle();
+          const remaining = Number(roomAvail ?? 0);
+          const total     = Number(roomData?.quantity_total ?? 0);
+          if (total > 0 && remaining <= 1) {
+            await sendLowInventoryAlert({
+              partnerEmail,
+              hotelName: input.hotelName,
+              itemName:  input.roomName,
+              itemType:  'room',
+              remaining,
+              total,
+              loginUrl,
+            });
+          }
+        }
+      }
     } catch (sideErr) {
       console.error('[createBooking] post-insert side effect failed (ignored):', sideErr);
     }
