@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
-import { getMyHotels, getMyRooms, updateMyRoom, type PartnerRoom } from '../actions';
+import { getMyHotels, getMyRooms, updateMyRoom, getTodayRoomRates, type PartnerRoom } from '../actions';
 import { getTranslations } from '@/lib/i18n/translations';
+import { getCurrentTier, calcLivePrice, type PriceTier } from '@/lib/pricingEngine';
+import AEDAmount, { useAEDFormat } from '../components/AEDAmount';
 
 type Room = PartnerRoom;
 
@@ -136,6 +138,8 @@ export default function LastMinRoomPage() {
   const { user, loading: authLoading } = useAuth();
   const t = getTranslations('en');
 
+  const fmt = useAEDFormat();
+
   const [loading,      setLoading]      = useState(true);
   const [rooms,        setRooms]        = useState<Room[]>([]);
   const [hotelIds,     setHotelIds]     = useState<string[]>([]);
@@ -143,6 +147,8 @@ export default function LastMinRoomPage() {
   const [hotelFilter,  setHotelFilter]  = useState('all');
   const [editRoom,     setEditRoom]     = useState<Room | null>(null);
   const [saveMsg,      setSaveMsg]      = useState<string | null>(null);
+  const [todayRates,   setTodayRates]   = useState<Record<string, number>>({});
+  const [tier,         setTier]         = useState<PriceTier>(getCurrentTier());
 
   useEffect(() => {
     if (authLoading) return;
@@ -159,6 +165,13 @@ export default function LastMinRoomPage() {
           setHotelNames(nameMap);
           const myRooms = await getMyRooms();
           setRooms(myRooms);
+          // Load today's calendar rates for live price calculation
+          const allIds = myRooms.map(r => r.id);
+          if (allIds.length) {
+            const rates = await getTodayRoomRates(allIds, 'en');
+            setTodayRates(rates);
+          }
+          setTier(getCurrentTier());
         }
       } catch (err) {
         console.error('[last-min-room] load error:', err);
@@ -262,24 +275,26 @@ export default function LastMinRoomPage() {
         {/* Mobile card list */}
         <div className="sm:hidden divide-y divide-gray-50">
           {filtered.map(room => {
-            const qtyAvailable = room.quantity_available ?? room.available ?? 0;
-            const qtyTotal     = room.quantity_total ?? 1;
+            const qtyAvailable      = room.quantity_available ?? room.available ?? 0;
+            const qtyTotal          = room.quantity_total ?? 1;
+            const basePrice         = Number(room.base_price ?? 0);
+            const minPrice          = Number(room.min_price ?? 0);
+            const minPriceWeekend   = Number(room.min_price_weekend ?? 0) || minPrice;
+            const effectivePrice    = todayRates[room.id] ?? basePrice;
+            const todayDow          = new Date().getDay();
+            const isTodayWeekend    = todayDow === 5 || todayDow === 6 || todayDow === 0;
+            const effectiveMinPrice = isTodayWeekend ? minPriceWeekend : minPrice;
+            const livePrice         = calcLivePrice(effectivePrice, effectiveMinPrice, tier);
             return (
               <div key={room.id} className="px-4 py-4">
-                <div className="flex items-start gap-3 mb-3">
+                <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-gray-900 text-sm truncate">{room.name}</p>
                     {multiHotel && <p className="text-xs text-gray-400 truncate">{hotelNames[room.hotel_id] ?? '—'}</p>}
                   </div>
-                </div>
-                <div className="flex items-center gap-4 mb-3 text-sm">
-                  <div>
-                    <p className="text-xs text-gray-400 font-medium">Total Slots</p>
-                    <p className="font-bold text-gray-800">{qtyTotal}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 font-medium">Available Tonight</p>
-                    <p className={`font-bold ${qtyAvailable === 0 ? 'text-red-500' : qtyAvailable <= 1 ? 'text-amber-600' : 'text-green-600'}`}>{qtyAvailable}</p>
+                  <div className="text-right shrink-0">
+                    <p className="font-bold text-green-600 text-sm"><AEDAmount amount={livePrice} /></p>
+                    <p className="text-xs text-gray-400 line-through"><AEDAmount amount={basePrice} /></p>
                   </div>
                 </div>
                 <div className="mb-3">
@@ -309,15 +324,27 @@ export default function LastMinRoomPage() {
               <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
                 <th className="px-4 py-3">Room Name</th>
                 {multiHotel && <th className="px-3 py-3">Hotel</th>}
-                <th className="px-3 py-3 text-center">Total Slots</th>
+                <th className="px-3 py-3 text-right">Original Price</th>
+                <th className="px-3 py-3 text-right">
+                  Current Price
+                  <span className="block text-[10px] font-normal text-orange-400 normal-case leading-tight">-{tier.discountPercent}% now</span>
+                </th>
                 <th className="px-3 py-3 min-w-[180px]">Available Tonight</th>
                 <th className="px-3 py-3 text-right">{/* actions */}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(room => {
-                const qtyAvailable = room.quantity_available ?? room.available ?? 0;
-                const qtyTotal     = room.quantity_total ?? 1;
+                const qtyAvailable      = room.quantity_available ?? room.available ?? 0;
+                const qtyTotal          = room.quantity_total ?? 1;
+                const basePrice         = Number(room.base_price ?? 0);
+                const minPrice          = Number(room.min_price ?? 0);
+                const minPriceWeekend   = Number(room.min_price_weekend ?? 0) || minPrice;
+                const effectivePrice    = todayRates[room.id] ?? basePrice;
+                const todayDow          = new Date().getDay();
+                const isTodayWeekend    = todayDow === 5 || todayDow === 6 || todayDow === 0;
+                const effectiveMinPrice = isTodayWeekend ? minPriceWeekend : minPrice;
+                const livePrice         = calcLivePrice(effectivePrice, effectiveMinPrice, tier);
                 return (
                   <tr key={room.id} className="hover:bg-gray-50/40 transition-colors border-b border-gray-50 last:border-0">
                     <td className="px-4 py-3">
@@ -331,8 +358,11 @@ export default function LastMinRoomPage() {
                         {hotelNames[room.hotel_id] ?? '—'}
                       </td>
                     )}
-                    <td className="px-3 py-3 text-center">
-                      <span className="font-semibold text-gray-800">{qtyTotal}</span>
+                    <td className="px-3 py-3 text-right">
+                      <span className="text-gray-400 line-through text-xs"><AEDAmount amount={basePrice} /></span>
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      <span className="font-bold text-green-600"><AEDAmount amount={livePrice} /></span>
                     </td>
                     <td className="px-3 py-3 min-w-[180px]">
                       <AvailabilityBar available={qtyAvailable} total={qtyTotal} />
@@ -363,7 +393,7 @@ export default function LastMinRoomPage() {
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={multiHotel ? 5 : 4} className="px-6 py-12 text-center text-gray-400 text-sm">
+                  <td colSpan={multiHotel ? 6 : 5} className="px-6 py-12 text-center text-gray-400 text-sm">
                     {t['partner.rooms.noRooms']}
                   </td>
                 </tr>
