@@ -6,6 +6,7 @@ import {
   getMyDeals,
   getMyRooms,
   createDeal,
+  updateDeal,
   updateDealStatus,
   deleteDeal,
   exportDealsCSV,
@@ -116,6 +117,99 @@ function DealAvailabilityBadge({ deal }: { deal: PartnerDeal }) {
         </>
       )}
     </span>
+  );
+}
+
+// ── Edit Deal Modal ───────────────────────────────────────────────────────────
+
+function EditDealModal({
+  deal,
+  onClose,
+  onSaved,
+}: {
+  deal: PartnerDeal;
+  onClose: () => void;
+  onSaved: (updated: Partial<PartnerDeal>) => void;
+}) {
+  const [price, setPrice]    = useState(String(deal.deal_price));
+  const [qty, setQty]        = useState(String(deal.quantity_total));
+  const [saving, setSaving]  = useState(false);
+  const [err, setErr]        = useState('');
+
+  const { currency } = useAppSettingsStore();
+  const sym = CURRENCY_MAP[currency as CurrencyCode]?.symbol ?? 'AED';
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const p = Number(price);
+    const q = Number(qty);
+    if (!p || p <= 0)  { setErr('Deal price must be greater than 0'); return; }
+    if (!q || q < 1)   { setErr('Quantity must be at least 1'); return; }
+    setSaving(true); setErr('');
+    const aedPrice = toAED(p, currency as CurrencyCode);
+    const result = await updateDeal(deal.id, { deal_price: aedPrice, quantity_total: q });
+    setSaving(false);
+    if (result.error) { setErr(result.error); return; }
+    onSaved({ deal_price: aedPrice, quantity_total: q });
+    onClose();
+  }
+
+  const disc = deal.base_price > 0
+    ? Math.max(0, Math.round((1 - toAED(Number(price) || deal.deal_price, currency as CurrencyCode) / deal.base_price) * 100))
+    : 0;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100">
+          <div>
+            <h2 className="text-base font-bold text-gray-900">Edit Deal</h2>
+            <p className="text-xs text-gray-400 mt-0.5">{deal.room_name} · {deal.hotel_name}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+              Deal Price ({sym}) <span className="text-gray-400 font-normal">— original: {sym}{deal.base_price.toFixed(0)}</span>
+            </label>
+            <input
+              type="number" min="1" step="0.01"
+              value={price} onChange={e => setPrice(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
+            />
+            {disc > 0 && (
+              <p className="text-xs text-emerald-600 mt-1 font-medium">{disc}% discount from original price</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Available Slots (Quantity)</label>
+            <input
+              type="number" min="1" step="1"
+              value={qty} onChange={e => setQty(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
+            />
+            <p className="text-xs text-gray-400 mt-1">Number of rooms available for this deal</p>
+          </div>
+          {err && <p className="text-xs text-red-600">{err}</p>}
+          <div className="flex gap-3 pt-1">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" disabled={saving}
+              className="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-50 transition-all"
+              style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
+              {saving ? 'Saving…' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
@@ -458,6 +552,7 @@ export default function PartnerDealsPage() {
   const [filter,        setFilter]        = useState<DealStatus | 'all'>('all');
   const [showModal,     setShowModal]     = useState(false);
   const [editingRoom,   setEditingRoom]   = useState<DealRoom | null>(null);
+  const [editingDeal,   setEditingDeal]   = useState<PartnerDeal | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [importMsg,     setImportMsg]     = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -487,6 +582,13 @@ export default function PartnerDealsPage() {
   function handleInventorySaved(roomId: number, newTotal: number, newAvailable: number) {
     setRooms((prev) =>
       prev.map((r) => r.id === roomId ? { ...r, quantity_total: newTotal, quantity_available: newAvailable } : r)
+    );
+  }
+
+  function handleDealSaved(updated: Partial<PartnerDeal>) {
+    if (!editingDeal) return;
+    setDeals((prev) =>
+      prev.map((d) => d.id === editingDeal.id ? { ...d, ...updated } : d)
     );
   }
 
@@ -733,6 +835,12 @@ export default function PartnerDealsPage() {
                       {/* Actions */}
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1.5 justify-end flex-wrap">
+                          <button
+                            onClick={() => setEditingDeal(deal)}
+                            className="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                          >
+                            Edit
+                          </button>
                           {deal.status === 'pending_approval' && (
                             <span className="flex items-center gap-1.5 text-orange-600 text-xs font-medium bg-orange-50 border border-orange-200 px-2.5 py-1.5 rounded-lg">
                               <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -785,6 +893,15 @@ export default function PartnerDealsPage() {
           room={editingRoom}
           onClose={() => setEditingRoom(null)}
           onSaved={handleInventorySaved}
+        />
+      )}
+
+      {/* Edit Deal Modal */}
+      {editingDeal && (
+        <EditDealModal
+          deal={editingDeal}
+          onClose={() => setEditingDeal(null)}
+          onSaved={handleDealSaved}
         />
       )}
     </div>

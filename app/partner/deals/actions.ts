@@ -201,6 +201,27 @@ export async function createDeal(
   return {};
 }
 
+// ── updateDeal ────────────────────────────────────────────────────────────────
+
+export async function updateDeal(
+  id: string,
+  fields: { deal_price?: number; quantity_total?: number },
+): Promise<{ error?: string }> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authenticated' };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from('partner_deals')
+    .update(fields)
+    .eq('id', id)
+    .eq('partner_id', user.id);
+
+  if (error) return { error: error.message };
+  return {};
+}
+
 // ── updateDealStatus ──────────────────────────────────────────────────────────
 
 export async function updateDealStatus(
