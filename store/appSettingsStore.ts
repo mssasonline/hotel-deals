@@ -36,7 +36,6 @@ export type Language =
   | 'ko'     // 한국어
   | 'lv'     // Latviski
   | 'uk'     // Українська
-  | 'hi'     // हिन्दी
   | 'id'     // Bahasa Indonesia
   | 'ms'     // Bahasa Malaysia
   | 'th'     // ภาษาไทย
