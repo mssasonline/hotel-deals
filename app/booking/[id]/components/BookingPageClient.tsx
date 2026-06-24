@@ -64,7 +64,7 @@ export default function BookingPageClient({
   const [submitError, setSubmitError] = useState('');
   const [availability, setAvailability] = useState<number | null>(null);
   const [supabaseRoomId, setSupabaseRoomId] = useState<string | null>(null);
-  const { selectedRoom: storeRoom, checkInDate, checkOutDate, guests, confirmBooking, breakfastIncluded, breakfastPricePerPerson } =
+  const { selectedRoom: storeRoom, checkInDate, checkOutDate, guests, confirmBooking, breakfastIncluded, breakfastPricePerPerson, dealId } =
     useBookingStore();
   const currency = useAppSettingsStore((s) => s.currency);
   const currencyInfo = CURRENCY_MAP[currency];
@@ -230,6 +230,7 @@ export default function BookingPageClient({
         breakfastPricePerPerson: hasBreakfast ? breakfastPricePerPerson : 0,
         chargedCurrency:         currency,
         currencySymbol:          currencyInfo.symbol,
+        dealId:                  dealId ?? null,
       });
 
       if (!result.ok) {

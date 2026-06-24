@@ -15,6 +15,7 @@ export type PartnerDeal = {
   room_name: string;
   base_price: number;
   deal_price: number;
+  quantity_total: number;
   title: string | null;
   start_date: string;
   end_date: string;
@@ -36,6 +37,7 @@ export type CreateDealData = {
   hotel_id: number;
   room_id: number;
   deal_price: number;
+  quantity_total: number;
   title?: string;
   start_date: string;
   end_date: string;
@@ -50,7 +52,7 @@ export async function getMyDeals(): Promise<PartnerDeal[]> {
 
   const { data, error } = await supabase
     .from('partner_deals')
-    .select('id, hotel_id, room_id, deal_price, title, start_date, end_date, status, created_at, rooms(name, base_price), hotels(name, city)')
+    .select('id, hotel_id, room_id, deal_price, quantity_total, title, start_date, end_date, status, created_at, rooms(name, base_price), hotels(name, city)')
     .eq('partner_id', user.id)
     .order('created_at', { ascending: false });
 
@@ -67,7 +69,8 @@ export async function getMyDeals(): Promise<PartnerDeal[]> {
       room_id:    Number(row.room_id),
       room_name:  String(room?.name ?? ''),
       base_price: Number(room?.base_price ?? 0),
-      deal_price: Number(row.deal_price),
+      deal_price:     Number(row.deal_price),
+      quantity_total: Number((row as unknown as { quantity_total?: number }).quantity_total ?? 1),
       title:      row.title ? String(row.title) : null,
       start_date: String(row.start_date),
       end_date:   String(row.end_date),
@@ -139,14 +142,15 @@ export async function createDeal(
   const { data: inserted, error } = await admin
     .from('partner_deals')
     .insert({
-      partner_id: user.id,
-      hotel_id:   data.hotel_id,
-      room_id:    data.room_id,
-      deal_price: data.deal_price,
-      title:      data.title ?? null,
-      start_date: data.start_date,
-      end_date:   data.end_date,
-      status:     'pending_approval',
+      partner_id:     user.id,
+      hotel_id:       data.hotel_id,
+      room_id:        data.room_id,
+      deal_price:     data.deal_price,
+      quantity_total: data.quantity_total,
+      title:          data.title ?? null,
+      start_date:     data.start_date,
+      end_date:       data.end_date,
+      status:         'pending_approval',
     })
     .select('id')
     .single();

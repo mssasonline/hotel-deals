@@ -59,12 +59,14 @@ interface BookingStore {
   breakfastIncluded: boolean;
   breakfastPricePerPerson: number;
   bookings: SavedBooking[];
+  dealId: string | null;
 
   setSelectedHotel: (hotel: SelectedHotel) => void;
   setRoom: (room: SelectedRoom | null) => void;
   setDates: (checkIn: string, checkOut: string) => void;
   setGuests: (guests: number) => void;
   setBreakfast: (included: boolean, pricePerPerson: number) => void;
+  setDealId: (id: string | null) => void;
   calculateTotalPrice: () => number;
   confirmBooking: () => string;
   resetBooking: () => void;
@@ -113,6 +115,7 @@ export const useBookingStore = create<BookingStore>()(
       breakfastIncluded: false,
       breakfastPricePerPerson: 0,
       bookings: [],
+      dealId: null,
 
       setSelectedHotel: (hotel) => set({ selectedHotel: hotel }),
 
@@ -132,6 +135,8 @@ export const useBookingStore = create<BookingStore>()(
 
       setBreakfast: (included, pricePerPerson) =>
         set({ breakfastIncluded: included, breakfastPricePerPerson: pricePerPerson }),
+
+      setDealId: (id) => set({ dealId: id }),
 
       calculateTotalPrice: () => {
         const { selectedRoom, checkInDate, checkOutDate, guests, breakfastIncluded, breakfastPricePerPerson } = get();
@@ -195,6 +200,7 @@ export const useBookingStore = create<BookingStore>()(
           totalPrice: 0,
           breakfastIncluded: false,
           breakfastPricePerPerson: 0,
+          dealId: null,
         }),
     }),
     {
@@ -209,6 +215,7 @@ export const useBookingStore = create<BookingStore>()(
         breakfastIncluded: state.breakfastIncluded,
         breakfastPricePerPerson: state.breakfastPricePerPerson,
         bookings: state.bookings,
+        dealId: state.dealId,
       }),
     }
   )

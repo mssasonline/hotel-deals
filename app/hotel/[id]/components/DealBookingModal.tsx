@@ -67,7 +67,7 @@ export default function DealBookingModal({
   const { user } = useAuth();
   const router   = useRouter();
   const pathname = usePathname();
-  const { setRoom, setSelectedHotel, setDates, setGuests, setBreakfast } = useBookingStore();
+  const { setRoom, setSelectedHotel, setDates, setGuests, setBreakfast, setDealId } = useBookingStore();
   const language = useAppSettingsStore((s) => s.language);
   const t = getTranslations(language);
 
@@ -126,7 +126,7 @@ export default function DealBookingModal({
     if (nights <= 0) { setAvailability(null); return; }
     let cancelled = false;
     setCheckingAvail(true);
-    fetch(`/api/availability?room_id=${deal.room_id}&check_in=${checkIn}&check_out=${checkOut}`)
+    fetch(`/api/deal-availability?deal_id=${deal.id}&check_in=${checkIn}&check_out=${checkOut}`)
       .then((r) => r.ok ? r.json() : {})
       .then((data: Record<string, unknown>) => {
         if (!cancelled) {
@@ -136,7 +136,7 @@ export default function DealBookingModal({
       })
       .catch(() => { if (!cancelled) { setAvailability(null); setCheckingAvail(false); } });
     return () => { cancelled = true; };
-  }, [checkIn, checkOut, nights, deal.room_id]);
+  }, [checkIn, checkOut, nights, deal.id]);
 
   function handleContinue() {
     if (!user) {
@@ -165,6 +165,7 @@ export default function DealBookingModal({
     setDates(isoToStored(checkIn), isoToStored(checkOut));
     setGuests(totalGuests);
     setBreakfast(breakfastSelected && hasBreakfast, hasBreakfast ? breakfastPricePerPerson! : 0);
+    setDealId(deal.id);
 
     router.push(`/booking/${hotelId}`);
   }

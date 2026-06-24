@@ -35,6 +35,7 @@ export interface CreateBookingInput {
   breakfastPricePerPerson: number;
   chargedCurrency: CurrencyCode;
   currencySymbol:  string;
+  dealId: string | null;
 }
 
 export type CreateBookingResult =
@@ -107,6 +108,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         tax_amount:       input.taxes,
         locked_price:     input.pricePerNight,
         room_count:                input.roomsCount,
+        deal_id:                   input.dealId ?? null,
         status:                    'upcoming',
         payment_status:            'paid',
         guests_count:              input.guests,

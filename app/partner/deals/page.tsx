@@ -76,6 +76,49 @@ function AvailabilityBadge({
   );
 }
 
+// ── Deal Availability Badge ───────────────────────────────────────────────────
+// Fetches live available slots for a deal's own independent inventory.
+
+function DealAvailabilityBadge({ deal }: { deal: PartnerDeal }) {
+  const [available, setAvailable] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(
+      `/api/deal-availability?deal_id=${deal.id}&check_in=${deal.start_date}&check_out=${deal.end_date}`
+    )
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled) setAvailable(Number(d.available ?? deal.quantity_total)); })
+      .catch(() => { if (!cancelled) setAvailable(deal.quantity_total); });
+    return () => { cancelled = true; };
+  }, [deal.id, deal.start_date, deal.end_date, deal.quantity_total]);
+
+  const total = deal.quantity_total;
+  const avail = available ?? total;
+  const pct   = total > 0 ? avail / total : 0;
+  const color =
+    pct > 0.5 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    : pct > 0   ? 'bg-amber-50 text-amber-700 border-amber-200'
+    :             'bg-red-50 text-red-600 border-red-200';
+
+  return (
+    <span
+      title={`${avail} of ${total} deal slots available`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-xs font-semibold ${color}`}
+    >
+      {available === null ? (
+        <span className="opacity-50">…</span>
+      ) : (
+        <>
+          <span>{avail}</span>
+          <span className="opacity-50">/</span>
+          <span>{total}</span>
+        </>
+      )}
+    </span>
+  );
+}
+
 // ── Edit Inventory Modal ───────────────────────────────────────────────────────
 
 interface EditInventoryModalProps {
@@ -170,6 +213,7 @@ function AddDealModal({ rooms, onClose, onCreated }: AddDealModalProps) {
   const today = new Date().toISOString().split('T')[0];
   const [roomId,     setRoomId]     = useState('');
   const [dealPrice,  setDealPrice]  = useState('');
+  const [quantity,   setQuantity]   = useState('1');
   const [title,      setTitle]      = useState('');
   const [startDate,  setStartDate]  = useState(today);
   const [endDate,    setEndDate]    = useState('');
@@ -204,13 +248,17 @@ function AddDealModal({ rooms, onClose, onCreated }: AddDealModalProps) {
     setSaving(true);
     setErr('');
 
+    const qty = Number(quantity);
+    if (!qty || qty < 1) { setSaving(false); setErr('Quantity must be at least 1.'); return; }
+
     const data: CreateDealData = {
-      hotel_id:   selectedRoom!.hotel_id,
-      room_id:    Number(roomId),
-      deal_price: toAED(Number(dealPrice), currency),
-      title:      title.trim() || undefined,
-      start_date: startDate,
-      end_date:   endDate,
+      hotel_id:       selectedRoom!.hotel_id,
+      room_id:        Number(roomId),
+      deal_price:     toAED(Number(dealPrice), currency),
+      quantity_total: qty,
+      title:          title.trim() || undefined,
+      start_date:     startDate,
+      end_date:       endDate,
     };
 
     const result = await createDeal(data);
@@ -287,6 +335,21 @@ function AddDealModal({ rooms, onClose, onCreated }: AddDealModalProps) {
                 </span>
               )}
             </div>
+          </div>
+
+          {/* Quantity */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">Number of Rooms for this Deal *</label>
+            <input
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              placeholder="e.g. 3"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
+              required
+            />
+            <p className="text-xs text-gray-400 mt-1">Independent from your rooms inventory. This is the deal-specific stock.</p>
           </div>
 
           {/* Title (optional) */}
@@ -659,15 +722,9 @@ export default function PartnerDealsPage() {
                       {/* Dates */}
                       <td className="px-4 py-3.5 text-gray-600 whitespace-nowrap">{fmtDate(deal.start_date)}</td>
                       <td className="px-4 py-3.5 text-gray-600 whitespace-nowrap">{fmtDate(deal.end_date)}</td>
-                      {/* Availability */}
+                      {/* Availability — deal's own independent stock */}
                       <td className="px-4 py-3.5 text-center">
-                        {roomInfo ? (
-                          <AvailabilityBadge
-                            available={roomInfo.quantity_available}
-                            total={roomInfo.quantity_total}
-                            onClick={() => setEditingRoom(roomInfo)}
-                          />
-                        ) : '—'}
+                        <DealAvailabilityBadge deal={deal} />
                       </td>
                       {/* Status */}
                       <td className="px-4 py-3.5 text-center">
