@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import AdminSidebar from './components/AdminSidebar';
+import AdminMobileHeader from './components/AdminMobileHeader';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 
 export const metadata: Metadata = {
@@ -29,9 +30,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="flex min-h-screen bg-[#F8FAFC]">
       <AdminSidebar />
-      <main className="flex-1 min-w-0 overflow-auto">
-        {children}
-      </main>
+      <div className="flex flex-col flex-1 min-w-0 overflow-auto">
+        <AdminMobileHeader />
+        <main className="flex-1">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

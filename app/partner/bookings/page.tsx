@@ -166,7 +166,75 @@ export default function BookingsPage() {
 
       {/* Bookings table */}
       <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(30,58,138,0.08)', boxShadow: '0 2px 12px rgba(15,34,96,0.06)' }}>
-        <div className="overflow-x-auto">
+
+        {/* Mobile card list */}
+        <div className="sm:hidden divide-y divide-gray-50">
+          {filtered.map(b => {
+            const cfg = BOOKING_STATUS_STYLE[b.status];
+            const payClass =
+              b.payment_status === 'paid'     ? 'bg-green-50 text-green-700'   :
+              b.payment_status === 'pending'  ? 'bg-amber-50 text-amber-700'   :
+              b.payment_status === 'refunded' ? 'bg-purple-50 text-purple-700' :
+              'bg-gray-100 text-gray-600';
+            const statusLabel = cfg ? (t[cfg.key as keyof typeof t] as string ?? b.status) : b.status.replace(/_/g, ' ');
+            const nights = calcNightsFromDates(b.check_in, b.check_out);
+            const roomSub = estimateRoomSubtotal(b.total_price, b.subtotal, nights);
+            return (
+              <Fragment key={b.id}>
+                <div className="px-4 py-4">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-gray-900 text-sm truncate">{b.guest_name}</p>
+                      <p className="text-xs text-gray-400 truncate">{b.guest_email}</p>
+                    </div>
+                    <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${cfg?.bg ?? 'bg-gray-100'} ${cfg?.text ?? 'text-gray-600'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${cfg?.dot ?? 'bg-gray-400'}`} />
+                      {statusLabel}
+                    </span>
+                  </div>
+                  {multiHotel && hotelNames[b.hotel_id] && (
+                    <p className="text-xs text-gray-500 mb-1 truncate">{hotelNames[b.hotel_id]}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mb-1">{b.rooms?.name ?? '—'}</p>
+                  <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
+                    <span>{b.check_in}</span>
+                    <span>→</span>
+                    <span>{b.check_out}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold capitalize ${payClass}`}>
+                      {b.payment_status ?? '—'}
+                    </span>
+                    {(b.total_price ?? 0) > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => setExpandedId(expandedId === b.id ? null : b.id)}
+                        className="flex items-center gap-1 font-bold text-gray-900"
+                      >
+                        <AEDAmount amount={b.total_price} />
+                        <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${expandedId === b.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    ) : (
+                      <span className="text-gray-400 text-sm">—</span>
+                    )}
+                  </div>
+                  {expandedId === b.id && (b.total_price ?? 0) > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <TaxFeeBreakdown roomSubtotal={roomSub} nights={nights} />
+                    </div>
+                  )}
+                </div>
+              </Fragment>
+            );
+          })}
+          {filtered.length === 0 && (
+            <p className="px-4 py-10 text-center text-gray-400 text-sm">{t['partner.bookings.noResults']}</p>
+          )}
+        </div>
+
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">

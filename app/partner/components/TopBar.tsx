@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/authContext';
 import NotificationBell from '@/app/components/NotificationBell';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import type { CurrencyCode } from '@/store/appSettingsStore';
+import { useSidebarStore } from '@/store/sidebarStore';
 import { CURRENCIES } from '@/lib/currencyData';
 import { getTranslations } from '@/lib/i18n/translations';
 
@@ -40,6 +41,7 @@ export default function PartnerTopBar() {
   const currency    = useAppSettingsStore(s => s.currency);
   const setCurrency = useAppSettingsStore(s => s.setCurrency);
   const t = getTranslations('en');
+  const setMobileOpen = useSidebarStore(s => s.setMobileOpen);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -78,6 +80,17 @@ export default function PartnerTopBar() {
 
   return (
     <header className="sticky top-0 z-40 h-16 flex items-center px-6 gap-4 shrink-0" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(30,58,138,0.10)', boxShadow: '0 2px 16px rgba(15,34,96,0.08), 0 1px 0 rgba(255,255,255,0.8)' }}>
+      {/* Hamburger — mobile only */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="lg:hidden p-2 rounded-xl text-brand-blue hover:bg-brand-blue/5 transition-colors shrink-0 -ml-1"
+        aria-label="Open menu"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
       {/* Page title */}
       <div className="flex-1 min-w-0">
         <span className="text-lg font-bold tracking-tight" style={{ color: '#0F2260', fontFamily: 'var(--font-playfair, Georgia, serif)' }}>{pageTitle}</span>

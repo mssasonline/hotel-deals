@@ -211,7 +211,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl">
       {/* Premium page header */}
       <div className="mb-8 rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)', boxShadow: '0 4px 24px rgba(15,34,96,0.18)' }}>
         <div className="px-6 py-5 flex items-center justify-between gap-4">
@@ -318,7 +318,7 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
               <div>
                 <p className="text-white/60 text-sm font-medium mb-1">{t['partner.dash.totalRevenue']}</p>
-                <p className="text-4xl font-bold text-white"><AEDAmount amount={grossRevenue} /></p>
+                <p className="text-2xl sm:text-4xl font-bold text-white"><AEDAmount amount={grossRevenue} /></p>
                 <p className="text-white/50 text-xs mt-1">{t['partner.dash.sumPaid']}</p>
               </div>
               <div className="flex items-center gap-3 bg-white/10 rounded-xl px-5 py-4 shrink-0">
@@ -332,25 +332,25 @@ export default function DashboardPage() {
               </div>
             </div>
             {/* Revenue split breakdown */}
-            <div className="grid grid-cols-4 gap-3">
-              <div className="bg-white/10 rounded-xl px-4 py-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              <div className="bg-white/10 rounded-xl px-3 py-3 sm:px-4">
                 <p className="text-white/50 text-xs mb-1">{t['partner.dash.totalRevBox']}</p>
-                <p className="text-white font-bold text-lg"><AEDAmount amount={grossRevenue} /></p>
+                <p className="text-white font-bold text-base sm:text-lg"><AEDAmount amount={grossRevenue} /></p>
                 <p className="text-white/40 text-xs mt-0.5">Guest paid</p>
               </div>
-              <div className="bg-white/5 rounded-xl px-4 py-3">
+              <div className="bg-white/5 rounded-xl px-3 py-3 sm:px-4">
                 <p className="text-white/40 text-xs mb-1">Taxes (15%)</p>
-                <p className="text-white/60 font-bold text-lg"><AEDAmount amount={taxCollected} /></p>
+                <p className="text-white/60 font-bold text-base sm:text-lg"><AEDAmount amount={taxCollected} /></p>
                 <p className="text-white/30 text-xs mt-0.5">Gov. collected</p>
               </div>
-              <div className="bg-emerald-500/20 border border-emerald-400/30 rounded-xl px-4 py-3">
+              <div className="bg-emerald-500/20 border border-emerald-400/30 rounded-xl px-3 py-3 sm:px-4">
                 <p className="text-emerald-200 text-xs mb-1">{t['partner.dash.partnerShare'].replace(/\d+%/, `${100 - commissionRate}%`)}</p>
-                <p className="text-white font-bold text-lg"><AEDAmount amount={partnerRevenue} /></p>
+                <p className="text-white font-bold text-base sm:text-lg"><AEDAmount amount={partnerRevenue} /></p>
                 <p className="text-emerald-300/70 text-xs mt-0.5">{t['partner.dash.netIncome']}</p>
               </div>
-              <div className="bg-white/5 rounded-xl px-4 py-3">
+              <div className="bg-white/5 rounded-xl px-3 py-3 sm:px-4">
                 <p className="text-white/40 text-xs mb-1">{t['partner.dash.platformFee'].replace(/\d+%/, `${commissionRate}%`)}</p>
-                <p className="text-white/60 font-bold text-lg"><AEDAmount amount={adminRevenue} /></p>
+                <p className="text-white/60 font-bold text-base sm:text-lg"><AEDAmount amount={adminRevenue} /></p>
                 <p className="text-white/30 text-xs mt-0.5">{t['partner.dash.serviceFee']}</p>
               </div>
             </div>
@@ -367,7 +367,47 @@ export default function DashboardPage() {
                 {t['partner.viewAll']}
               </a>
             </div>
-            <div className="overflow-x-auto">
+            {/* Mobile card list */}
+            <div className="sm:hidden divide-y divide-gray-50">
+              {upcomingBookings.map(b => (
+                <div key={b.id} className="px-4 py-4">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-gray-900 text-sm truncate">{b.guest_name}</p>
+                      <p className="text-xs text-gray-400 truncate">{b.guest_email}</p>
+                    </div>
+                    <StatusBadge status={b.status} t={t} />
+                  </div>
+                  <p className="text-xs text-gray-500 mb-1">{b.rooms?.name ?? '—'}</p>
+                  <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
+                    <span>{b.check_in}</span>
+                    <span>→</span>
+                    <span>{b.check_out}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400 font-mono">{String(b.id).slice(0, 8)}…</span>
+                    <div className="text-right">
+                      {b.payment_status === 'paid' ? (
+                        <>
+                          <p className="text-sm font-bold text-gray-900"><AEDAmount amount={b.total_price ?? 0} /></p>
+                          {b.partner_amount != null && (
+                            <p className="text-xs font-semibold text-emerald-600"><AEDAmount amount={b.partner_amount} /></p>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-gray-400 text-sm">—</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {bookings.length === 0 && (
+                <p className="px-4 py-10 text-center text-gray-400 text-sm">{t['partner.dash.noBookings']}</p>
+              )}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">

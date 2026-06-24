@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/authContext';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 import type { TranslationKey } from '@/lib/i18n/translations';
+import { useSidebarStore } from '@/store/sidebarStore';
 
 // ─── Nav item definitions ─────────────────────────────────────────────────────
 
@@ -169,6 +170,7 @@ export default function SharedSidebar({ variant }: Props) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const { user } = useAuth();
+  const { mobileOpen, setMobileOpen } = useSidebarStore();
 
   const language = useAppSettingsStore((s) => s.language);
   const t = getTranslations(language);
@@ -202,8 +204,26 @@ export default function SharedSidebar({ variant }: Props) {
   }
 
   return (
+    <>
+    {/* Desktop flex spacer — takes the sidebar's width in the flex row */}
+    <div className={`hidden lg:block shrink-0 transition-all duration-300 ${collapsed ? 'lg:w-16' : 'lg:w-64'}`} />
+
+    {/* Mobile backdrop */}
+    {mobileOpen && (
+      <div
+        className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+        onClick={() => setMobileOpen(false)}
+      />
+    )}
     <aside
-      className={`${collapsed ? 'w-16' : 'w-64'} flex-shrink-0 flex flex-col transition-all duration-300 min-h-screen relative overflow-hidden`}
+      className={`
+        fixed inset-y-0 left-0 z-50
+        ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
+        w-64
+        lg:translate-x-0
+        ${collapsed ? 'lg:w-16' : 'lg:w-64'}
+        flex flex-col transition-all duration-300 overflow-hidden
+      `}
       style={{ background: 'linear-gradient(180deg, #0A1A4F 0%, #0F2260 40%, #111F58 100%)' }}
     >
       {/* Decorative background glow */}
@@ -228,15 +248,26 @@ export default function SharedSidebar({ variant }: Props) {
             </span>
           </Link>
         )}
+        {/* Desktop: collapse toggle */}
         <button
           onClick={() => setCollapsed((v) => !v)}
-          className="text-white/30 hover:text-white/80 transition-colors ml-auto shrink-0 p-1 rounded-lg hover:bg-white/5"
+          className="text-white/30 hover:text-white/80 transition-colors ml-auto shrink-0 p-1 rounded-lg hover:bg-white/5 hidden lg:flex"
           aria-label="Toggle sidebar"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {collapsed
               ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />}
+          </svg>
+        </button>
+        {/* Mobile: close button */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="text-white/30 hover:text-white/80 transition-colors ml-auto shrink-0 p-1 rounded-lg hover:bg-white/5 lg:hidden"
+          aria-label="Close sidebar"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
@@ -252,6 +283,7 @@ export default function SharedSidebar({ variant }: Props) {
               key={href}
               href={href}
               title={collapsed ? label : undefined}
+              onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer ${
                 active
                   ? 'text-white'
@@ -324,5 +356,6 @@ export default function SharedSidebar({ variant }: Props) {
         )}
       </div>
     </aside>
+    </>
   );
 }
