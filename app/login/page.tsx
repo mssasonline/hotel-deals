@@ -28,7 +28,7 @@ export default function LoginPage() {
   const [forgotError, setForgotError]     = useState('');
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && role !== null) {
       if (role === 'partner') router.replace('/partner/dashboard');
       else if (role === 'admin') router.replace('/admin/dashboard');
       else router.replace('/');
