@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
+import { useAppSettingsStore } from '@/store/appSettingsStore';
+import { getTranslations } from '@/lib/i18n/translations';
 
 // Dedicated non-SSR client for recovery flow — avoids conflicts with @supabase/ssr cookie management
 const recoveryClient = createClient(
@@ -13,6 +15,8 @@ const recoveryClient = createClient(
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const language = useAppSettingsStore((s) => s.language);
+  const t = getTranslations(language);
   const [ready, setReady]       = useState(false);
   const [expired, setExpired]   = useState(false);
   const [password, setPassword] = useState('');
@@ -47,11 +51,11 @@ export default function ResetPasswordPage() {
     setError(null);
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError(t['reset.errorMinChars']);
       return;
     }
     if (password !== confirm) {
-      setError('Passwords do not match');
+      setError(t['reset.errorNoMatch']);
       return;
     }
 
@@ -99,8 +103,8 @@ export default function ResetPasswordPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-lg font-bold text-gray-900">Password Updated</h1>
-          <p className="text-sm text-gray-400 mt-1">Redirecting you now…</p>
+          <h1 className="text-lg font-bold text-gray-900">{t['reset.passwordUpdated']}</h1>
+          <p className="text-sm text-gray-400 mt-1">{t['reset.redirecting']}</p>
         </div>
       </div>
     );
@@ -117,13 +121,13 @@ export default function ResetPasswordPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h1 className="text-lg font-bold text-gray-900">Link Expired</h1>
-              <p className="text-sm text-gray-400 mt-1">This reset link is invalid or has expired. Request a new one.</p>
+              <h1 className="text-lg font-bold text-gray-900">{t['reset.linkExpired']}</h1>
+              <p className="text-sm text-gray-400 mt-1">{t['reset.linkExpiredDesc']}</p>
             </>
           ) : (
             <>
               <div className="w-8 h-8 border-4 border-brand-blue/20 border-t-brand-blue rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-sm text-gray-400">Verifying reset link…</p>
+              <p className="text-sm text-gray-400">{t['reset.verifying']}</p>
             </>
           )}
         </div>
@@ -135,32 +139,32 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-sm">
         <div className="px-8 pt-8 pb-2">
-          <h1 className="text-xl font-bold text-gray-900">Set New Password</h1>
-          <p className="text-sm text-gray-400 mt-1">Choose a strong password for your account.</p>
+          <h1 className="text-xl font-bold text-gray-900">{t['reset.setNewPassword']}</h1>
+          <p className="text-sm text-gray-400 mt-1">{t['reset.chooseStrong']}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="p-8 pt-5 space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">New Password</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t['reset.newPassword']}</label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
               minLength={8}
-              placeholder="Minimum 8 characters"
+              placeholder={t['reset.minCharsPlaceholder']}
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Confirm Password</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t['reset.confirmPassword']}</label>
             <input
               type="password"
               value={confirm}
               onChange={e => setConfirm(e.target.value)}
               required
-              placeholder="Repeat your password"
+              placeholder={t['reset.repeatPasswordPlaceholder']}
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
             />
           </div>
@@ -178,7 +182,7 @@ export default function ResetPasswordPage() {
             style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
           >
             {loading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-            {loading ? 'Saving…' : 'Save New Password'}
+            {loading ? t['reset.saving'] : t['reset.saveNewPassword']}
           </button>
         </form>
       </div>

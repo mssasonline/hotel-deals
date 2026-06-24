@@ -17,8 +17,32 @@ export default function AuthCallbackPage() {
         await supabase.auth.exchangeCodeForSession(code);
       }
 
-      const redirect = consumeLoginRedirect('/');
-      router.replace(redirect);
+      // If a pre-login redirect was saved (e.g. from a protected page), honour it
+      const savedRedirect = consumeLoginRedirect('');
+      if (savedRedirect) {
+        router.replace(savedRedirect);
+        return;
+      }
+
+      // Otherwise redirect based on role
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profile?.role === 'partner') {
+          router.replace('/partner/dashboard');
+        } else if (profile?.role === 'admin') {
+          router.replace('/admin/dashboard');
+        } else {
+          router.replace('/');
+        }
+      } else {
+        router.replace('/');
+      }
     }
 
     handleCallback();

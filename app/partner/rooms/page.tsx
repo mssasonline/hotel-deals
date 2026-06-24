@@ -612,8 +612,7 @@ function AddRoomModal({ hotelIds, hotelNames, onAdd, onClose, t }: AddRoomModalP
 export default function RoomsPage() {
   const router   = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const language = useAppSettingsStore(s => s.language);
-  const t        = getTranslations(language);
+  const t = getTranslations('en');
 
   const [loading, setLoading]         = useState(true);
   const [rooms, setRooms]             = useState<Room[]>([]);

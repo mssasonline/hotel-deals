@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import type { PaymentMethod, CardDetails, CardNetworkType } from '../lib/types';
 import CurrencyAmount from '@/app/components/CurrencyAmount';
+import { useAppSettingsStore } from '@/store/appSettingsStore';
+import { getTranslations } from '@/lib/i18n/translations';
 
 interface Props {
   method: PaymentMethod;
@@ -68,6 +70,8 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export default function CardPaymentForm({ method, onSubmit, isProcessing, totalPrice }: Props) {
+  const language = useAppSettingsStore((s) => s.language);
+  const t = getTranslations(language);
   const [form, setForm] = useState<CardDetails>({
     cardholderName: '',
     cardNumber: '',
@@ -86,32 +90,32 @@ export default function CardPaymentForm({ method, onSubmit, isProcessing, totalP
   function validateField(field: FieldKey, value: string): string | undefined {
     switch (field) {
       case 'cardholderName':
-        if (!value.trim()) return 'Cardholder name is required';
-        if (value.trim().length < 2) return 'Enter your full name';
+        if (!value.trim()) return t['payment.err.nameRequired'];
+        if (value.trim().length < 2) return t['payment.err.nameMin'];
         break;
       case 'cardNumber': {
         const digits = value.replace(/\s/g, '');
-        if (!digits) return 'Card number is required';
-        if (digits.length !== maxCardDigits) return `Must be ${maxCardDigits} digits`;
+        if (!digits) return t['payment.err.cardRequired'];
+        if (digits.length !== maxCardDigits) return t['payment.err.mustBeDigits'].replace('{n}', String(maxCardDigits));
         break;
       }
       case 'expiryDate': {
-        if (!value || value.length < 5) return 'Enter expiry as MM/YY';
+        if (!value || value.length < 5) return t['payment.err.expiryFormat'];
         const [m, y] = value.split('/');
         const month = parseInt(m);
         const year = 2000 + parseInt(y || '0');
         const now = new Date();
-        if (month < 1 || month > 12) return 'Invalid month';
+        if (month < 1 || month > 12) return t['payment.err.invalidMonth'];
         if (
           year < now.getFullYear() ||
           (year === now.getFullYear() && month < now.getMonth() + 1)
         )
-          return 'Card has expired';
+          return t['payment.err.cardExpired'];
         break;
       }
       case 'cvv':
-        if (!value) return 'CVV is required';
-        if (value.length !== maxCvvLen) return `Must be ${maxCvvLen} digits`;
+        if (!value) return t['payment.err.cvvRequired'];
+        if (value.length !== maxCvvLen) return t['payment.err.mustBeDigits'].replace('{n}', String(maxCvvLen));
         break;
     }
     return undefined;
@@ -174,16 +178,16 @@ export default function CardPaymentForm({ method, onSubmit, isProcessing, totalP
             </div>
             <div>
               <h2 className="font-bold text-gray-900 text-lg leading-tight">
-                {isDebit ? 'Debit Card' : 'Credit Card'}
+                {isDebit ? t['payment.debitCardTitle'] : t['payment.creditCardTitle']}
               </h2>
-              <p className="text-gray-400 text-xs">Your info is encrypted &amp; secure</p>
+              <p className="text-gray-400 text-xs">{t['payment.encryptedNote']}</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
             <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
             </svg>
-            <span className="text-green-600 text-xs font-semibold">SSL Secured</span>
+            <span className="text-green-600 text-xs font-semibold">{t['payment.sslSecured']}</span>
           </div>
         </div>
       </div>
@@ -192,7 +196,7 @@ export default function CardPaymentForm({ method, onSubmit, isProcessing, totalP
         <div className="px-6 py-5 space-y-4">
           {/* Accepted card networks */}
           <div className="flex items-center gap-2">
-            <span className="text-gray-400 text-xs font-medium">Accepted:</span>
+            <span className="text-gray-400 text-xs font-medium">{t['payment.accepted']}</span>
             <CardNetworkBadge type="VISA" active={cardType === 'visa'} />
             <CardNetworkBadge type="MC" active={cardType === 'mastercard'} />
             <CardNetworkBadge type="AMEX" active={cardType === 'amex'} />
@@ -201,7 +205,7 @@ export default function CardPaymentForm({ method, onSubmit, isProcessing, totalP
           {/* Cardholder name */}
           <div>
             <label htmlFor="cardholderName" className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Cardholder Name
+              {t['payment.cardHolder']}
             </label>
             <div className="relative">
               <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -219,7 +223,7 @@ export default function CardPaymentForm({ method, onSubmit, isProcessing, totalP
               <input
                 id="cardholderName"
                 type="text"
-                placeholder="Name as it appears on card"
+                placeholder={t['payment.cardNamePlaceholder']}
                 value={form.cardholderName}
                 onChange={(e) => handleChange('cardholderName', e.target.value)}
                 onBlur={() => handleBlur('cardholderName')}
@@ -233,7 +237,7 @@ export default function CardPaymentForm({ method, onSubmit, isProcessing, totalP
           {/* Card number */}
           <div>
             <label htmlFor="cardNumber" className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Card Number
+              {t['payment.cardNumber']}
             </label>
             <div className="relative">
               <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -265,7 +269,7 @@ export default function CardPaymentForm({ method, onSubmit, isProcessing, totalP
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="expiryDate" className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Expiry Date
+                {t['payment.expiry']}
               </label>
               <input
                 id="expiryDate"
@@ -284,7 +288,7 @@ export default function CardPaymentForm({ method, onSubmit, isProcessing, totalP
 
             <div>
               <label htmlFor="cvv" className="block text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-1">
-                CVV
+                {t['payment.cvv']}
                 <span
                   className="inline-flex items-center justify-center w-3.5 h-3.5 bg-gray-200 text-gray-500 text-[9px] rounded-full cursor-help"
                   title={`${maxCvvLen}-digit code on the ${isAmex ? 'front' : 'back'} of your card`}
@@ -333,7 +337,7 @@ export default function CardPaymentForm({ method, onSubmit, isProcessing, totalP
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
             <p className="text-gray-400 text-xs">
-              Your card details are protected by 256-bit SSL encryption. We never store your CVV.
+              {t['payment.securityNote']}
             </p>
           </div>
 
@@ -350,14 +354,14 @@ export default function CardPaymentForm({ method, onSubmit, isProcessing, totalP
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Processing Payment...
+                {t['payment.processing']}
               </>
             ) : (
               <>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                Pay <CurrencyAmount amount={totalPrice} /> Securely
+                {t['payment.paySecurely']} — <CurrencyAmount amount={totalPrice} />
               </>
             )}
           </button>
@@ -366,7 +370,7 @@ export default function CardPaymentForm({ method, onSubmit, isProcessing, totalP
             <svg className="w-3.5 h-3.5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            Reserve with confidence — secure booking guarantee
+            {t['payment.reserveGuarantee']}
           </p>
         </div>
       </form>

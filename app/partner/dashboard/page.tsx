@@ -9,7 +9,6 @@ import DashboardCard from '../components/DashboardCard';
 import AEDAmount, { useAEDFormat } from '../components/AEDAmount';
 import SetupChecklist, { type SetupProgress } from '../components/SetupChecklist';
 import { type Booking, type RawBookingRow, normalizeBooking } from '@/lib/types';
-import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 
 type Hotel = {
@@ -171,8 +170,7 @@ export default function DashboardPage() {
 
   const selectedHotel = hotels.find(h => h.id === selectedId);
   const fmt      = useAEDFormat();
-  const language = useAppSettingsStore(s => s.language);
-  const t        = getTranslations(language);
+  const t = getTranslations('en');
 
   const setupProgress: SetupProgress = {
     hasDescription: !!(selectedHotel as unknown as { description?: string } | undefined)?.description?.trim(),

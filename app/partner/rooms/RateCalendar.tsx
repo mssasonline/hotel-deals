@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getRoomRates, upsertRoomRates, deleteRoomRate, updateMyRoom, type RoomRate } from '../actions';
-import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 import { useAEDFormat } from '../components/AEDAmount';
 
@@ -181,8 +180,8 @@ interface Props {
 export default function RateCalendar({
   roomId, roomName, basePrice, minPrice, minPriceWeekend, onClose, onPricingUpdate,
 }: Props) {
-  const language = useAppSettingsStore(s => s.language);
-  const t        = getTranslations(language);
+  const t = getTranslations('en');
+  const language = 'en' as const;
   const fmt      = useAEDFormat();
 
   const now  = new Date();

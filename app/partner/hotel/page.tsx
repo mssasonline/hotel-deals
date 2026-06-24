@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import { getTranslations } from '@/lib/i18n/translations';
-import { useAppSettingsStore } from '@/store/appSettingsStore';
 import {
   getMyHotels,
   getMyHotelImages,
@@ -257,8 +256,7 @@ function AmenityPicker({
 function AddHotelModal({
   onClose, onCreated,
 }: { onClose: () => void; onCreated: (hotel: PartnerHotel) => void }) {
-  const language = useAppSettingsStore(s => s.language);
-  const t = getTranslations(language);
+  const t = getTranslations('en');
 
   const [form, setForm] = useState({ name: '', city: '', country: '', address: '', description: '', star_rating: '4', category: 'Hotel' });
   const [saving, setSaving] = useState(false);
@@ -357,8 +355,7 @@ function AddHotelModal({
 export default function HotelsPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const language = useAppSettingsStore(s => s.language);
-  const t = getTranslations(language);
+  const t = getTranslations('en');
 
   // ── Page state
   const [loading, setLoading]         = useState(true);

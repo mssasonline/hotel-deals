@@ -1,7 +1,6 @@
 'use client';
 
 import { Fragment, useEffect, useState } from 'react';
-import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 import AEDAmount, { useAEDFormat } from '../components/AEDAmount';
 import { getMyBookings, type BookingRow } from '../actions';
@@ -38,8 +37,7 @@ function Spinner() {
 }
 
 export default function BookingsPage() {
-  const language = useAppSettingsStore(s => s.language);
-  const t        = getTranslations(language);
+  const t = getTranslations('en');
   const fmt      = useAEDFormat();
   const [loading, setLoading]           = useState(true);
   const [bookings, setBookings]         = useState<Booking[]>([]);

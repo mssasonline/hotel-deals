@@ -7,10 +7,14 @@ import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/authContext';
+import { useAppSettingsStore } from '@/store/appSettingsStore';
+import { getTranslations } from '@/lib/i18n/translations';
 
 export default function SignupPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
+  const language = useAppSettingsStore((s) => s.language);
+  const t = getTranslations(language);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,15 +35,15 @@ export default function SignupPage() {
     setError('');
 
     if (!name.trim()) {
-      setError('Please enter your full name.');
+      setError(t['form.errorFullName']);
       return;
     }
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Please enter a valid email address.');
+      setError(t['login.errorInvalidEmail']);
       return;
     }
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError(t['signup.errorPasswordMin']);
       return;
     }
 
@@ -82,16 +86,16 @@ export default function SignupPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-gray-900 font-extrabold text-2xl mb-2">Check your email</h2>
+              <h2 className="text-gray-900 font-extrabold text-2xl mb-2">{t['signup.checkYourEmail']}</h2>
               <p className="text-gray-500 text-sm mb-6">
-                We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.
+                {t['signup.confirmationSentTo']} <strong>{email}</strong>. {t['signup.clickToActivate']}
               </p>
               <Link
                 href="/login"
                 className="inline-block text-white font-bold px-6 py-3 rounded-xl transition-all hover:-translate-y-0.5 text-sm"
                 style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)', boxShadow: '0 4px 14px rgba(30,58,138,0.3)' }}
               >
-                Back to Sign In
+                {t['signup.backToSignIn']}
               </Link>
             </div>
           </div>
@@ -124,8 +128,8 @@ export default function SignupPage() {
               <div className="flex items-center gap-3">
                 <div className="w-1 h-6 rounded-full shrink-0" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
                 <div>
-                  <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>Create your account</h1>
-                  <p className="text-white/45 text-xs mt-0.5">Join thousands of smart travelers</p>
+                  <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', color: '#fff' }}>{t['signup.createAccount']}</h1>
+                  <p className="text-white/45 text-xs mt-0.5">{t['signup.tagline']}</p>
                 </div>
               </div>
             </div>
@@ -133,9 +137,9 @@ export default function SignupPage() {
             {/* Perks row */}
             <div className="bg-brand-blue-light px-8 py-4 grid grid-cols-3 gap-2 border-b border-brand-blue/10">
               {[
-                { icon: '🔓', text: 'Free forever' },
-                { icon: '⚡', text: 'Instant access' },
-                { icon: '💳', text: 'No card needed' },
+                { icon: '🔓', text: t['signup.freeForever'] },
+                { icon: '⚡', text: t['signup.instantAccess'] },
+                { icon: '💳', text: t['signup.noCardNeeded'] },
               ].map((p) => (
                 <div key={p.text} className="text-center">
                   <div className="text-lg leading-none">{p.icon}</div>
@@ -177,7 +181,7 @@ export default function SignupPage() {
                       <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                     </svg>
                   )}
-                  Continue with Google
+                  {t['login.continueGoogle']}
                 </button>
 
                 <button
@@ -196,14 +200,14 @@ export default function SignupPage() {
                       <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
                     </svg>
                   )}
-                  Continue with GitHub
+                  {t['login.continueGithub']}
                 </button>
               </div>
 
               {/* Divider */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-gray-100" />
-                <span className="text-gray-400 text-xs font-medium">or sign up with email</span>
+                <span className="text-gray-400 text-xs font-medium">{t['signup.orSignUpEmail']}</span>
                 <div className="flex-1 h-px bg-gray-100" />
               </div>
 
@@ -212,7 +216,7 @@ export default function SignupPage() {
                 {/* Name */}
                 <div className="space-y-1.5">
                   <label htmlFor="name" className="block text-sm font-semibold text-gray-700">
-                    Full name
+                    {t['form.fullName']}
                   </label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center">
@@ -235,7 +239,7 @@ export default function SignupPage() {
                 {/* Email */}
                 <div className="space-y-1.5">
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
-                    Email address
+                    {t['form.emailAddress']}
                   </label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center">
@@ -258,8 +262,8 @@ export default function SignupPage() {
                 {/* Password */}
                 <div className="space-y-1.5">
                   <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
-                    Password
-                    <span className="text-gray-400 font-normal ml-1.5">(min 6 characters)</span>
+                    {t['login.password']}
+                    <span className="text-gray-400 font-normal ml-1.5">{t['signup.passwordMinHint']}</span>
                   </label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center">
@@ -272,7 +276,7 @@ export default function SignupPage() {
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Create a password"
+                      placeholder={t['signup.createPasswordPlaceholder']}
                       autoComplete="new-password"
                       className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10 transition-all"
                     />
@@ -280,7 +284,7 @@ export default function SignupPage() {
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
                       className="absolute inset-y-0 right-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      aria-label={showPassword ? t['login.hidePassword'] : t['login.showPassword']}
                     >
                       {showPassword ? (
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,25 +313,25 @@ export default function SignupPage() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
-                      Creating account…
+                      {t['signup.creatingAccount']}
                     </span>
                   ) : (
-                    'Create free account'
+                    t['signup.createFreeAccount']
                   )}
                 </button>
 
                 <p className="text-center text-gray-400 text-xs">
-                  By signing up you agree to our{' '}
-                  <span className="text-brand-blue cursor-pointer hover:underline">Terms of Service</span>
-                  {' '}and{' '}
-                  <span className="text-brand-blue cursor-pointer hover:underline">Privacy Policy</span>.
+                  {t['signup.termsAgreePrefix']}{' '}
+                  <span className="text-brand-blue cursor-pointer hover:underline">{t['footer.termsOfService']}</span>
+                  {' '}{t['signup.and']}{' '}
+                  <span className="text-brand-blue cursor-pointer hover:underline">{t['footer.privacyPolicy']}</span>.
                 </p>
               </form>
 
               {/* Divider */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-gray-100" />
-                <span className="text-gray-400 text-xs font-medium">Already have an account?</span>
+                <span className="text-gray-400 text-xs font-medium">{t['signup.alreadyHaveAccount']}</span>
                 <div className="flex-1 h-px bg-gray-100" />
               </div>
 
@@ -336,7 +340,7 @@ export default function SignupPage() {
                 href="/login"
                 className="block w-full text-center border-2 border-brand-blue text-brand-blue hover:bg-brand-blue-light font-bold py-3 rounded-xl transition-all duration-200 text-sm"
               >
-                Sign in instead
+                {t['signup.signInInstead']}
               </Link>
             </div>
           </div>
@@ -347,19 +351,19 @@ export default function SignupPage() {
               <svg className="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              SSL Encrypted
+              {t['login.sslEncrypted']}
             </span>
             <span className="flex items-center gap-1.5">
               <svg className="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              No spam, ever
+              {t['login.noSpam']}
             </span>
             <span className="flex items-center gap-1.5">
               <svg className="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              Cancel anytime
+              {t['signup.cancelAnytime']}
             </span>
           </div>
         </div>

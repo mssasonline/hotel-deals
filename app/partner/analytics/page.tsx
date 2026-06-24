@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import { getMyHotels, getHotelData } from '../actions';
-import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 import { useAEDFormat } from '../components/AEDAmount';
 
@@ -413,8 +412,7 @@ function ReviewsAnalytics({ reviews }: { reviews: Review[] }) {
 export default function AnalyticsPage() {
   const router   = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const language = useAppSettingsStore(s => s.language);
-  const t        = getTranslations(language);
+  const t = getTranslations('en');
   const fmt      = useAEDFormat();
   const [hotelsLoading, setHotelsLoading] = useState(false);
   const [dataLoading, setDataLoading]     = useState(false);

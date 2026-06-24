@@ -5,9 +5,8 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import NotificationBell from '@/app/components/NotificationBell';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
-import type { Language, CurrencyCode } from '@/store/appSettingsStore';
+import type { CurrencyCode } from '@/store/appSettingsStore';
 import { CURRENCIES } from '@/lib/currencyData';
-import { LANGUAGES } from '@/lib/languageData';
 import { getTranslations } from '@/lib/i18n/translations';
 
 const PAGE_TITLES: Record<string, string> = {
@@ -38,11 +37,9 @@ export default function PartnerTopBar() {
   const pathname = usePathname();
   const { user, loading } = useAuth();
 
-  const language    = useAppSettingsStore(s => s.language);
   const currency    = useAppSettingsStore(s => s.currency);
-  const setLanguage = useAppSettingsStore(s => s.setLanguage);
   const setCurrency = useAppSettingsStore(s => s.setCurrency);
-  const t = getTranslations(language);
+  const t = getTranslations('en');
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -89,18 +86,6 @@ export default function PartnerTopBar() {
 
       {/* Controls */}
       <div className="flex items-center gap-2">
-
-        {/* Language */}
-        <select
-          aria-label="Language"
-          value={language}
-          onChange={e => setLanguage(e.target.value as Language)}
-          className="text-xs text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 bg-white hover:border-brand-blue/40 focus:outline-none focus:border-brand-blue transition-colors cursor-pointer"
-        >
-          {LANGUAGES.filter((l) => l.supported).map(lang => (
-            <option key={lang.code} value={lang.code}>{lang.nativeName}</option>
-          ))}
-        </select>
 
         {/* Currency */}
         <select
