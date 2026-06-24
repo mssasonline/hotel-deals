@@ -234,7 +234,6 @@ export default function HotelsClient({ initialHotels }: HotelsClientProps) {
   const router  = useRouter();
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate]     = useState(false);
-  const [editTarget, setEditTarget]     = useState<AdminHotelRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminHotelRow | null>(null);
   const [toast, setToast]   = useState<string | null>(null);
 
@@ -256,7 +255,6 @@ export default function HotelsClient({ initialHotels }: HotelsClientProps) {
   function handleDone(msg: string) {
     showToast(msg);
     setShowCreate(false);
-    setEditTarget(null);
     setDeleteTarget(null);
     router.refresh();
   }
@@ -269,14 +267,6 @@ export default function HotelsClient({ initialHotels }: HotelsClientProps) {
           mode="create"
           onClose={() => setShowCreate(false)}
           onDone={() => handleDone('Hotel created successfully.')}
-        />
-      )}
-      {editTarget && (
-        <HotelModal
-          mode="edit"
-          initial={editTarget}
-          onClose={() => setEditTarget(null)}
-          onDone={() => handleDone('Hotel updated successfully.')}
         />
       )}
       {deleteTarget && (
@@ -406,12 +396,6 @@ export default function HotelsClient({ initialHotels }: HotelsClientProps) {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => setEditTarget(hotel)}
-                        className="px-3 py-1.5 text-xs font-medium bg-brand-blue-light text-brand-blue hover:bg-blue-100 rounded-lg transition-colors"
-                      >
-                        Edit
-                      </button>
                       <a
                         href={`/hotel/${hotel.id}`}
                         target="_blank"
