@@ -34,9 +34,11 @@ export default function Header() {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -52,14 +54,15 @@ export default function Header() {
   const t = getTranslations(language);
 
   useEffect(() => {
-    if (!dropdownOpen && !settingsOpen) return;
+    if (!dropdownOpen && !settingsOpen && !langOpen) return;
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(false);
       if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) setSettingsOpen(false);
+      if (langRef.current && !langRef.current.contains(e.target as Node)) setLangOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [dropdownOpen, settingsOpen]);
+  }, [dropdownOpen, settingsOpen, langOpen]);
 
   function handleLogout() {
     setDropdownOpen(false);
@@ -68,6 +71,7 @@ export default function Header() {
 
   const displayName = user ? getDisplayName(user) : '';
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
+  const currentLang = LANGUAGES.find((l) => l.code === language) ?? LANGUAGES[0];
 
   return (
     <header
@@ -129,22 +133,41 @@ export default function Header() {
           {/* Right controls */}
           <div className="flex items-center gap-2 sm:gap-3">
 
-            {/* Desktop: individual selects */}
-            <select
-              aria-label="Language"
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as Language)}
-              className="text-white/85 text-xs rounded-lg px-2.5 py-1.5 cursor-pointer focus:outline-none transition-all hidden sm:block"
-              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(217,119,6,0.6)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)'; }}
-            >
-              {LANGUAGES.filter((l) => l.supported).map((lang) => (
-                <option key={lang.code} value={lang.code} className="bg-brand-blue text-white">
-                  {lang.flag} {lang.nativeName}
-                </option>
-              ))}
-            </select>
+            {/* Desktop: custom language dropdown (flag emoji don't render in <select> on Windows) */}
+            <div ref={langRef} className="relative hidden sm:block">
+              <button
+                onClick={() => setLangOpen((v) => !v)}
+                className="flex items-center gap-1.5 text-white/85 text-xs rounded-lg px-2.5 py-1.5 cursor-pointer transition-all"
+                style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(217,119,6,0.6)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.15)'; }}
+              >
+                <span>{currentLang.flag}</span>
+                <span>{currentLang.nativeName}</span>
+                <svg className={`w-3 h-3 opacity-60 transition-transform ${langOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {langOpen && (
+                <div
+                  className="absolute right-0 top-full mt-1.5 bg-white rounded-xl z-50 overflow-hidden"
+                  style={{ boxShadow: '0 8px 32px rgba(15,23,42,0.18)', border: '1px solid rgba(30,58,138,0.08)', minWidth: '160px' }}
+                >
+                  <div className="max-h-64 overflow-y-auto py-1">
+                    {LANGUAGES.filter((l) => l.supported).map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => { setLanguage(lang.code); setLangOpen(false); }}
+                        className={`flex items-center gap-2 w-full px-3 py-2 text-xs text-left transition-colors ${lang.code === language ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-gray-50'}`}
+                      >
+                        <span className="text-base leading-none">{lang.flag}</span>
+                        <span>{lang.nativeName}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             <select
               aria-label="Currency"
