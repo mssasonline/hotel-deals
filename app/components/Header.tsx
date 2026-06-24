@@ -141,7 +141,7 @@ export default function Header() {
             >
               {LANGUAGES.filter((l) => l.supported).map((lang) => (
                 <option key={lang.code} value={lang.code} className="bg-brand-blue text-white">
-                  {lang.nativeName}
+                  {lang.flag} {lang.nativeName}
                 </option>
               ))}
             </select>
@@ -190,7 +190,7 @@ export default function Header() {
                         className="w-full text-sm text-gray-800 rounded-xl px-3 py-2 cursor-pointer focus:outline-none border border-gray-200 bg-gray-50"
                       >
                         {LANGUAGES.filter((l) => l.supported).map((lang) => (
-                          <option key={lang.code} value={lang.code}>{lang.nativeName}</option>
+                          <option key={lang.code} value={lang.code}>{lang.flag} {lang.nativeName}</option>
                         ))}
                       </select>
                     </div>
