@@ -2,7 +2,7 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
-import { sendDealApprovalEmail, sendNewDealNotification, type NewDealNotificationData } from '@/lib/emailService';
+import { sendNewDealNotification, type NewDealNotificationData } from '@/lib/emailService';
 
 export type DealStatus = 'pending_approval' | 'active' | 'paused' | 'ended';
 
@@ -118,8 +118,6 @@ export async function getMyRooms(): Promise<DealRoom[]> {
 }
 
 // ── createDeal ────────────────────────────────────────────────────────────────
-// Creates deal as pending_approval, then emails the partner to confirm.
-// Subscribers are NOT notified until the partner clicks "Confirm & Publish".
 
 export async function createDeal(
   data: CreateDealData,
@@ -140,8 +138,7 @@ export async function createDeal(
 
   const admin = createAdminClient();
 
-  // Insert with pending_approval — not visible to guests yet
-  const { data: inserted, error } = await admin
+  const { error } = await admin
     .from('partner_deals')
     .insert({
       partner_id:     user.id,
@@ -152,54 +149,10 @@ export async function createDeal(
       title:          data.title ?? null,
       start_date:     data.start_date,
       end_date:       data.end_date,
-      status:         'pending_approval',
-    })
-    .select('id')
-    .single();
+      status:         'active',
+    });
 
   if (error) return { error: error.message };
-
-  // Fire-and-forget: send confirmation email to partner
-  void (async () => {
-    try {
-      const [roomRes, hotelRes, profileRes] = await Promise.all([
-        admin.from('rooms').select('name, base_price').eq('id', data.room_id).maybeSingle(),
-        admin.from('hotels').select('name').eq('id', data.hotel_id).maybeSingle(),
-        admin.from('profiles').select('full_name, email').eq('id', user.id).maybeSingle(),
-      ]);
-
-      const room    = roomRes.data;
-      const hotel   = hotelRes.data;
-      const profile = profileRes.data;
-      if (!room || !hotel || !profile?.email) return;
-
-      const basePrice   = Number(room.base_price ?? 0);
-      const dealPrice   = Number(data.deal_price);
-      const discountPct = basePrice > 0
-        ? Math.round(((basePrice - dealPrice) / basePrice) * 100)
-        : 0;
-
-      const siteUrl     = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://selectedroom.com';
-      const approvalUrl = `${siteUrl}/api/deals/approve?id=${inserted.id}&pid=${user.id}`;
-
-      await sendDealApprovalEmail({
-        partnerEmail: profile.email,
-        partnerName:  profile.full_name ?? 'Partner',
-        hotelName:    String(hotel.name),
-        hotelId:      Number(data.hotel_id),
-        roomName:     String(room.name),
-        dealPrice,
-        basePrice,
-        discountPct,
-        startDate:    data.start_date,
-        endDate:      data.end_date,
-        approvalUrl,
-      });
-    } catch (err) {
-      console.error('[createDeal] approval email error:', err);
-    }
-  })();
-
   return {};
 }
 

@@ -10,6 +10,7 @@ import AEDAmount, { useAEDFormat } from '../components/AEDAmount';
 
 type Room = PartnerRoom;
 
+
 function Spinner() {
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
@@ -165,6 +166,7 @@ export default function LastMinRoomPage() {
   const [saveMsg,      setSaveMsg]      = useState<string | null>(null);
   const [todayRates,   setTodayRates]   = useState<Record<string, number>>({});
   const [tier,         setTier]         = useState<PriceTier>(getCurrentTier());
+  const [pausing,      setPausing]      = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (authLoading) return;
@@ -213,6 +215,19 @@ export default function LastMinRoomPage() {
     ));
     setEditRoom(null);
     showMsg('Inventory updated successfully.');
+  }
+
+  async function handleTogglePause(room: Room) {
+    const isPaused = (room.quantity_available ?? 0) === 0;
+    const newQa = isPaused ? (room.quantity_total ?? 1) : 0;
+    setPausing(prev => new Set(prev).add(room.id));
+    const { error } = await updateMyRoom(room.id, { quantity_available: newQa });
+    setPausing(prev => { const s = new Set(prev); s.delete(room.id); return s; });
+    if (error) { alert('Failed: ' + error); return; }
+    setRooms(prev => prev.map(r =>
+      r.id === room.id ? { ...r, quantity_available: newQa, available: newQa > 0 ? 1 : 0 } : r
+    ));
+    showMsg(isPaused ? 'Room activated.' : 'Room paused.');
   }
 
   function showMsg(msg: string) {
@@ -313,21 +328,40 @@ export default function LastMinRoomPage() {
                     <p className="text-xs text-gray-400 line-through"><AEDAmount amount={basePrice} /></p>
                   </div>
                 </div>
-                <div className="mb-3">
+                <div className="flex items-center gap-2 mb-3">
                   <AvailabilityBadge
                     available={qtyAvailable}
                     total={qtyTotal}
                     onClick={() => setEditRoom(room)}
                   />
+                  {qtyAvailable === 0 ? (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-lg border text-xs font-semibold bg-red-50 text-red-600 border-red-200">Paused</span>
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-lg border text-xs font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">Active</span>
+                  )}
                 </div>
                 <button
-                  onClick={() => setEditRoom(room)}
-                  className="flex items-center gap-1 text-xs font-medium text-brand-blue bg-brand-blue-light hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition-colors"
+                  onClick={() => handleTogglePause(room)}
+                  disabled={pausing.has(room.id)}
+                  className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
+                    qtyAvailable === 0
+                      ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+                      : 'text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200'
+                  }`}
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Edit
+                  {pausing.has(room.id) ? (
+                    <span className="w-3 h-3 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                  ) : qtyAvailable === 0 ? (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                  {qtyAvailable === 0 ? 'Activate' : 'Pause'}
                 </button>
               </div>
             );
@@ -339,18 +373,19 @@ export default function LastMinRoomPage() {
 
         {/* Desktop table */}
         <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm table-fixed">
             <thead>
               <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
-                <th className="px-4 py-3">Room Name</th>
-                {multiHotel && <th className="px-3 py-3">Hotel</th>}
-                <th className="px-3 py-3 text-right">Original Price</th>
-                <th className="px-3 py-3 text-right">
+                <th className={`px-5 py-3.5 ${multiHotel ? 'w-[24%]' : 'w-[29%]'}`}>Room Name</th>
+                {multiHotel && <th className="px-4 py-3.5 w-[15%]">Hotel</th>}
+                <th className="px-4 py-3.5 w-[15%] text-center">Original Price</th>
+                <th className="px-4 py-3.5 w-[15%] text-center">
                   Current Price
-                  <span className="block text-[10px] font-normal text-orange-400 normal-case leading-tight">-{tier.discountPercent}% now</span>
+                  <span className="block text-[10px] font-normal text-orange-400 normal-case leading-tight mt-0.5">-{tier.discountPercent}% now</span>
                 </th>
-                <th className="px-3 py-3 text-center">Available Tonight</th>
-                <th className="px-3 py-3 text-right">{/* actions */}</th>
+                <th className="px-4 py-3.5 w-[15%] text-center">Available</th>
+                <th className="px-4 py-3.5 w-[12%] text-center">Status</th>
+                <th className="px-4 py-3.5 w-[14%]">{/* actions */}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -367,39 +402,60 @@ export default function LastMinRoomPage() {
                 const livePrice         = calcLivePrice(effectivePrice, effectiveMinPrice, tier);
                 return (
                   <tr key={room.id} className="hover:bg-gray-50/40 transition-colors border-b border-gray-50 last:border-0">
-                    <td className="px-4 py-3">
-                      <span className="font-semibold text-gray-900 text-sm">{room.name}</span>
+                    <td className="px-5 py-4">
+                      <p className="font-semibold text-gray-900 text-sm truncate">{room.name}</p>
                       {room.type && (
-                        <span className="ml-2 text-xs text-gray-400">{room.type}</span>
+                        <p className="text-xs text-gray-400 mt-0.5">{room.type}</p>
                       )}
                     </td>
                     {multiHotel && (
-                      <td className="px-3 py-3 text-gray-500 text-xs max-w-[120px] truncate">
+                      <td className="px-4 py-4 text-gray-500 text-xs truncate">
                         {hotelNames[room.hotel_id] ?? '—'}
                       </td>
                     )}
-                    <td className="px-3 py-3 text-right">
-                      <span className="text-gray-400 line-through text-xs"><AEDAmount amount={basePrice} /></span>
+                    <td className="px-4 py-4 text-center">
+                      <span className="text-gray-400 line-through text-sm"><AEDAmount amount={basePrice} /></span>
                     </td>
-                    <td className="px-3 py-3 text-right">
-                      <span className="font-bold text-green-600"><AEDAmount amount={livePrice} /></span>
+                    <td className="px-4 py-4 text-center">
+                      <span className="font-bold text-green-600 text-sm"><AEDAmount amount={livePrice} /></span>
                     </td>
-                    <td className="px-3 py-3">
+                    <td className="px-4 py-4 text-center">
                       <AvailabilityBadge
                         available={qtyAvailable}
                         total={qtyTotal}
                         onClick={() => setEditRoom(room)}
                       />
                     </td>
-                    <td className="px-3 py-3 text-right">
+                    <td className="px-4 py-4 text-center">
+                      {qtyAvailable === 0 ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg border text-xs font-semibold bg-red-50 text-red-600 border-red-200">Paused</span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg border text-xs font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">Active</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 text-right">
                       <button
-                        onClick={() => setEditRoom(room)}
-                        className="flex items-center gap-1 text-xs font-medium text-brand-blue bg-brand-blue-light hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition-colors ml-auto"
+                        onClick={() => handleTogglePause(room)}
+                        disabled={pausing.has(room.id)}
+                        className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${
+                          qtyAvailable === 0
+                            ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+                            : 'text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200'
+                        }`}
                       >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit
+                        {pausing.has(room.id) ? (
+                          <span className="w-3 h-3 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                        ) : qtyAvailable === 0 ? (
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        )}
+                        {qtyAvailable === 0 ? 'Activate' : 'Pause'}
                       </button>
                     </td>
                   </tr>
@@ -407,7 +463,7 @@ export default function LastMinRoomPage() {
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={multiHotel ? 6 : 5} className="px-6 py-12 text-center text-gray-400 text-sm">
+                  <td colSpan={multiHotel ? 7 : 6} className="px-6 py-12 text-center text-gray-400 text-sm">
                     {t['partner.rooms.noRooms']}
                   </td>
                 </tr>
@@ -432,6 +488,7 @@ export default function LastMinRoomPage() {
           onClose={() => setEditRoom(null)}
         />
       )}
+
     </div>
   );
 }

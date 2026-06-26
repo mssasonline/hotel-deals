@@ -80,7 +80,7 @@ function AvailabilityBadge({
 // ── Deal Availability Badge ───────────────────────────────────────────────────
 // Fetches live available slots for a deal's own independent inventory.
 
-function DealAvailabilityBadge({ deal }: { deal: PartnerDeal }) {
+function DealAvailabilityBadge({ deal, onClick }: { deal: PartnerDeal; onClick?: () => void }) {
   const [available, setAvailable] = useState<number | null>(null);
 
   useEffect(() => {
@@ -103,9 +103,10 @@ function DealAvailabilityBadge({ deal }: { deal: PartnerDeal }) {
     :             'bg-red-50 text-red-600 border-red-200';
 
   return (
-    <span
-      title={`${avail} of ${total} deal slots available`}
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-xs font-semibold ${color}`}
+    <button
+      onClick={onClick}
+      title="Click to edit deal inventory"
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-xs font-semibold transition-colors hover:brightness-95 ${color}`}
     >
       {available === null ? (
         <span className="opacity-50">…</span>
@@ -116,7 +117,10 @@ function DealAvailabilityBadge({ deal }: { deal: PartnerDeal }) {
           <span>{total}</span>
         </>
       )}
-    </span>
+      <svg className="w-3 h-3 ml-0.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+      </svg>
+    </button>
   );
 }
 
@@ -802,7 +806,6 @@ export default function PartnerDealsPage() {
                         </p>
                       )}
                       <p className="font-semibold text-gray-900 truncate">{deal.room_name}</p>
-                      <p className="text-xs text-gray-400 truncate">{deal.hotel_name}</p>
                     </div>
                     <StatusBadge status={deal.status} variant="deal" />
                   </div>
@@ -811,7 +814,7 @@ export default function PartnerDealsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-base font-bold text-green-600">
-                        <AEDAmount amount={deal.deal_price} /><span className="text-xs font-normal text-gray-400">/night</span>
+                        <AEDAmount amount={deal.deal_price} />
                       </p>
                       <p className="text-xs text-gray-400 line-through"><AEDAmount amount={deal.base_price} /></p>
                     </div>
@@ -819,7 +822,7 @@ export default function PartnerDealsPage() {
                       {disc > 0 && (
                         <span className="bg-brand-gold text-white text-xs font-bold px-2 py-0.5 rounded-full">-{disc}%</span>
                       )}
-                      <DealAvailabilityBadge deal={deal} />
+                      <DealAvailabilityBadge deal={deal} onClick={() => setEditingDeal(deal)} />
                     </div>
                   </div>
 
@@ -835,20 +838,6 @@ export default function PartnerDealsPage() {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      onClick={() => setEditingDeal(deal)}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                    >
-                      Edit
-                    </button>
-                    {deal.status === 'pending_approval' && (
-                      <span className="flex items-center gap-1 text-orange-600 text-xs font-medium bg-orange-50 border border-orange-200 px-2.5 py-1.5 rounded-lg">
-                        <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                        Confirm via email
-                      </span>
-                    )}
                     {rowActions.map((action) => (
                       <button
                         key={action}
@@ -875,18 +864,18 @@ export default function PartnerDealsPage() {
 
           {/* Desktop table */}
           <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm table-fixed">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/60">
-                  <th className="text-left px-5 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Room · Hotel</th>
-                  <th className="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Base</th>
-                  <th className="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Deal Price</th>
-                  <th className="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Discount</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">From</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">To</th>
-                  <th className="text-center px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Availability</th>
-                  <th className="text-center px-4 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">Status</th>
-                  <th className="px-4 py-3" />
+                  <th className="text-left px-5 py-3.5 w-[22%] font-semibold text-gray-500 text-xs uppercase tracking-wide">Room</th>
+                  <th className="text-center px-4 py-3.5 w-[9%] font-semibold text-gray-500 text-xs uppercase tracking-wide">Base</th>
+                  <th className="text-center px-4 py-3.5 w-[9%] font-semibold text-gray-500 text-xs uppercase tracking-wide">Price</th>
+                  <th className="text-center px-4 py-3.5 w-[8%] font-semibold text-gray-500 text-xs uppercase tracking-wide">Discount</th>
+                  <th className="text-center px-4 py-3.5 w-[9%] font-semibold text-gray-500 text-xs uppercase tracking-wide">From</th>
+                  <th className="text-center px-4 py-3.5 w-[9%] font-semibold text-gray-500 text-xs uppercase tracking-wide">To</th>
+                  <th className="text-center px-4 py-3.5 w-[9%] font-semibold text-gray-500 text-xs uppercase tracking-wide">Availability</th>
+                  <th className="text-center px-4 py-3.5 w-[12%] font-semibold text-gray-500 text-xs uppercase tracking-wide">Status</th>
+                  <th className="px-4 py-3.5 w-[13%]" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -897,26 +886,24 @@ export default function PartnerDealsPage() {
                   return (
                     <tr key={deal.id} className="hover:bg-gray-50/40 transition-colors">
                       {/* Room + Hotel */}
-                      <td className="px-5 py-3.5">
+                      <td className="px-5 py-3">
                         {deal.title && (
-                          <p className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md mb-1 truncate max-w-[200px] inline-block">
+                          <p className="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md mb-1 truncate inline-block max-w-full">
                             {deal.title}
                           </p>
                         )}
-                        <p className="font-semibold text-gray-900 truncate max-w-[200px]">{deal.room_name}</p>
-                        <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[200px]">{deal.hotel_name}</p>
+                        <p className="font-semibold text-gray-900 truncate">{deal.room_name}</p>
                       </td>
                       {/* Base */}
-                      <td className="px-4 py-3.5 text-right text-gray-400 line-through text-xs">
+                      <td className="px-4 py-3 text-center text-gray-400 line-through text-sm">
                         <AEDAmount amount={deal.base_price} />
                       </td>
                       {/* Deal Price */}
-                      <td className="px-4 py-3.5 text-right font-bold text-green-600">
+                      <td className="px-4 py-3 text-center font-bold text-green-600">
                         <AEDAmount amount={deal.deal_price} />
-                        <span className="text-xs font-normal text-gray-400">/night</span>
                       </td>
                       {/* Discount */}
-                      <td className="px-4 py-3.5 text-right">
+                      <td className="px-4 py-3 text-center">
                         {disc > 0 ? (
                           <span className="bg-brand-gold text-white text-xs font-bold px-2 py-0.5 rounded-full">
                             -{disc}%
@@ -924,33 +911,19 @@ export default function PartnerDealsPage() {
                         ) : '—'}
                       </td>
                       {/* Dates */}
-                      <td className="px-4 py-3.5 text-gray-600 whitespace-nowrap">{fmtDate(deal.start_date)}</td>
-                      <td className="px-4 py-3.5 text-gray-600 whitespace-nowrap">{fmtDate(deal.end_date)}</td>
+                      <td className="px-4 py-3 text-center text-gray-600 text-sm whitespace-nowrap">{fmtDate(deal.start_date)}</td>
+                      <td className="px-4 py-3 text-center text-gray-600 text-sm whitespace-nowrap">{fmtDate(deal.end_date)}</td>
                       {/* Availability — deal's own independent stock */}
-                      <td className="px-4 py-3.5 text-center">
-                        <DealAvailabilityBadge deal={deal} />
+                      <td className="px-4 py-3 text-center">
+                        <DealAvailabilityBadge deal={deal} onClick={() => setEditingDeal(deal)} />
                       </td>
                       {/* Status */}
-                      <td className="px-4 py-3.5 text-center">
+                      <td className="px-4 py-3 text-center">
                         <StatusBadge status={deal.status} variant="deal" />
                       </td>
                       {/* Actions */}
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-1.5 justify-end flex-wrap">
-                          <button
-                            onClick={() => setEditingDeal(deal)}
-                            className="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                          >
-                            Edit
-                          </button>
-                          {deal.status === 'pending_approval' && (
-                            <span className="flex items-center gap-1.5 text-orange-600 text-xs font-medium bg-orange-50 border border-orange-200 px-2.5 py-1.5 rounded-lg">
-                              <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                              </svg>
-                              Confirm via email
-                            </span>
-                          )}
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col items-end gap-1">
                           {rowActions.map((action) => (
                             <button
                               key={action}
