@@ -5,6 +5,7 @@ import { getTranslations } from '@/lib/i18n/translations';
 import AEDAmount, { useAEDFormat } from '../components/AEDAmount';
 import { getMyBookings, type BookingRow } from '../actions';
 import TaxFeeBreakdown from '@/app/components/TaxFeeBreakdown';
+import { deriveStatus, BOOKING_STATUS_STYLE } from '../lib/bookingStatus';
 
 type Booking = BookingRow;
 
@@ -14,30 +15,11 @@ function calcNightsFromDates(checkIn: string, checkOut: string): number {
   return Math.max(1, Math.round((b - a) / 86_400_000));
 }
 
-function deriveStatus(b: Booking): string {
-  if (b.status === 'cancelled') return 'cancelled';
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const checkIn  = new Date(b.check_in);  checkIn.setHours(0, 0, 0, 0);
-  const checkOut = new Date(b.check_out); checkOut.setHours(0, 0, 0, 0);
-  if (checkOut < today)  return 'completed';
-  if (checkIn <= today)  return 'checked_in';
-  return b.status === 'confirmed' ? 'confirmed' : 'upcoming';
-}
-
 function estimateRoomSubtotal(totalPrice: number, subtotal: number | null, nights: number): number {
   if (subtotal != null && subtotal > 0) return subtotal;
   // Back-calculate from total: total = room×1.22 + 15×nights, so room ≈ (total - 15×nights)/1.22
   return Math.max(0, Math.round((totalPrice - 15 * nights) / 1.22));
 }
-
-const BOOKING_STATUS_STYLE: Record<string, { bg: string; text: string; dot: string; key: string }> = {
-  upcoming:   { bg: 'bg-blue-50',   text: 'text-blue-700',  dot: 'bg-blue-500',  key: 'partner.status.upcoming'   },
-  confirmed:  { bg: 'bg-blue-50',   text: 'text-blue-700',  dot: 'bg-blue-500',  key: 'partner.status.confirmed'  },
-  checked_in: { bg: 'bg-amber-50',  text: 'text-amber-700', dot: 'bg-amber-500', key: 'partner.status.checkedIn'  },
-  completed:  { bg: 'bg-green-50',  text: 'text-green-700', dot: 'bg-green-500', key: 'partner.status.completed'  },
-  cancelled:  { bg: 'bg-red-50',    text: 'text-red-600',   dot: 'bg-red-400',   key: 'partner.status.cancelled'  },
-};
 
 function Spinner() {
   return (

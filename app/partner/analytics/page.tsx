@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/authContext';
 import { getMyHotels, getHotelData } from '../actions';
 import { getTranslations } from '@/lib/i18n/translations';
 import { useAEDFormat } from '../components/AEDAmount';
+import { deriveStatus } from '../lib/bookingStatus';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -278,7 +279,7 @@ function BookingStatusBreakdown({ bookings }: { bookings: AnalyticsBooking[] }) 
   const total = bookings.length || 1;
   const counts = STATUS_CONFIG.map(g => ({
     ...g,
-    count: bookings.filter(b => b.status === g.key).length,
+    count: bookings.filter(b => deriveStatus(b) === g.key).length,
   }));
 
   return (

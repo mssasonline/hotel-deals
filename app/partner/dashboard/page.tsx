@@ -10,6 +10,7 @@ import AEDAmount, { useAEDFormat } from '../components/AEDAmount';
 import SetupChecklist, { type SetupProgress } from '../components/SetupChecklist';
 import { type Booking, type RawBookingRow, normalizeBooking } from '@/lib/types';
 import { getTranslations } from '@/lib/i18n/translations';
+import { deriveStatus, BOOKING_STATUS_STYLE } from '../lib/bookingStatus';
 
 type Hotel = {
   id: string;
@@ -32,14 +33,6 @@ type Review = {
   rating: number;
   comment: string;
   created_at: string;
-};
-
-const BOOKING_STATUS_STYLE: Record<string, { bg: string; text: string; dot: string; key: string }> = {
-  upcoming:   { bg: 'bg-blue-50',   text: 'text-blue-700',  dot: 'bg-blue-500',  key: 'partner.status.upcoming'   },
-  confirmed:  { bg: 'bg-blue-50',   text: 'text-blue-700',  dot: 'bg-blue-500',  key: 'partner.status.confirmed'  },
-  checked_in: { bg: 'bg-amber-50',  text: 'text-amber-700', dot: 'bg-amber-500', key: 'partner.status.checkedIn'  },
-  completed:  { bg: 'bg-green-50',  text: 'text-green-700', dot: 'bg-green-500', key: 'partner.status.completed'  },
-  cancelled:  { bg: 'bg-red-50',    text: 'text-red-600',   dot: 'bg-red-400',   key: 'partner.status.cancelled'  },
 };
 
 function StatusBadge({ status, t }: { status: string; t: ReturnType<typeof getTranslations> }) {
@@ -376,7 +369,7 @@ export default function DashboardPage() {
                       <p className="font-semibold text-gray-900 text-sm truncate">{b.guest_name}</p>
                       <p className="text-xs text-gray-400 truncate">{b.guest_email}</p>
                     </div>
-                    <StatusBadge status={b.status} t={t} />
+                    <StatusBadge status={deriveStatus(b)} t={t} />
                   </div>
                   <p className="text-xs text-gray-500 mb-1">{b.rooms?.name ?? '—'}</p>
                   <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
@@ -434,7 +427,7 @@ export default function DashboardPage() {
                       <td className="px-6 py-3.5 text-gray-600">{b.rooms?.name ?? '—'}</td>
                       <td className="px-6 py-3.5 text-gray-600">{b.check_in}</td>
                       <td className="px-6 py-3.5 text-gray-600">{b.check_out}</td>
-                      <td className="px-6 py-3.5"><StatusBadge status={b.status} t={t} /></td>
+                      <td className="px-6 py-3.5"><StatusBadge status={deriveStatus(b)} t={t} /></td>
                       <td className="px-6 py-3.5 text-right font-bold text-gray-900">
                         {b.payment_status === 'paid'
                           ? <AEDAmount amount={b.total_price ?? 0} />
