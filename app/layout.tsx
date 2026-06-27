@@ -1,33 +1,19 @@
 ﻿import type { Metadata } from "next";
-import { Cormorant_Garamond, Plus_Jakarta_Sans, Cairo, Montserrat, Sora } from "next/font/google";
+import { Inter, Cairo, Sora } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/authContext";
 import HtmlLangUpdater from "@/app/components/HtmlLangUpdater";
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-playfair",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
-
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
 
 const cairo = Cairo({
   variable: "--font-cairo",
   subsets: ["arabic", "latin"],
-  display: "swap",
-});
-
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
   display: "swap",
 });
 
@@ -80,7 +66,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`${cormorant.variable} ${jakarta.variable} ${cairo.variable} ${montserrat.variable} ${sora.variable} h-full antialiased`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${inter.variable} ${cairo.variable} ${sora.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <HtmlLangUpdater />
         <AuthProvider>{children}</AuthProvider>

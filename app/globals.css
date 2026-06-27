@@ -3,8 +3,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-jakarta), 'Segoe UI', system-ui, sans-serif;
-  --font-display: var(--font-playfair), Georgia, 'Times New Roman', serif;
+  --font-sans: var(--font-inter), 'Segoe UI', system-ui, sans-serif;
+  --font-display: var(--font-inter), 'Segoe UI', system-ui, sans-serif;
 }
 
 @theme {
@@ -22,6 +22,9 @@
 }
 
 :root {
+  --font-jakarta: var(--font-inter);
+  --font-playfair: var(--font-inter);
+  --font-montserrat: var(--font-inter);
   --background: #F8FAFC;
   --foreground: #0F172A;
   --shadow-premium: 0 1px 4px rgba(0,0,0,0.04), 0 4px 20px rgba(30,58,138,0.07), 0 0 0 1px rgba(30,58,138,0.05);
@@ -37,33 +40,32 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-jakarta), 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-inter), 'Segoe UI', system-ui, sans-serif;
   font-size: 1rem;
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
-/* Cormorant Garamond type scale — high contrast, editorial */
 h1 {
-  font-family: var(--font-playfair), 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-inter), 'Segoe UI', system-ui, sans-serif;
   font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
   color: #0F172A;
 }
 
 h2 {
-  font-family: var(--font-playfair), 'Cormorant Garamond', Georgia, serif;
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.015em;
+  font-family: var(--font-inter), 'Segoe UI', system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   color: #0F172A;
 }
 
 h3 {
-  font-family: var(--font-playfair), 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--font-inter), 'Segoe UI', system-ui, sans-serif;
   font-weight: 600;
-  line-height: 1.22;
-  letter-spacing: -0.008em;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
   color: #0F172A;
 }
 
@@ -154,7 +156,7 @@ h3 {
 
 /* Numbers and prices stay in sans-serif */
 .font-mono, [class*="tabular"] {
-  font-family: var(--font-jakarta), 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-inter), 'Segoe UI', system-ui, sans-serif;
 }
 
 /* Arabic override */
