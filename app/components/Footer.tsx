@@ -120,11 +120,21 @@ export default function Footer() {
 
           {/* Brand */}
           <div>
-            <div className="mb-5 leading-none">
-              <span className="font-bold block" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '18px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
-              </span>
-              <span className="text-[10px] font-semibold uppercase block mt-0.5" style={{ color: '#FCD34D', letterSpacing: '0.22em' }}>Premium Hotels</span>
+            <div className="mb-5">
+              <a
+                href="/"
+                aria-label="SelectedRoom — Premium Hotels"
+                className="inline-flex flex-col items-start gap-[10px]"
+                style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", textDecoration: 'none' }}
+              >
+                <span style={{ display: 'inline-flex', alignItems: 'baseline', fontSize: '22px', letterSpacing: '0.10em', lineHeight: 1, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontWeight: 300, color: '#FFFFFF' }}>SELECTED</span>
+                  <span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
+                </span>
+                <span style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.45em', color: '#B8C2DC' }}>
+                  PREMIUM HOTELS
+                </span>
+              </a>
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-4 max-w-[220px]">
               {t['footer.tagline']}

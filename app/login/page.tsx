@@ -118,16 +118,9 @@ export default function LoginPage() {
 
             {/* Header bar */}
             <div className="px-8 py-7" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)' }}>
-              <Link href="/" className="flex items-center gap-2.5 mb-5">
-                <div className="w-8 h-8 bg-brand-gold rounded-lg flex items-center justify-center shadow-sm">
-                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    <polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700, fontSize: '15px', lineHeight: 1 }}>
-                  <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span><span style={{ color: '#fff', fontSize: '10px', position: 'relative', top: '-2px', letterSpacing: '0.05em' }}>.com</span>
-                </span>
+              <Link href="/" aria-label="SelectedRoom — Premium Hotels" className="flex items-baseline mb-5" style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", fontSize: '18px', letterSpacing: '0.10em', textDecoration: 'none', whiteSpace: 'nowrap', lineHeight: 1 }}>
+                <span style={{ fontWeight: 300, color: '#FFFFFF' }}>SELECTED</span>
+                <span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
               </Link>
               <div className="flex items-center gap-3">
                 <div className="w-1 h-6 rounded-full shrink-0" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />

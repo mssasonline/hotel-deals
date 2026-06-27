@@ -226,7 +226,7 @@ export default function LiveBookingModal({
                   </span>
                 )}
               </div>
-              <h2 className="font-bold text-white text-base leading-tight">{room.name}</h2>
+              <h2 className="font-bold !text-white text-base leading-tight">{room.name}</h2>
             </div>
             <button type="button" onClick={onClose}
               className="w-8 h-8 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 shrink-0 ml-2 transition-colors">

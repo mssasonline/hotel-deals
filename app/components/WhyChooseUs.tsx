@@ -69,8 +69,8 @@ export default function WhyChooseUs() {
             {t['why.heading'].split('SelectedRoom').reduce<ReactNode[]>((acc, part, i, arr) => {
               acc.push(part);
               if (i < arr.length - 1) acc.push(
-                <span key={i} style={{ fontFamily: 'var(--font-montserrat, sans-serif)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  <span style={{ color: '#1E3A8A' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
+                <span key={i} style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", letterSpacing: '0.10em' }}>
+                  <span style={{ fontWeight: 300, color: '#12224F' }}>SELECTED</span><span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
                 </span>
               );
               return acc;

@@ -235,16 +235,16 @@ export default function SharedSidebar({ variant }: Props) {
       {/* Logo */}
       <div className="relative flex items-center justify-between px-4 h-16" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         {!collapsed ? (
-          <Link href={cfg.dashboardHref} className="min-w-0 leading-none">
-            <span className="font-bold block truncate" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '14px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
+          <Link href={cfg.dashboardHref} aria-label="SelectedRoom — Premium Hotels" className="min-w-0 leading-none flex flex-col gap-[6px]">
+            <span className="inline-flex items-baseline" style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", fontSize: '14px', letterSpacing: '0.10em' }}>
+              <span style={{ fontWeight: 300, color: '#FFFFFF' }}>SELECTED</span><span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
             </span>
-            <span className="text-[10px] font-semibold tracking-widest uppercase block mt-0.5" style={{ color: '#D97706' }}>{cfg.subtitle}</span>
+            <span className="text-[10px] font-semibold tracking-widest uppercase block" style={{ color: '#E78319' }}>{cfg.subtitle}</span>
           </Link>
         ) : (
-          <Link href={cfg.dashboardHref} className="mx-auto">
-            <span className="font-bold" style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              <span style={{ color: '#fff' }}>SR</span>
+          <Link href={cfg.dashboardHref} aria-label="SelectedRoom" className="mx-auto">
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: '#12224F', fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", fontSize: '13px', fontWeight: 700, letterSpacing: '-0.02em' }}>
+              <span style={{ color: '#FFFFFF' }}>S</span><span style={{ color: '#E78319' }}>R</span>
             </span>
           </Link>
         )}

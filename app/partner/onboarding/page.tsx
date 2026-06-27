@@ -129,9 +129,9 @@ export default function OnboardingPage() {
                 {step === 1 ? (
                   <>
                     Welcome to{' '}
-                    <span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                      <span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span>
-                    </span><span style={{ fontFamily: 'var(--font-montserrat, sans-serif)', fontSize: '10px', letterSpacing: '0.05em', color: '#fff', verticalAlign: 'baseline', position: 'relative', top: '-2px' }}>.com</span>
+                    <span style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", letterSpacing: '0.10em' }}>
+                      <span style={{ fontWeight: 300, color: '#FFFFFF' }}>SELECTED</span><span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
+                    </span>
                   </>
                 ) : 'About your hotel'}
               </h1>

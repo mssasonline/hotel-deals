@@ -1,5 +1,5 @@
 ﻿import type { Metadata } from "next";
-import { Cormorant_Garamond, Plus_Jakarta_Sans, Cairo, Montserrat } from "next/font/google";
+import { Cormorant_Garamond, Plus_Jakarta_Sans, Cairo, Montserrat, Sora } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/authContext";
 import HtmlLangUpdater from "@/app/components/HtmlLangUpdater";
@@ -31,6 +31,13 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
+const sora = Sora({
+  variable: "--font-sora",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+  display: "swap",
+});
+
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://selectedroom.com';
 
@@ -42,6 +49,12 @@ export const metadata: Metadata = {
   },
   description:
     "Flash deals on luxury hotel rooms — up to 50% off, tonight only. SelectedRoom connects travelers with premium unsold rooms at end-of-day prices.",
+  icons: {
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+  },
+  other: {
+    'theme-color': '#12224F',
+  },
   openGraph: {
     siteName: 'SelectedRoom',
     type: 'website',
@@ -67,7 +80,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`${cormorant.variable} ${jakarta.variable} ${cairo.variable} ${montserrat.variable} h-full antialiased`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${cormorant.variable} ${jakarta.variable} ${cairo.variable} ${montserrat.variable} ${sora.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <HtmlLangUpdater />
         <AuthProvider>{children}</AuthProvider>

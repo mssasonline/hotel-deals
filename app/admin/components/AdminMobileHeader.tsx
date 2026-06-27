@@ -25,11 +25,11 @@ export default function AdminMobileHeader() {
         </svg>
       </button>
       <span
-        className="font-bold text-sm tracking-widest uppercase"
-        style={{ fontFamily: 'var(--font-montserrat, sans-serif)' }}
+        className="inline-flex items-baseline"
+        style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", fontSize: '15px', letterSpacing: '0.10em' }}
       >
-        <span style={{ color: '#0F2260' }}>Selected</span>
-        <span style={{ color: '#D97706' }}>Room</span>
+        <span style={{ fontWeight: 300, color: '#12224F' }}>SELECTED</span>
+        <span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
       </span>
       <span className="text-[10px] font-semibold tracking-widest uppercase text-amber-600 ml-1">Admin</span>
     </header>

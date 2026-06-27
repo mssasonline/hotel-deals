@@ -152,7 +152,9 @@ export default function HeroSection() {
                 );
               });
               if (i < arr.length - 1) acc.push(
-                <span key={i} className="font-semibold" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}><span style={{ color: '#fff' }}>Selected</span><span style={{ color: '#D97706' }}>Room</span></span>
+                <span key={i} style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", letterSpacing: '0.10em' }}>
+                  <span style={{ fontWeight: 300, color: '#FFFFFF' }}>SELECTED</span><span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
+                </span>
               );
               return acc;
             }, [])}
