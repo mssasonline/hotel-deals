@@ -23,6 +23,9 @@ type AnalyticsBooking = {
   total_price: number;
   subtotal: number | null;
   room_count: number | null;
+  guests_count: number | null;
+  breakfast_included: boolean | null;
+  breakfast_price_per_person: number | null;
   created_at: string;
   rooms: { name: string } | null;
   partner_amount: number | null;

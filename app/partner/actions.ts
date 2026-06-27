@@ -2,6 +2,7 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
+import { calcCommission } from './lib/calcCommission';
 
 export type PartnerHotel = {
   id: string;
@@ -68,6 +69,9 @@ export type HotelBooking = {
   total_price: number;
   subtotal: number | null;
   room_count: number | null;
+  guests_count: number | null;
+  breakfast_included: boolean | null;
+  breakfast_price_per_person: number | null;
   created_at: string;
   rooms: { id: string; name: string } | null;
   partner_amount: number | null;
@@ -131,7 +135,7 @@ export async function getHotelData(hotelId: string): Promise<HotelData> {
   const [bookingsRes, roomsRes, reviewsRes, imagesRes] = await Promise.all([
     admin
       .from('bookings')
-      .select('id, hotel_id, room_id, guest_name, guest_email, check_in, check_out, status, payment_status, total_price, subtotal, room_count, created_at, rooms(id, name), booking_revenue(partner_amount, admin_amount)')
+      .select('id, hotel_id, room_id, guest_name, guest_email, check_in, check_out, status, payment_status, total_price, subtotal, room_count, guests_count, breakfast_included, breakfast_price_per_person, created_at, rooms(id, name)')
       .eq('hotel_id', hotelId)
       .order('created_at', { ascending: false }),
     admin
@@ -150,23 +154,20 @@ export async function getHotelData(hotelId: string): Promise<HotelData> {
       .eq('hotel_id', hotelId),
   ]);
 
-  type RawBooking = Omit<HotelBooking, 'rooms' | 'partner_amount' | 'admin_amount'> & {
+  type RawBooking = Omit<HotelBooking, 'rooms'> & {
     rooms: { id: string; name: string }[] | { id: string; name: string } | null;
-    booking_revenue: { partner_amount: number; admin_amount: number }[] | { partner_amount: number; admin_amount: number } | null;
   };
 
   return {
     bookings: ((bookingsRes.data ?? []) as RawBooking[]).map(row => {
-      const rev = Array.isArray(row.booking_revenue)
-        ? (row.booking_revenue[0] ?? null)
-        : (row.booking_revenue ?? null);
+      const { adminAmount, partnerAmount } = calcCommission(row as HotelBooking);
       return {
         ...row,
         id: String(row.id),
         hotel_id: String(row.hotel_id),
         rooms: Array.isArray(row.rooms) ? (row.rooms[0] ?? null) : (row.rooms ?? null),
-        partner_amount: rev?.partner_amount ?? null,
-        admin_amount:   rev?.admin_amount   ?? null,
+        admin_amount:   adminAmount,
+        partner_amount: partnerAmount,
       };
     }),
     rooms: (roomsRes.data ?? []) as HotelRoom[],
