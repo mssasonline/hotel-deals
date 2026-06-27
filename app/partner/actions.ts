@@ -2,7 +2,7 @@
 
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
-import { calcCommission } from './lib/calcCommission';
+import { calcCommission } from '@/lib/calcCommission';
 
 export type PartnerHotel = {
   id: string;

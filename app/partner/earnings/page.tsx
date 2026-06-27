@@ -6,7 +6,7 @@ import AEDAmount from '@/app/partner/components/AEDAmount';
 import { calcTaxBreakdown, UAE_FEE_DEFAULTS } from '@/lib/pricingEngine';
 import { getMyPayouts } from '../actions';
 import PayoutStatusPanel from './PayoutStatusPanel';
-import { calcCommission } from '../lib/calcCommission';
+import { calcCommission } from '@/lib/calcCommission';
 
 export const metadata: Metadata = { title: 'Financial Summary — Partner Portal' };
 export const dynamic = 'force-dynamic';

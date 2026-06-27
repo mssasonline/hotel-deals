@@ -4,6 +4,7 @@ import AEDAmount from '@/app/partner/components/AEDAmount';
 import { calcTaxBreakdown, UAE_FEE_DEFAULTS } from '@/lib/pricingEngine';
 import { getAdminPayouts } from '../actions';
 import PayoutManager from './PayoutManager';
+import { calcCommission } from '@/lib/calcCommission';
 
 export const metadata: Metadata = { title: 'Financials — Admin Console' };
 export const dynamic = 'force-dynamic';
@@ -16,6 +17,9 @@ type RawBooking = {
   subtotal: number;
   total_price: number;
   room_count: number;
+  guests_count: number | null;
+  breakfast_included: boolean | null;
+  breakfast_price_per_person: number | null;
   created_at: string;
   partner_amount: number;
   admin_amount: number;
@@ -64,8 +68,8 @@ export default async function AdminFinancialsPage() {
   const { data: bookings } = await admin
     .from('bookings')
     .select(`
-      id, hotel_id, check_in, check_out, subtotal, total_price, room_count, created_at,
-      booking_revenue ( partner_amount, admin_amount ),
+      id, hotel_id, check_in, check_out, subtotal, total_price, room_count,
+      guests_count, breakfast_included, breakfast_price_per_person, created_at,
       hotels ( name, hotel_partners ( user_id ) )
     `)
     .eq('payment_status', 'paid')
@@ -98,14 +102,11 @@ export default async function AdminFinancialsPage() {
   const rawRows: RawBooking[] = [];
 
   for (const b of (bookings ?? []) as Record<string, unknown>[]) {
-    const rev = (Array.isArray(b.booking_revenue) ? b.booking_revenue[0] : b.booking_revenue) as
-      { partner_amount: number; admin_amount: number } | null;
     const hotel = (Array.isArray(b.hotels) ? b.hotels[0] : b.hotels) as { name: string } | null;
-    const total = Number(b.total_price ?? 0);
+    const total   = Number(b.total_price ?? 0);
     const hotelId = String(b.hotel_id);
     const partnerUserId = hotelToPartnerUser.get(hotelId) ?? '';
-
-    rawRows.push({
+    const row = {
       id: String(b.id),
       hotel_id: hotelId,
       check_in: String(b.check_in),
@@ -113,12 +114,15 @@ export default async function AdminFinancialsPage() {
       subtotal: Number(b.subtotal ?? 0),
       total_price: total,
       room_count: Number(b.room_count ?? 1),
+      guests_count: b.guests_count != null ? Number(b.guests_count) : null,
+      breakfast_included: (b.breakfast_included as boolean | null) ?? null,
+      breakfast_price_per_person: b.breakfast_price_per_person != null ? Number(b.breakfast_price_per_person) : null,
       created_at: String(b.created_at),
-      partner_amount: Number(rev?.partner_amount ?? total * 0.9),
-      admin_amount: Number(rev?.admin_amount ?? total * 0.1),
       hotel_name: hotel?.name ?? '—',
       partner_name: profileMap.get(partnerUserId) || partnerUserId || 'Unknown',
-    });
+    };
+    const { adminAmount, partnerAmount } = calcCommission(row);
+    rawRows.push({ ...row, admin_amount: adminAmount, partner_amount: partnerAmount });
   }
 
   // ── Monthly summary (platform-wide) ─────────────────────────────────────────

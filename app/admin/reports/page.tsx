@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase-admin';
 import { getCommissionRate } from '@/lib/platformSettings';
+import { calcCommission } from '@/lib/calcCommission';
 import ReportsClient, {
   type TrendPoint,
   type TopHotel,
@@ -20,7 +21,7 @@ export default async function ReportsPage() {
     // 12-month paid bookings for trend data
     supabase
       .from('bookings')
-      .select('created_at, total_price, booking_revenue(partner_amount, admin_amount)')
+      .select('created_at, check_in, check_out, total_price, subtotal, guests_count, breakfast_included, breakfast_price_per_person')
       .eq('payment_status', 'paid')
       .neq('status', 'cancelled')
       .gte('created_at', twelveMonthsAgo.toISOString()),
@@ -41,12 +42,19 @@ export default async function ReportsPage() {
     }
     const entry = trendMap.get(month)!;
     const total = Number(b.total_price ?? 0);
-    const rev = (Array.isArray(b.booking_revenue) ? b.booking_revenue[0] : b.booking_revenue) as
-      { partner_amount: number; admin_amount: number } | null;
+    const { adminAmount, partnerAmount } = calcCommission({
+      subtotal: b.subtotal as number | null,
+      total_price: total,
+      breakfast_included: b.breakfast_included as boolean | null,
+      breakfast_price_per_person: b.breakfast_price_per_person as number | null,
+      guests_count: b.guests_count as number | null,
+      check_in: String(b.check_in),
+      check_out: String(b.check_out),
+    });
     entry.revenue        += total;
     entry.booking_count  += 1;
-    entry.platform_rev   += Number(rev?.admin_amount   ?? total * 0.1);
-    entry.partner_payout += Number(rev?.partner_amount ?? total * 0.9);
+    entry.platform_rev   += adminAmount;
+    entry.partner_payout += partnerAmount;
   }
 
   // Fill all 12 months (zero-fill empty months)

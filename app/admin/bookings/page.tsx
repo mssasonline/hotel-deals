@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase-admin';
 import BookingsClient, { type AdminBooking, type BookingStatus } from './BookingsClient';
+import { calcCommission } from '@/lib/calcCommission';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,10 +14,12 @@ type RawRow = {
   payment_status: string | null;
   total_price: number;
   subtotal: number | null;
+  guests_count: number | null;
+  breakfast_included: boolean | null;
+  breakfast_price_per_person: number | null;
   created_at: string;
   rooms: { name: string } | { name: string }[] | null;
   hotels: { name: string; city: string } | { name: string; city: string }[] | null;
-  booking_revenue: { partner_amount: number; admin_amount: number } | { partner_amount: number; admin_amount: number }[] | null;
 };
 
 function nightsBetween(checkIn: string, checkOut: string): number {
@@ -36,21 +39,28 @@ export default async function BookingsPage() {
     .select(`
       id, guest_name, guest_email, check_in, check_out,
       status, payment_status,
-      total_price, subtotal, created_at,
+      total_price, subtotal, guests_count, breakfast_included, breakfast_price_per_person, created_at,
       rooms(name),
-      hotels(name, city),
-      booking_revenue(partner_amount, admin_amount)
+      hotels(name, city)
     `)
     .order('created_at', { ascending: false });
 
 
   const bookings: AdminBooking[] = ((raw ?? []) as RawRow[]).map((row) => {
-    const room    = resolveJoin(row.rooms);
-    const hotel   = resolveJoin(row.hotels);
-    const revenue = resolveJoin(row.booking_revenue);
+    const room  = resolveJoin(row.rooms);
+    const hotel = resolveJoin(row.hotels);
     const validStatuses: BookingStatus[] = ['upcoming', 'confirmed', 'pending', 'completed', 'cancelled'];
     const status = validStatuses.includes(row.status as BookingStatus) ? (row.status as BookingStatus) : 'pending';
     const total  = status === 'cancelled' ? 0 : Number(row.total_price ?? 0);
+    const { adminAmount, partnerAmount } = calcCommission({
+      subtotal: row.subtotal,
+      total_price: total,
+      breakfast_included: row.breakfast_included,
+      breakfast_price_per_person: row.breakfast_price_per_person,
+      guests_count: row.guests_count,
+      check_in: row.check_in,
+      check_out: row.check_out,
+    });
 
     return {
       id:             String(row.id),
@@ -66,8 +76,8 @@ export default async function BookingsPage() {
       status,
       paymentStatus:  row.payment_status || 'pending',
       amount:         total,
-      partnerAmount:  Number(revenue?.partner_amount ?? total * 0.9),
-      adminAmount:    Number(revenue?.admin_amount   ?? total * 0.1),
+      partnerAmount,
+      adminAmount,
     };
   });
 
