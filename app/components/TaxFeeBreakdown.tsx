@@ -10,6 +10,7 @@ interface Props {
   feeConfig?: HotelFeeConfig;
   currency?: string;
   compact?: boolean;
+  grandTotal?: number;
 }
 
 function fmt(n: number, currency = 'AED') {
@@ -24,6 +25,7 @@ export default function TaxFeeBreakdown({
   feeConfig = UAE_FEE_DEFAULTS,
   currency = 'AED',
   compact = false,
+  grandTotal,
 }: Props) {
   const { serviceChargePct, municipalityFeePct, tourismDirhamPerNight, vatPct } = feeConfig;
   const bd = calcTaxBreakdown({ roomSubtotal, breakfastSubtotal, nights, rooms, ...feeConfig });
@@ -101,7 +103,7 @@ export default function TaxFeeBreakdown({
       <div className="flex justify-between items-center px-4 py-3 bg-gray-50 border-t border-gray-200">
         <p className="font-bold text-gray-900">Grand Total</p>
         <span className="font-extrabold text-brand-blue text-base tabular-nums">
-          {fmt(roomSubtotal + breakfastSubtotal + bd.total, currency)}
+          {fmt(grandTotal ?? (roomSubtotal + breakfastSubtotal + bd.total), currency)}
         </span>
       </div>
     </div>

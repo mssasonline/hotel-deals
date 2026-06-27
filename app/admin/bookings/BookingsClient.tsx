@@ -25,6 +25,11 @@ export interface AdminBooking {
   amount: number;
   partnerAmount: number;
   adminAmount: number;
+  subtotal: number | null;
+  roomCount: number | null;
+  guestsCount: number | null;
+  breakfastIncluded: boolean | null;
+  breakfastPricePerPerson: number | null;
 }
 
 const BOOKING_STATUS_FILTERS: Array<{ label: string; value: BookingStatus | 'all' }> = [
@@ -64,7 +69,13 @@ function BookingDetailModal({ booking, onClose, fmt, fmtDate }: {
   fmt: (n: number) => string;
   fmtDate: (iso: string | null) => string;
 }) {
-  const roomSubtotal = Math.max(0, Math.round((booking.amount - 15 * booking.nights) / 1.22));
+  const roomSubtotal = booking.subtotal != null && booking.subtotal > 0
+    ? booking.subtotal
+    : Math.max(0, Math.round((booking.amount - 15 * booking.nights) / 1.22));
+  const breakfastTotal = (booking.breakfastIncluded && (booking.breakfastPricePerPerson ?? 0) > 0)
+    ? Math.round((booking.breakfastPricePerPerson ?? 0) * (booking.guestsCount ?? 1) * booking.nights)
+    : 0;
+  const roomCount = booking.roomCount ?? 1;
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
@@ -126,7 +137,13 @@ function BookingDetailModal({ booking, onClose, fmt, fmtDate }: {
           </div>
 
           {booking.amount > 0 && (
-            <TaxFeeBreakdown roomSubtotal={roomSubtotal} nights={booking.nights} />
+            <TaxFeeBreakdown
+            roomSubtotal={roomSubtotal}
+            breakfastSubtotal={breakfastTotal}
+            nights={booking.nights}
+            rooms={roomCount}
+            grandTotal={booking.amount}
+          />
           )}
         </div>
       </div>

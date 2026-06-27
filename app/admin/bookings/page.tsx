@@ -14,6 +14,7 @@ type RawRow = {
   payment_status: string | null;
   total_price: number;
   subtotal: number | null;
+  room_count: number | null;
   guests_count: number | null;
   breakfast_included: boolean | null;
   breakfast_price_per_person: number | null;
@@ -39,7 +40,7 @@ export default async function BookingsPage() {
     .select(`
       id, guest_name, guest_email, check_in, check_out,
       status, payment_status,
-      total_price, subtotal, guests_count, breakfast_included, breakfast_price_per_person, created_at,
+      total_price, subtotal, room_count, guests_count, breakfast_included, breakfast_price_per_person, created_at,
       rooms(name),
       hotels(name, city)
     `)
@@ -78,6 +79,11 @@ export default async function BookingsPage() {
       amount:         total,
       partnerAmount,
       adminAmount,
+      subtotal:               row.subtotal,
+      roomCount:              row.room_count,
+      guestsCount:            row.guests_count,
+      breakfastIncluded:      row.breakfast_included,
+      breakfastPricePerPerson: row.breakfast_price_per_person,
     };
   });
 

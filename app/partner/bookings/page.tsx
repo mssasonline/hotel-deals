@@ -173,6 +173,10 @@ export default function BookingsPage() {
             const statusLabel = cfg ? (t[cfg.key as keyof typeof t] as string ?? ds) : ds.replace(/_/g, ' ');
             const nights = calcNightsFromDates(b.check_in, b.check_out);
             const roomSub = estimateRoomSubtotal(b.total_price, b.subtotal, nights);
+            const breakfastTotal = (b.breakfast_included && (b.breakfast_price_per_person ?? 0) > 0)
+              ? Math.round((b.breakfast_price_per_person ?? 0) * (b.guests_count ?? 1) * nights)
+              : 0;
+            const roomCount = b.room_count ?? 1;
             return (
               <Fragment key={b.id}>
                 <div className="px-4 py-4">
@@ -216,7 +220,13 @@ export default function BookingsPage() {
                   </div>
                   {expandedId === b.id && (b.total_price ?? 0) > 0 && (
                     <div className="mt-3 pt-3 border-t border-gray-100">
-                      <TaxFeeBreakdown roomSubtotal={roomSub} nights={nights} />
+                      <TaxFeeBreakdown
+                        roomSubtotal={roomSub}
+                        breakfastSubtotal={breakfastTotal}
+                        nights={nights}
+                        rooms={roomCount}
+                        grandTotal={b.total_price}
+                      />
                     </div>
                   )}
                 </div>
@@ -258,6 +268,10 @@ export default function BookingsPage() {
                   : ds.replace(/_/g, ' ');
                 const nights = calcNightsFromDates(b.check_in, b.check_out);
                 const roomSub = estimateRoomSubtotal(b.total_price, b.subtotal, nights);
+                const breakfastTotal = (b.breakfast_included && (b.breakfast_price_per_person ?? 0) > 0)
+                  ? Math.round((b.breakfast_price_per_person ?? 0) * (b.guests_count ?? 1) * nights)
+                  : 0;
+                const roomCount = b.room_count ?? 1;
                 return (
                   <Fragment key={b.id}>
                   <tr className="hover:bg-gray-50/50 transition-colors">
@@ -310,7 +324,13 @@ export default function BookingsPage() {
                     <tr key={`${b.id}-breakdown`}>
                       <td colSpan={multiHotel ? 9 : 8} className="px-6 pb-4 pt-0 bg-gray-50/60">
                         <div className="max-w-sm ml-auto pt-2">
-                          <TaxFeeBreakdown roomSubtotal={roomSub} nights={nights} />
+                          <TaxFeeBreakdown
+                            roomSubtotal={roomSub}
+                            breakfastSubtotal={breakfastTotal}
+                            nights={nights}
+                            rooms={roomCount}
+                            grandTotal={b.total_price}
+                          />
                         </div>
                       </td>
                     </tr>
