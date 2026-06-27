@@ -234,16 +234,16 @@ export async function getMyBookings(): Promise<{
 
   const { data: bookingData } = await supabase
     .from('bookings')
-    .select('id, hotel_id, guest_name, guest_email, check_in, check_out, status, payment_status, total_price, subtotal, created_at, rooms(name)')
+    .select('id, hotel_id, room_id, guest_name, guest_email, check_in, check_out, status, payment_status, total_price, subtotal, created_at, rooms(name)')
     .in('hotel_id', hotelIds)
     .order('created_at', { ascending: false });
 
-  type RawRow = Omit<BookingRow, 'rooms'> & { rooms: { name: string }[] | null };
+  type RawRow = Omit<BookingRow, 'rooms'> & { rooms: { name: string }[] | { name: string } | null };
   const bookings: BookingRow[] = ((bookingData ?? []) as RawRow[]).map(row => ({
     ...row,
     id: String(row.id),
     hotel_id: String(row.hotel_id),
-    rooms: row.rooms?.[0] ?? null,
+    rooms: Array.isArray(row.rooms) ? (row.rooms[0] ?? null) : (row.rooms ?? null),
   }));
 
   return { bookings, hotelNames };
