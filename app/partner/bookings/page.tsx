@@ -14,6 +14,17 @@ function calcNightsFromDates(checkIn: string, checkOut: string): number {
   return Math.max(1, Math.round((b - a) / 86_400_000));
 }
 
+function deriveStatus(b: Booking): string {
+  if (b.status === 'cancelled') return 'cancelled';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const checkIn  = new Date(b.check_in);  checkIn.setHours(0, 0, 0, 0);
+  const checkOut = new Date(b.check_out); checkOut.setHours(0, 0, 0, 0);
+  if (checkOut < today)  return 'completed';
+  if (checkIn <= today)  return 'checked_in';
+  return b.status === 'confirmed' ? 'confirmed' : 'upcoming';
+}
+
 function estimateRoomSubtotal(totalPrice: number, subtotal: number | null, nights: number): number {
   if (subtotal != null && subtotal > 0) return subtotal;
   // Back-calculate from total: total = room×1.22 + 15×nights, so room ≈ (total - 15×nights)/1.22
@@ -61,10 +72,10 @@ export default function BookingsPage() {
 
   // ── Derived state ─────────────────────────────────────────────────────────
   const statusCounts: Record<string, number> = {};
-  bookings.forEach(b => { statusCounts[b.status] = (statusCounts[b.status] ?? 0) + 1; });
+  bookings.forEach(b => { const s = deriveStatus(b); statusCounts[s] = (statusCounts[s] ?? 0) + 1; });
 
   const filtered = bookings.filter(b => {
-    const matchStatus = statusFilter === 'all' || b.status === statusFilter;
+    const matchStatus = statusFilter === 'all' || deriveStatus(b) === statusFilter;
     const matchHotel  = hotelFilter  === 'all' || b.hotel_id === hotelFilter;
     const q = search.toLowerCase();
     const matchSearch = !q
@@ -170,13 +181,14 @@ export default function BookingsPage() {
         {/* Mobile card list */}
         <div className="sm:hidden divide-y divide-gray-50">
           {filtered.map(b => {
-            const cfg = BOOKING_STATUS_STYLE[b.status];
+            const ds = deriveStatus(b);
+            const cfg = BOOKING_STATUS_STYLE[ds];
             const payClass =
               b.payment_status === 'paid'     ? 'bg-green-50 text-green-700'   :
               b.payment_status === 'pending'  ? 'bg-amber-50 text-amber-700'   :
               b.payment_status === 'refunded' ? 'bg-purple-50 text-purple-700' :
               'bg-gray-100 text-gray-600';
-            const statusLabel = cfg ? (t[cfg.key as keyof typeof t] as string ?? b.status) : b.status.replace(/_/g, ' ');
+            const statusLabel = cfg ? (t[cfg.key as keyof typeof t] as string ?? ds) : ds.replace(/_/g, ' ');
             const nights = calcNightsFromDates(b.check_in, b.check_out);
             const roomSub = estimateRoomSubtotal(b.total_price, b.subtotal, nights);
             return (
@@ -251,7 +263,8 @@ export default function BookingsPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(b => {
-                const cfg = BOOKING_STATUS_STYLE[b.status];
+                const ds = deriveStatus(b);
+                const cfg = BOOKING_STATUS_STYLE[ds];
                 const payClass =
                   b.payment_status === 'paid'     ? 'bg-green-50 text-green-700'   :
                   b.payment_status === 'pending'  ? 'bg-amber-50 text-amber-700'   :
@@ -259,8 +272,8 @@ export default function BookingsPage() {
                   'bg-gray-100 text-gray-600';
 
                 const statusLabel = cfg
-                  ? (t[cfg.key as keyof typeof t] as string ?? b.status)
-                  : b.status.replace(/_/g, ' ');
+                  ? (t[cfg.key as keyof typeof t] as string ?? ds)
+                  : ds.replace(/_/g, ' ');
                 const nights = calcNightsFromDates(b.check_in, b.check_out);
                 const roomSub = estimateRoomSubtotal(b.total_price, b.subtotal, nights);
                 return (
