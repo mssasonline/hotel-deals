@@ -1,0 +1,80 @@
+<!--
+  SelectedRoom — Logo HTML/CSS reference snippets
+  ------------------------------------------------
+  These are copy-paste building blocks for the site. The wordmark is pure text
+  (no image needed) so it stays crisp at any size and is accessible to screen readers.
+  Make sure the Sora font is loaded once in your <head>:
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;700&display=swap" rel="stylesheet">
+-->
+
+<!-- ============================================================
+     1. HEADER WORDMARK  (use .sr-logo--light on dark/navy header,
+        .sr-logo--dark on white header)
+     ============================================================ -->
+<style>
+  .sr-logo{
+    display:inline-flex; align-items:baseline;
+    font-family:'Sora', sans-serif; line-height:1;
+    letter-spacing:0.10em; font-size:26px;            /* scale this one value */
+    text-decoration:none; white-space:nowrap;
+  }
+  .sr-logo .sr-sel{ font-weight:300; }
+  .sr-logo .sr-room{ font-weight:700; color:#E78319; } /* amber — same on both themes */
+  .sr-logo--light .sr-sel{ color:#FFFFFF; }            /* on navy background */
+  .sr-logo--dark  .sr-sel{ color:#12224F; }            /* on white background */
+</style>
+
+<a href="/" class="sr-logo sr-logo--light" aria-label="SelectedRoom — Premium Hotels">
+  <span class="sr-sel">SELECTED</span><span class="sr-room">ROOM</span>
+</a>
+
+
+<!-- ============================================================
+     2. FULL LOCKUP WITH TAGLINE (footer / hero)
+     ============================================================ -->
+<style>
+  .sr-lockup{ display:inline-flex; flex-direction:column; align-items:center; gap:14px; font-family:'Sora',sans-serif; }
+  .sr-lockup .sr-logo{ font-size:34px; }
+  .sr-lockup .sr-tag{
+    display:flex; align-items:center; gap:16px;
+    font-size:12px; font-weight:500; letter-spacing:0.5em; padding-left:0.5em;
+  }
+  .sr-lockup .sr-tag::before,
+  .sr-lockup .sr-tag::after{ content:""; width:34px; height:1px; background:currentColor; opacity:.5; }
+  .sr-lockup--light .sr-tag{ color:#B8C2DC; }
+  .sr-lockup--dark  .sr-tag{ color:#7886A8; }
+</style>
+
+<div class="sr-lockup sr-lockup--light">
+  <span class="sr-logo sr-logo--light"><span class="sr-sel">SELECTED</span><span class="sr-room">ROOM</span></span>
+  <span class="sr-tag">PREMIUM HOTELS</span>
+</div>
+
+
+<!-- ============================================================
+     3. APP ICON / AVATAR  (SR monogram)
+     ============================================================ -->
+<style>
+  .sr-icon{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:48px; height:48px; border-radius:24%;
+    background:#12224F; font-family:'Sora',sans-serif;
+    font-weight:700; font-size:21px; letter-spacing:-0.02em;
+  }
+  .sr-icon .a{ color:#FFFFFF; } .sr-icon .b{ color:#E78319; }
+</style>
+
+<span class="sr-icon"><span class="a">S</span><span class="b">R</span></span>
+
+
+<!-- ============================================================
+     4. FAVICON / META TAGS  (drop assets/favicon.svg at site root)
+     ============================================================ -->
+<!--
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">   (render favicon.svg @180x180)
+  <meta name="theme-color" content="#12224F">
+-->
