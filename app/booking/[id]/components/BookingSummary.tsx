@@ -35,7 +35,7 @@ export default function BookingSummary({ hotel, room, checkIn, checkOut, guests,
       {/* Header bar */}
       <div className="px-5 py-4" style={{ background: 'linear-gradient(135deg, #0F2260 0%, #1E3A8A 55%, #2563EB 100%)' }}>
         <p className="text-white/70 text-xs font-medium uppercase tracking-wider mb-1">{t['booking.reservationLabel']}</p>
-        <h2 className="text-white font-extrabold text-xl leading-tight">{hotel.name}</h2>
+        <h2 className="!text-white font-extrabold text-xl leading-tight">{hotel.name}</h2>
         <div className="flex items-center gap-2 mt-1.5">
           <Stars count={hotel.stars} />
           <span className="text-white/70 text-xs">{hotel.location}</span>
