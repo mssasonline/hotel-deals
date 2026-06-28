@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useAuth } from '@/lib/authContext';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
+import SiteLogo from '@/app/components/SiteLogo';
 import type { TranslationKey } from '@/lib/i18n/translations';
 import { useSidebarStore } from '@/store/sidebarStore';
 
@@ -235,10 +236,8 @@ export default function SharedSidebar({ variant }: Props) {
       {/* Logo */}
       <div className="relative flex items-center justify-between px-4 h-16" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         {!collapsed ? (
-          <Link href={cfg.dashboardHref} aria-label="SelectedRoom — Premium Hotels" className="min-w-0 leading-none flex flex-col gap-[6px]">
-            <span className="inline-flex items-baseline" style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", fontSize: '14px', letterSpacing: '0.10em' }}>
-              <span style={{ fontWeight: 300, color: '#FFFFFF' }}>SELECTED</span><span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
-            </span>
+          <Link href={cfg.dashboardHref} className="min-w-0 leading-none flex flex-col gap-[6px]" style={{ textDecoration: 'none' }}>
+            <SiteLogo variant="light" size="14px" />
             <span className="text-[10px] font-semibold tracking-widest uppercase block" style={{ color: '#E78319' }}>{cfg.subtitle}</span>
           </Link>
         ) : (

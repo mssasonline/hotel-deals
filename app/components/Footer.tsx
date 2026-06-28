@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { subscribeNewsletter } from '@/app/actions/newsletter';
+import SiteLogo from '@/app/components/SiteLogo';
 
 const DESTINATIONS = [
   { city: 'Dubai',    href: '/search?city=Dubai' },
@@ -121,20 +122,12 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="mb-5">
-              <a
-                href="/"
-                aria-label="SelectedRoom — Premium Hotels"
-                className="inline-flex flex-col items-start gap-[10px]"
-                style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", textDecoration: 'none' }}
-              >
-                <span style={{ display: 'inline-flex', alignItems: 'baseline', fontSize: '22px', letterSpacing: '0.10em', lineHeight: 1, whiteSpace: 'nowrap' }}>
-                  <span style={{ fontWeight: 300, color: '#FFFFFF' }}>SELECTED</span>
-                  <span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
-                </span>
+              <div className="inline-flex flex-col items-start gap-[10px]">
+                <SiteLogo href="/" variant="light" size="22px" />
                 <span style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.45em', color: '#B8C2DC' }}>
                   PREMIUM HOTELS
                 </span>
-              </a>
+              </div>
             </div>
             <p className="text-white/50 text-sm leading-relaxed mb-4 max-w-[220px]">
               {t['footer.tagline']}

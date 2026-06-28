@@ -5,6 +5,7 @@ import ScrollReveal from './ScrollReveal';
 import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 import { getCurrentTier, type PriceTier } from '@/lib/pricingEngine';
+import SiteLogo from '@/app/components/SiteLogo';
 
 const STEP_ICONS = [
   (
@@ -62,9 +63,7 @@ export default function HowItWorks() {
             {t['how.badge'].split('SelectedRoom').reduce<React.ReactNode[]>((acc, part, i, arr) => {
               acc.push(part);
               if (i < arr.length - 1) acc.push(
-                <span key={i} style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", letterSpacing: '0.10em' }}>
-                  <span style={{ fontWeight: 300, color: '#FFFFFF' }}>SELECTED</span><span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
-                </span>
+                <SiteLogo key={i} variant="light" />
               );
               return acc;
             }, [])}

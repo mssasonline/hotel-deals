@@ -6,6 +6,7 @@ import { useAppSettingsStore } from '@/store/appSettingsStore';
 import { getTranslations } from '@/lib/i18n/translations';
 import AutocompleteSearch from '@/app/components/AutocompleteSearch';
 import CountdownTimer from '@/app/components/CountdownTimer';
+import SiteLogo from '@/app/components/SiteLogo';
 import PricingPulseBar from '@/app/components/PricingPulseBar';
 import { getCurrentTier, type PriceTier } from '@/lib/pricingEngine';
 import { localDateISO, localTomorrowISO } from '@/lib/dateUtils';
@@ -152,9 +153,7 @@ export default function HeroSection() {
                 );
               });
               if (i < arr.length - 1) acc.push(
-                <span key={i} style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", letterSpacing: '0.10em' }}>
-                  <span style={{ fontWeight: 300, color: '#FFFFFF' }}>SELECTED</span><span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
-                </span>
+                <SiteLogo key={i} variant="light" />
               );
               return acc;
             }, [])}

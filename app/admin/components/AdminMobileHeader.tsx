@@ -1,6 +1,7 @@
 'use client';
 
 import { useSidebarStore } from '@/store/sidebarStore';
+import SiteLogo from '@/app/components/SiteLogo';
 
 export default function AdminMobileHeader() {
   const setMobileOpen = useSidebarStore(s => s.setMobileOpen);
@@ -24,13 +25,7 @@ export default function AdminMobileHeader() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
-      <span
-        className="inline-flex items-baseline"
-        style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", fontSize: '15px', letterSpacing: '0.10em' }}
-      >
-        <span style={{ fontWeight: 300, color: '#12224F' }}>SELECTED</span>
-        <span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
-      </span>
+      <SiteLogo variant="dark" size="15px" />
       <span className="text-[10px] font-semibold tracking-widest uppercase text-amber-600 ml-1">Admin</span>
     </header>
   );

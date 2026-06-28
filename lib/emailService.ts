@@ -8,6 +8,8 @@
  * Install when ready: npm install resend
  */
 
+import { emailLogoHtml } from '@/lib/brand';
+
 export interface BookingEmailData {
   guestName:  string;
   guestEmail: string;
@@ -42,15 +44,13 @@ function formatEmailTime(t: string): string {
 
 const LOGO_HTML = `
   <div style="margin-bottom:14px">
-    <span style="font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:22px;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff">SELECTED</span><span style="font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:22px;letter-spacing:0.1em;text-transform:uppercase;color:#F59E0B">ROOM</span><sup style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#93C5FD;letter-spacing:0">.com</sup>
+    ${emailLogoHtml('light', 22)}
   </div>
 `;
 
 const FOOTER_HTML = `
   <div style="text-align:center;padding:24px 32px;border-top:1px solid #e2e8f0;margin-top:8px">
-    <p style="margin:0 0 6px">
-      <span style="font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:14px;letter-spacing:0.1em;text-transform:uppercase;color:#1E3A8A">SELECTED</span><span style="font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:14px;letter-spacing:0.1em;text-transform:uppercase;color:#D97706">ROOM</span><sup style="font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:700;color:#6b7280">.com</sup>
-    </p>
+    <p style="margin:0 0 6px">${emailLogoHtml('dark', 14)}</p>
     <p style="margin:0;color:#9ca3af;font-size:11px">Your last-minute hotel deals platform</p>
   </div>
 `;

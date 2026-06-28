@@ -7,6 +7,7 @@ import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import { supabase } from '@/lib/supabase';
 import { consumeLoginRedirect } from '@/lib/auth';
+import SiteLogo from '@/app/components/SiteLogo';
 import { useAuth } from '@/lib/authContext';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 
@@ -118,10 +119,7 @@ export default function LoginPage() {
 
             {/* Header bar */}
             <div className="px-8 py-7" style={{ background: 'linear-gradient(135deg, #0A1A4F 0%, #0F2260 50%, #1A3A8F 100%)' }}>
-              <Link href="/" aria-label="SelectedRoom — Premium Hotels" className="flex items-baseline mb-5" style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", fontSize: '18px', letterSpacing: '0.10em', textDecoration: 'none', whiteSpace: 'nowrap', lineHeight: 1 }}>
-                <span style={{ fontWeight: 300, color: '#FFFFFF' }}>SELECTED</span>
-                <span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
-              </Link>
+              <SiteLogo href="/" variant="light" size="18px" className="mb-5" />
               <div className="flex items-center gap-3">
                 <div className="w-1 h-6 rounded-full shrink-0" style={{ background: 'linear-gradient(180deg, #D97706 0%, #B45309 100%)' }} />
                 <div>

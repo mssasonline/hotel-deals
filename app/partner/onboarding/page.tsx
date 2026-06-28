@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createHotelForPartner } from './actions';
+import SiteLogo from '@/app/components/SiteLogo';
 
 const STAR_OPTIONS = [3, 4, 5];
 
@@ -129,9 +130,7 @@ export default function OnboardingPage() {
                 {step === 1 ? (
                   <>
                     Welcome to{' '}
-                    <span style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", letterSpacing: '0.10em' }}>
-                      <span style={{ fontWeight: 300, color: '#FFFFFF' }}>SELECTED</span><span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
-                    </span>
+                    <SiteLogo variant="light" />
                   </>
                 ) : 'About your hotel'}
               </h1>

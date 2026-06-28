@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import ScrollReveal from './ScrollReveal';
+import SiteLogo from '@/app/components/SiteLogo';
 
 interface Feature {
   icon: ReactNode;
@@ -69,9 +70,7 @@ export default function WhyChooseUs() {
             {t['why.heading'].split('SelectedRoom').reduce<ReactNode[]>((acc, part, i, arr) => {
               acc.push(part);
               if (i < arr.length - 1) acc.push(
-                <span key={i} style={{ fontFamily: "var(--font-sora, 'Segoe UI', system-ui, sans-serif)", letterSpacing: '0.10em' }}>
-                  <span style={{ fontWeight: 300, color: '#12224F' }}>SELECTED</span><span style={{ fontWeight: 700, color: '#E78319' }}>ROOM</span>
-                </span>
+                <SiteLogo key={i} variant="dark" />
               );
               return acc;
             }, [])}
