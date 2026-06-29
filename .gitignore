@@ -1,5 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Microsoft Office temp/lock files
+~$*
+
 # dependencies
 /node_modules
 /.pnp
