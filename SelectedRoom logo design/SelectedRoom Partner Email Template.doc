@@ -1,0 +1,112 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<meta name="ProgId" content="Word.Document">
+<meta name="Generator" content="Microsoft Word 15">
+<style>
+  @page { margin: 2.5cm 3cm; size: A4; }
+  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #1A1A1A; line-height: 1.6; }
+  .header-logo { font-size: 22pt; letter-spacing: 2pt; margin-bottom: 4pt; }
+  .logo-selected { font-weight: 300; color: #12224F; }
+  .logo-room { font-weight: 700; color: #E78319; }
+  .header-sub { font-size: 8pt; letter-spacing: 3pt; color: #7886A8; margin-bottom: 16pt; }
+  .divider { border: none; border-top: 2px solid #E78319; margin: 12pt 0; }
+  .label { font-size: 9pt; color: #7886A8; font-weight: bold; text-transform: uppercase; letter-spacing: 1pt; }
+  .field { color: #12224F; font-weight: bold; }
+  .field-blank { color: #C4CCE0; font-style: italic; }
+  .section-title { font-size: 10pt; font-weight: bold; color: #12224F; margin-top: 18pt; margin-bottom: 4pt; border-bottom: 1px solid #E2E7F1; padding-bottom: 4pt; }
+  .body-text { font-size: 11pt; color: #1A1A1A; line-height: 1.8; }
+  .highlight-box { background: #FFF8F0; border-left: 4px solid #E78319; padding: 10pt 14pt; margin: 12pt 0; font-size: 10.5pt; color: #7C5B2A; }
+  .footer { font-size: 8.5pt; color: #9AA6C4; margin-top: 24pt; border-top: 1px solid #E2E7F1; padding-top: 10pt; }
+  .note { font-size: 9pt; color: #9AA6C4; font-style: italic; }
+  table { border-collapse: collapse; width: 100%; }
+  td { padding: 5pt 8pt; vertical-align: top; }
+  .td-label { width: 30%; color: #7886A8; font-size: 9.5pt; white-space: nowrap; }
+  .td-value { color: #12224F; font-size: 10pt; font-weight: bold; border-bottom: 1pt solid #E2E7F1; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     INSTRUCTIONS (delete before sending)
+═══════════════════════════════════════════ -->
+<p style="background:#FFF3CD; border:1px solid #FBBF24; padding:10pt 14pt; font-size:9.5pt; color:#92400E; margin-bottom:18pt;">
+  <b>📋 Instructions — Delete this box before sending</b><br>
+  1. Fill in all fields marked in <span style="color:#C4CCE0; font-style:italic;">[brackets / italics]</span><br>
+  2. Attach the signed PDF of the contract (SR-XXXX)<br>
+  3. Send from: <b>info@selectedroom.com</b><br>
+  4. After partner replies, copy the email Message-ID into the contract record
+</p>
+
+<!-- ═══════════════════════════════════════════
+     EMAIL HEADER META
+═══════════════════════════════════════════ -->
+<p class="section-title">Email Fields</p>
+<table>
+  <tr><td class="td-label">From:</td><td class="td-value">info@selectedroom.com</td></tr>
+  <tr><td class="td-label">To:</td><td class="td-value"><span class="field-blank">[partner-email@hotel.com]</span></td></tr>
+  <tr><td class="td-label">CC:</td><td class="td-value"><span class="field-blank">[optional — internal team]</span></td></tr>
+  <tr><td class="td-label">Subject:</td><td class="td-value">Hotel Partnership Agreement — SelectedRoom · Contract No. SR-<span class="field-blank">[XXXX]</span></td></tr>
+  <tr><td class="td-label">Attachment:</td><td class="td-value">SelectedRoom Partner Contract SR-<span class="field-blank">[XXXX]</span>.pdf</td></tr>
+</table>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════
+     EMAIL BODY
+═══════════════════════════════════════════ -->
+<p class="section-title">Email Body</p>
+
+<p class="body-text">Dear <span class="field-blank">[Partner Representative Name]</span>,</p>
+
+<p class="body-text">
+Thank you for your interest in partnering with <b>SelectedRoom — Premium Hotels</b>. We are pleased to present your official Hotel Partnership Agreement for review.
+</p>
+
+<p class="body-text">
+Please find attached Contract No. <b>SR-<span class="field-blank">[XXXX]</span></b>, outlining the terms and conditions of our collaboration, including listing, booking management, financial settlement, and commission structure agreed upon for <b><span class="field-blank">[Hotel / Property Name]</span></b>.
+</p>
+
+<div class="highlight-box">
+  <b>How to accept this Agreement:</b><br>
+  Simply reply to this email with the following statement:<br><br>
+  <span style="font-style:italic; color:#92400E;">"I accept all terms and conditions of the Partnership Agreement attached hereto, Contract No. SR-<span class="field-blank">[XXXX]</span>, on behalf of <span class="field-blank">[Hotel / Company Name]</span>."</span><br><br>
+  Your reply will constitute a legally binding electronic signature under <b>UAE Electronic Transactions Law No. 1 of 2006</b>.
+</div>
+
+<p class="body-text">
+Should you have any questions or require clarification on any clause, please do not hesitate to reach out before confirming. We are happy to discuss.
+</p>
+
+<p class="body-text">We look forward to a successful partnership.</p>
+
+<p class="body-text" style="margin-top:18pt;">
+Warm regards,<br><br>
+<b><span class="field-blank">[Your Name]</span></b><br>
+<span class="field-blank">[Your Title]</span><br>
+<span style="font-size:14pt; letter-spacing:1pt;"><span class="logo-selected">SELECTED</span><span class="logo-room">ROOM</span></span><br>
+<span style="font-size:9pt; color:#7886A8;">info@selectedroom.com &nbsp;·&nbsp; selectedroom.com</span>
+</p>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════
+     INTERNAL RECORD (fill after reply received)
+═══════════════════════════════════════════ -->
+<p class="section-title">Internal Record — Fill After Partner Replies</p>
+<table>
+  <tr><td class="td-label">Date Sent:</td><td class="td-value"><span class="field-blank">[DD / MM / YYYY]</span></td></tr>
+  <tr><td class="td-label">Reply Received:</td><td class="td-value"><span class="field-blank">[DD / MM / YYYY]</span></td></tr>
+  <tr><td class="td-label">Partner Rep.:</td><td class="td-value"><span class="field-blank">[Name of person who replied]</span></td></tr>
+  <tr><td class="td-label">Acceptance Text:</td><td class="td-value"><span class="field-blank">[Paste exact reply text here]</span></td></tr>
+  <tr><td class="td-label">Message-ID:</td><td class="td-value"><span class="field-blank">[&lt;message-id@mail.server.com&gt;]</span></td></tr>
+  <tr><td class="td-label">Contract Filed:</td><td class="td-value"><span class="field-blank">[ ] Yes — location: _______________</span></td></tr>
+</table>
+
+<div class="footer">
+  <b>SELECTEDROOM</b> · Premium Hotels · info@selectedroom.com · selectedroom.com<br>
+  This document is confidential and intended for internal use only.
+</div>
+
+</body>
+</html>

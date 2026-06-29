@@ -7,8 +7,10 @@ import AEDAmount from '../../partner/components/AEDAmount';
 import {
   createProperty, deleteProperty, setPropertyPartnerStatus,
   generatePropertyPasswordReset, addPropertyAccount,
-  type PropertyCreateFields,
+  saveContractRecord, updateContractStatus, deleteContract, getContractSignedUrl,
+  type PropertyCreateFields, type ContractInfo, type ContractStatus,
 } from './actions';
+import { supabase } from '@/lib/supabase';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -37,6 +39,7 @@ export type PropertyRow = {
   accounts: PropertyAccount[];
   booking_count: number;
   total_revenue: number;
+  contract: ContractInfo | null;
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -70,6 +73,234 @@ function StatusPill({ status }: { status: 'active' | 'suspended' }) {
 
 function getInitials(name: string) {
   return name.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+}
+
+// ── Contract helpers ──────────────────────────────────────────────────────────
+
+const CONTRACT_STATUS_CONFIG: Record<ContractStatus, { label: string; bg: string; text: string; dot: string }> = {
+  pending:    { label: 'Pending',    bg: 'bg-amber-50',   text: 'text-amber-700',  dot: 'bg-amber-400' },
+  active:     { label: 'Active',     bg: 'bg-emerald-50', text: 'text-emerald-700',dot: 'bg-emerald-500' },
+  expired:    { label: 'Expired',    bg: 'bg-gray-100',   text: 'text-gray-500',   dot: 'bg-gray-400' },
+  terminated: { label: 'Terminated', bg: 'bg-red-50',     text: 'text-red-600',    dot: 'bg-red-400' },
+};
+
+function ContractPill({ status }: { status: ContractStatus }) {
+  const c = CONTRACT_STATUS_CONFIG[status];
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${c.bg} ${c.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
+      {c.label}
+    </span>
+  );
+}
+
+// ── Contract Section (inside detail panel) ───────────────────────────────────
+
+function ContractSection({ row, onUpdate }: { row: PropertyRow; onUpdate: () => void }) {
+  const [isPending, startTransition] = useTransition();
+  const [showUpload, setShowUpload] = useState(false);
+  const [showAccept, setShowAccept] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Upload form state
+  const [file, setFile] = useState<File | null>(null);
+  const [contractNumber, setContractNumber] = useState('');
+  const [dateSent, setDateSent] = useState(new Date().toISOString().split('T')[0]);
+  const [uploadProgress, setUploadProgress] = useState(false);
+
+  // Accept form state
+  const [dateAccepted, setDateAccepted] = useState(new Date().toISOString().split('T')[0]);
+  const [acceptedByName, setAcceptedByName] = useState('');
+  const [acceptedByTitle, setAcceptedByTitle] = useState('');
+  const [acceptanceText, setAcceptanceText] = useState('');
+  const [msgId, setMsgId] = useState('');
+
+  const contract = row.contract;
+
+  async function handleUpload(e: React.FormEvent) {
+    e.preventDefault();
+    if (!file || !contractNumber.trim()) { setError('Contract number and PDF file are required.'); return; }
+    setError(null);
+    setUploadProgress(true);
+
+    const ext = file.name.split('.').pop();
+    const path = `hotel-${row.hotel.id}/${contractNumber.replace(/\//g, '-')}-${Date.now()}.${ext}`;
+
+    const { error: uploadErr } = await supabase.storage.from('contracts').upload(path, file, { contentType: 'application/pdf' });
+    if (uploadErr) { setError(uploadErr.message); setUploadProgress(false); return; }
+
+    startTransition(async () => {
+      const result = await saveContractRecord({ hotel_id: row.hotel.id, contract_number: contractNumber, file_path: path, date_sent: dateSent });
+      setUploadProgress(false);
+      if (result.error) { setError(result.error); return; }
+      setShowUpload(false);
+      setFile(null); setContractNumber('');
+      onUpdate();
+    });
+  }
+
+  async function handleViewPdf() {
+    if (!contract?.file_path) return;
+    const result = await getContractSignedUrl(contract.file_path);
+    if (result.url) window.open(result.url, '_blank');
+    else setError(result.error ?? 'Could not generate link');
+  }
+
+  function handleStatusChange(status: ContractStatus) {
+    if (!contract) return;
+    startTransition(async () => {
+      await updateContractStatus(contract.id, status);
+      onUpdate();
+    });
+  }
+
+  function handleAccept(e: React.FormEvent) {
+    e.preventDefault();
+    if (!contract) return;
+    startTransition(async () => {
+      await updateContractStatus(contract.id, 'active', {
+        date_accepted: dateAccepted,
+        accepted_by_name: acceptedByName || undefined,
+        accepted_by_title: acceptedByTitle || undefined,
+        acceptance_text: acceptanceText || undefined,
+        message_id: msgId || undefined,
+      });
+      setShowAccept(false);
+      onUpdate();
+    });
+  }
+
+  function handleDelete() {
+    if (!contract) return;
+    startTransition(async () => {
+      await deleteContract(contract.id, contract.file_path);
+      onUpdate();
+    });
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Contract</h3>
+        {!contract && (
+          <button onClick={() => setShowUpload(v => !v)} className="flex items-center gap-1 text-xs font-semibold text-brand-blue hover:underline">
+            {showUpload ? 'Cancel' : <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>Upload Contract</>}
+          </button>
+        )}
+      </div>
+
+      {error && <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600 mb-3">{error}</div>}
+
+      {/* Upload form */}
+      {showUpload && !contract && (
+        <form onSubmit={handleUpload} className="bg-blue-50 rounded-xl p-4 space-y-3 mb-3 border border-blue-100">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Contract Number <span className="text-red-400">*</span></label>
+            <input value={contractNumber} onChange={e => setContractNumber(e.target.value)}
+              className={INPUT} placeholder="SR-0001" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Date Sent</label>
+            <input type="date" value={dateSent} onChange={e => setDateSent(e.target.value)} className={INPUT} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">PDF File <span className="text-red-400">*</span></label>
+            <input type="file" accept="application/pdf" onChange={e => setFile(e.target.files?.[0] ?? null)}
+              className="w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200" />
+          </div>
+          <button type="submit" disabled={isPending || uploadProgress}
+            className="w-full py-2 rounded-xl text-white text-xs font-semibold disabled:opacity-50"
+            style={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%)' }}>
+            {uploadProgress || isPending ? 'Uploading…' : 'Upload & Save'}
+          </button>
+        </form>
+      )}
+
+      {/* Contract card */}
+      {contract ? (
+        <div className="bg-gray-50 rounded-xl p-4 space-y-3 border border-gray-100">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-bold text-gray-900">{contract.contract_number}</p>
+              {contract.date_sent && <p className="text-xs text-gray-400 mt-0.5">Sent {contract.date_sent}</p>}
+            </div>
+            <ContractPill status={contract.status} />
+          </div>
+
+          {/* Accepted details */}
+          {contract.date_accepted && (
+            <div className="text-xs text-gray-600 space-y-0.5">
+              <p><span className="text-gray-400">Accepted:</span> {contract.date_accepted}</p>
+              {contract.accepted_by_name && <p><span className="text-gray-400">By:</span> {contract.accepted_by_name} {contract.accepted_by_title && `· ${contract.accepted_by_title}`}</p>}
+              {contract.message_id && <p className="font-mono text-gray-400 truncate">{contract.message_id}</p>}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-2 flex-wrap">
+            {contract.file_path && (
+              <button onClick={handleViewPdf}
+                className="flex-1 py-1.5 text-xs font-semibold rounded-lg border border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors">
+                View PDF
+              </button>
+            )}
+            {contract.status === 'pending' && (
+              <button onClick={() => setShowAccept(v => !v)}
+                className="flex-1 py-1.5 text-xs font-semibold rounded-lg border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors">
+                {showAccept ? 'Cancel' : 'Mark Accepted'}
+              </button>
+            )}
+            {contract.status === 'active' && (
+              <button onClick={() => handleStatusChange('expired')} disabled={isPending}
+                className="flex-1 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-gray-600 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50">
+                Mark Expired
+              </button>
+            )}
+            <button onClick={handleDelete} disabled={isPending}
+              className="py-1.5 px-3 text-xs font-semibold rounded-lg border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50">
+              Delete
+            </button>
+          </div>
+
+          {/* Accept form */}
+          {showAccept && contract.status === 'pending' && (
+            <form onSubmit={handleAccept} className="bg-white rounded-xl p-3 space-y-2.5 border border-emerald-100">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Date Accepted</label>
+                <input type="date" value={dateAccepted} onChange={e => setDateAccepted(e.target.value)} className={INPUT} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Accepted By</label>
+                <input value={acceptedByName} onChange={e => setAcceptedByName(e.target.value)} className={INPUT} placeholder="Partner rep name" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Title</label>
+                <input value={acceptedByTitle} onChange={e => setAcceptedByTitle(e.target.value)} className={INPUT} placeholder="e.g. General Manager" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Acceptance Text</label>
+                <input value={acceptanceText} onChange={e => setAcceptanceText(e.target.value)} className={INPUT} placeholder="I accept all terms…" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Email Message-ID</label>
+                <input value={msgId} onChange={e => setMsgId(e.target.value)} className={INPUT} placeholder="<ref@mail.server.com>" dir="ltr" />
+              </div>
+              <button type="submit" disabled={isPending}
+                className="w-full py-2 rounded-xl text-white text-xs font-semibold disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)' }}>
+                {isPending ? 'Saving…' : 'Confirm Acceptance'}
+              </button>
+            </form>
+          )}
+        </div>
+      ) : !showUpload && (
+        <div className="bg-gray-50 rounded-xl p-5 text-center border border-dashed border-gray-200">
+          <p className="text-sm text-gray-400">No contract uploaded yet</p>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ── New Property Modal ────────────────────────────────────────────────────────
@@ -400,6 +631,9 @@ function PropertyDetailPanel({
             )}
           </div>
 
+          {/* Contract section */}
+          <ContractSection row={row} onUpdate={onUpdate} />
+
           {error && (
             <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600">{error}</div>
           )}
@@ -665,6 +899,7 @@ export default function PropertiesClient({ initialProperties }: Props) {
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Rooms</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Bookings</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Revenue</th>
+              <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Contract</th>
               <th className="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</th>
               <th className="px-5 py-3" />
             </tr>
@@ -672,7 +907,7 @@ export default function PropertiesClient({ initialProperties }: Props) {
           <tbody className="divide-y divide-gray-50">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-5 py-16 text-center text-gray-400 text-sm">
+                <td colSpan={7} className="px-5 py-16 text-center text-gray-400 text-sm">
                   {search ? 'No properties match your search.' : 'No properties yet.'}
                 </td>
               </tr>
@@ -695,6 +930,16 @@ export default function PropertiesClient({ initialProperties }: Props) {
                 </td>
                 <td className="px-5 py-4 font-semibold text-gray-900">{row.booking_count.toLocaleString()}</td>
                 <td className="px-5 py-4 font-semibold text-gray-900"><AEDAmount amount={row.total_revenue} /></td>
+                <td className="px-5 py-4">
+                  {row.contract ? (
+                    <div className="flex flex-col gap-1">
+                      <ContractPill status={row.contract.status} />
+                      <span className="text-xs text-gray-400">{row.contract.contract_number}</span>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-300 italic">None</span>
+                  )}
+                </td>
                 <td className="px-5 py-4">
                   {row.accounts.length === 0 ? (
                     <span className="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">Unassigned</span>

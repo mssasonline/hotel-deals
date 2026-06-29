@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase-admin';
 import PropertiesClient, { type PropertyRow } from './PropertiesClient';
+import type { ContractInfo } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,7 +54,21 @@ export default async function PropertiesPage() {
     }
   }
 
-  // 5. hotel_id → accounts[] (many accounts per hotel)
+  // 5b. Contracts per hotel (latest one per hotel)
+  const contractsMap = new Map<number, ContractInfo>();
+  if (hotelIds.length > 0) {
+    const { data: contractsRaw } = await admin
+      .from('partner_contracts')
+      .select('*')
+      .in('hotel_id', hotelIds)
+      .order('created_at', { ascending: false });
+
+    for (const c of (contractsRaw ?? []) as ContractInfo[]) {
+      if (!contractsMap.has(c.hotel_id)) contractsMap.set(c.hotel_id, c);
+    }
+  }
+
+  // 6. hotel_id → accounts[] (many accounts per hotel)
   const accountsByHotel = new Map<number, { id: string; email: string; status: 'active' | 'suspended'; created_at: string }[]>();
   for (const row of (hpRaw ?? []) as { hotel_id: number; user_id: string }[]) {
     const p = profilesMap.get(row.user_id);
@@ -96,6 +111,7 @@ export default async function PropertiesPage() {
       accounts,
       booking_count: stats.total,
       total_revenue: stats.revenue,
+      contract:      contractsMap.get(h.id) ?? null,
     };
   });
 

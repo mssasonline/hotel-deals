@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
 import { sendNewDealNotification, type NewDealNotificationData } from '@/lib/emailService';
 
-export type DealStatus = 'pending_approval' | 'active' | 'paused' | 'ended';
+export type DealStatus = 'active' | 'paused' | 'ended';
 
 export type PartnerDeal = {
   id: string;

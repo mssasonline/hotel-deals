@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.ar { font-family: 'Noto Kufi Arabic', sans-serif; direction: rtl; }
+.en { font-family: 'Sora', sans-serif; direction: ltr; }
+@media print { .page-break { page-break-before: always; } }
+
+[contenteditable] {
+  outline: none;
+  cursor: text;
+  transition: background 0.15s;
+  border-radius: 3px;
+  min-width: 20px;
+  display: inline-block;
+}
+[contenteditable]:hover { background: rgba(231,131,25,0.06); }
+[contenteditable]:focus { background: rgba(231,131,25,0.10); border-bottom-color: #E78319 !important; }
+
+td[contenteditable] { display: table-cell; width: 100%; }
+td[contenteditable]:empty::before { content: attr(data-ph); color: #C4CCE0; font-style: italic; font-size: 10px; }
+span[contenteditable]:empty::before { content: attr(data-ph); color: #C4CCE0; }
+div[contenteditable]:empty::before { content: attr(data-ph); color: #C4CCE0; font-style: italic; }
+
+@media print {
+  [contenteditable]:hover, [contenteditable]:focus { background: transparent !important; }
+}
+</style>
+</helmet>
+
+<div style="width:794px; background:#FFFFFF; color:#1A2438; font-family:'Noto Kufi Arabic',sans-serif;">
+
+  <!-- ══════════════════════════════════════════════════════════
+       LETTERHEAD
+  ══════════════════════════════════════════════════════════ -->
+  <div style="background:linear-gradient(135deg,#0A1A4F 0%,#12224F 60%,#1A3270 100%); padding:36px 56px; display:flex; align-items:center; justify-content:space-between;">
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <div style="display:flex; align-items:baseline; font-family:'Sora',sans-serif; font-size:32px; line-height:1; letter-spacing:0.09em; direction:ltr;">
+        <span style="font-weight:300; color:#FFFFFF;">SELECTED</span><span style="font-weight:700; color:#E78319;">ROOM</span>
+      </div>
+      <div style="font-family:'Sora',sans-serif; font-size:9.5px; letter-spacing:0.42em; color:#B8C2DC; font-weight:500; direction:ltr;">PREMIUM HOTELS · SELECTEDROOM.COM</div>
+    </div>
+    <div style="text-align:left; direction:ltr; border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:14px 20px;">
+      <div style="font-family:'Sora',sans-serif; font-size:9px; letter-spacing:0.16em; color:#93A3C8; font-weight:500; margin-bottom:6px;">CONTRACT NO.</div>
+      <div style="font-family:'Sora',sans-serif; font-size:16px; font-weight:700; color:#FFFFFF; letter-spacing:0.08em;">SR-<span contenteditable="true" data-ph="______" style="color:#E78319; min-width:60px;"></span></div>
+    </div>
+  </div>
+  <div style="height:4px; background:linear-gradient(90deg,#E78319 0%,#F59E0B 100%);"></div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       TITLE BLOCK
+  ══════════════════════════════════════════════════════════ -->
+  <div style="padding:36px 56px 0; text-align:center;">
+    <h1 class="ar" style="font-size:24px; font-weight:700; color:#12224F; margin-bottom:4px;">اتفاقية شراكة فندقية</h1>
+    <h2 class="en" style="font-size:16px; font-weight:500; color:#7886A8; margin-bottom:14px;">Hotel Partnership Agreement</h2>
+    <p style="font-size:12px; color:#7886A8; line-height:2; font-family:'Sora',sans-serif; direction:ltr;">
+      Contract No.: <strong style="color:#1A2438;">SR-<span contenteditable="true" data-ph="______" style="min-width:50px;"></span></strong>
+      &nbsp;·&nbsp;
+      Date / التاريخ: <strong style="color:#1A2438;"><span contenteditable="true" data-ph="DD / MM / YYYY" style="min-width:110px;"></span></strong>
+      &nbsp;·&nbsp;
+      Version / الإصدار: 1.0
+    </p>
+    <div style="height:1px; background:linear-gradient(90deg,transparent,#E2E7F1,transparent); margin-top:24px;"></div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       HELPER: ARTICLE HEADER MACRO
+       Each article: AR block then EN block
+  ══════════════════════════════════════════════════════════ -->
+
+  <!-- ── PARTIES ── -->
+  <div style="padding:28px 56px 0;">
+
+    <!-- AR preamble -->
+    <p class="ar" style="font-size:13px; line-height:2.2; color:#36415C; margin-bottom:20px;">
+      أُبرمت هذه الاتفاقية إلكترونياً عبر تبادل رسائل البريد الإلكتروني الرسمي بين الطرفين بتاريخ المذكور أعلاه. ويُعدّ ردّ الطرف الثاني بالقبول على البريد الإلكتروني الصادر من الطرف الأول على العنوان <strong style="color:#12224F; font-family:'Sora',sans-serif; direction:ltr; display:inline-block;">info@selectedroom.com</strong> موافقةً صريحةً وتوقيعاً إلكترونياً ملزماً لكلا الطرفين وفق قانون المعاملات الإلكترونية الإماراتي رقم 1 لسنة 2006، بين الطرفين الآتي بيانهما:
+    </p>
+    <!-- EN preamble -->
+    <p class="en" style="font-size:11.5px; line-height:1.9; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px; margin-bottom:24px;">
+      This Agreement is concluded electronically via official email exchange. The Second Party's acceptance reply to <strong style="color:#12224F;">info@selectedroom.com</strong> constitutes a legally binding electronic signature for both Parties under UAE Electronic Transactions Law No. 1 of 2006, between the Parties identified below:
+    </p>
+
+    <!-- Parties grid -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+      <div style="background:#F9FAFB; border:1.5px solid #12224F; border-radius:14px; padding:20px 22px; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; right:0; width:5px; height:100%; background:#12224F; border-radius:0 14px 14px 0;"></div>
+        <div class="ar" style="font-size:10px; letter-spacing:0.18em; color:#E78319; font-weight:700; margin-bottom:4px;">◈ الطرف الأول (المنصة)</div>
+        <div class="en" style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:600; margin-bottom:12px;">FIRST PARTY — PLATFORM</div>
+        <div style="font-family:'Sora',sans-serif; font-size:13px; font-weight:700; color:#12224F; direction:ltr; margin-bottom:12px;">SelectedRoom — Premium Hotels</div>
+        <table style="width:100%; font-size:11px; color:#56607A; line-height:2.3; border-collapse:collapse; direction:ltr;">
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Trade Lic. / السجل التجاري</td><td contenteditable="true" data-ph="enter value…" style="border-bottom:1px dotted #C4CCE0; width:100%;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">TRN / رقم ضريبي</td><td contenteditable="true" data-ph="enter value…" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Address / العنوان</td><td contenteditable="true" data-ph="enter value…" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Rep. by / يمثّلها</td><td contenteditable="true" data-ph="enter value…" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Title / الصفة</td><td contenteditable="true" data-ph="enter value…" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+        </table>
+      </div>
+      <div style="background:#F9FAFB; border:1.5px solid #E2E7F1; border-radius:14px; padding:20px 22px; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; right:0; width:5px; height:100%; background:#E78319; border-radius:0 14px 14px 0;"></div>
+        <div class="ar" style="font-size:10px; letter-spacing:0.18em; color:#7886A8; font-weight:700; margin-bottom:4px;">◈ الطرف الثاني (الشريك)</div>
+        <div class="en" style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:600; margin-bottom:12px;">SECOND PARTY — PARTNER</div>
+        <div contenteditable="true" data-ph="Hotel / Company Name" style="font-size:13px; font-weight:700; color:#12224F; margin-bottom:12px; border-bottom:1px dotted #C4CCE0; min-width:160px; display:block;"></div>
+        <table style="width:100%; font-size:11px; color:#56607A; line-height:2.3; border-collapse:collapse; direction:ltr;">
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Trade Lic. / السجل التجاري</td><td contenteditable="true" data-ph="enter value…" style="border-bottom:1px dotted #C4CCE0; width:100%;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">TRN / رقم ضريبي</td><td contenteditable="true" data-ph="enter value…" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Address / العنوان</td><td contenteditable="true" data-ph="enter value…" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Rep. by / يمثّله</td><td contenteditable="true" data-ph="enter value…" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Title / الصفة</td><td contenteditable="true" data-ph="enter value…" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Preamble AR -->
+    <div style="background:#F0F3FA; border-right:4px solid #12224F; border-radius:0 10px 10px 0; padding:16px 20px; margin-bottom:10px;" dir="rtl">
+      <div class="ar" style="font-size:10px; letter-spacing:0.16em; color:#7886A8; font-weight:700; margin-bottom:8px;">التمهيد</div>
+      <p class="ar" style="font-size:12px; line-height:2.1; color:#36415C;">
+        إذ يمتلك الطرف الأول منصة <strong style="color:#12224F; font-family:'Sora',sans-serif; direction:ltr; display:inline-block;">SelectedRoom</strong> للحجوزات الفندقية الفاخرة، وتعمل بنموذجين: حجوزات اللحظة الأخيرة بأسعار متدرجة، وعروض حصرية بخصومات ثابتة يقدّمها الفندق الشريك. ويرغب الطرف الثاني في الانضمام شريكاً فندقياً معتمداً لعرض وحداته عبر المنصة واستقطاب الحجوزات؛ اتفق الطرفان على ما يلي:
+      </p>
+    </div>
+    <!-- Preamble EN -->
+    <div style="background:#F9FAFB; border-left:4px solid #B8C2DC; border-radius:10px 0 0 10px; padding:16px 20px; margin-bottom:28px;" dir="ltr">
+      <div class="en" style="font-size:9px; letter-spacing:0.16em; color:#9AA6C4; font-weight:700; margin-bottom:8px;">RECITALS</div>
+      <p class="en" style="font-size:11px; line-height:2; color:#56607A;">
+        Whereas the First Party operates the <strong style="color:#12224F;">SelectedRoom</strong> platform for luxury hotel bookings under two models: last-minute bookings with tiered pricing, and exclusive fixed-discount deals offered by partner hotels. The Second Party wishes to join as a certified hotel partner to list its units on the Platform and attract bookings; the Parties agree as follows:
+      </p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       ARTICLE TEMPLATE (repeated for each article)
+       Navy number badge + AR title → AR content
+       Then gray badge + EN title → EN content
+  ══════════════════════════════════════════════════════════ -->
+
+  <!-- ── ARTICLE 1 ── -->
+  <div style="padding:0 56px 24px;">
+    <!-- AR -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">1</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">التعريفات والمصطلحات</h2>
+    </div>
+    <p class="ar" style="font-size:11.5px; color:#56607A; line-height:2; margin-bottom:12px; direction:rtl;">يُقصد بالمصطلحات الواردة في هذه الاتفاقية المعاني المبيّنة أمام كلٍّ منها، ما لم يقتضِ السياق خلاف ذلك:</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;" dir="rtl">
+      <div style="background:#F9FAFB; border-radius:8px; padding:10px 14px; border:1px solid #E8EBF4;"><div class="ar" style="font-size:10.5px; font-weight:700; color:#12224F; margin-bottom:4px;">المنصة</div><div class="ar" style="font-size:10.5px; color:#56607A; line-height:1.8;">الموقع الإلكتروني وتطبيق الهاتف الذكي الخاصَّين بـ SelectedRoom وجميع خدماتهما.</div></div>
+      <div style="background:#F9FAFB; border-radius:8px; padding:10px 14px; border:1px solid #E8EBF4;"><div class="ar" style="font-size:10.5px; font-weight:700; color:#12224F; margin-bottom:4px;">الشريك</div><div class="ar" style="font-size:10.5px; color:#56607A; line-height:1.8;">الطرف الثاني الموقّع بصفته مالك المنشأة الفندقية أو مفوّضاً عنها قانونياً.</div></div>
+      <div style="background:#F9FAFB; border-radius:8px; padding:10px 14px; border:1px solid #E8EBF4;"><div class="ar" style="font-size:10.5px; font-weight:700; color:#12224F; margin-bottom:4px;">الوحدة الفندقية</div><div class="ar" style="font-size:10.5px; color:#56607A; line-height:1.8;">الغرف أو الأجنحة أو الوحدات السكنية المخصّصة للعرض عبر المنصة.</div></div>
+      <div style="background:#F9FAFB; border-radius:8px; padding:10px 14px; border:1px solid #E8EBF4;"><div class="ar" style="font-size:10.5px; font-weight:700; color:#12224F; margin-bottom:4px;">الحجز المؤكَّد</div><div class="ar" style="font-size:10.5px; color:#56607A; line-height:1.8;">أي حجز اكتمل عبر المنصة وصدر له رقم تأكيد وتمّت معالجة الدفع.</div></div>
+      <div style="background:#F9FAFB; border-radius:8px; padding:10px 14px; border:1px solid #E8EBF4;"><div class="ar" style="font-size:10.5px; font-weight:700; color:#12224F; margin-bottom:4px;">العمولة</div><div class="ar" style="font-size:10.5px; color:#56607A; line-height:1.8;">النسبة المئوية المستحقة للطرف الأول من إجمالي قيمة كل حجز مؤكّد.</div></div>
+      <div style="background:#F9FAFB; border-radius:8px; padding:10px 14px; border:1px solid #E8EBF4;"><div class="ar" style="font-size:10.5px; font-weight:700; color:#12224F; margin-bottom:4px;">السعر الصافي</div><div class="ar" style="font-size:10.5px; color:#56607A; line-height:1.8;">المبلغ المستحق للشريك بعد خصم عمولة المنصة.</div></div>
+      <div style="background:#F9FAFB; border-radius:8px; padding:10px 14px; border:1px solid #E8EBF4;"><div class="ar" style="font-size:10.5px; font-weight:700; color:#12224F; margin-bottom:4px;">المعلومات السرية</div><div class="ar" style="font-size:10.5px; color:#56607A; line-height:1.8;">أي بيانات تجارية أو مالية أو تقنية يتبادلها الطرفان في إطار تنفيذ الاتفاقية.</div></div>
+      <div style="background:#F9FAFB; border-radius:8px; padding:10px 14px; border:1px solid #E8EBF4;"><div class="ar" style="font-size:10.5px; font-weight:700; color:#12224F; margin-bottom:4px;">الضيف</div><div class="ar" style="font-size:10.5px; color:#56607A; line-height:1.8;">المستخدم النهائي الذي أجرى حجزاً عبر المنصة وسيُقيم في وحدة الشريك.</div></div>
+    </div>
+    <!-- EN -->
+    <div style="background:#F9FAFB; border-radius:10px; padding:14px 18px; border:1px solid #E8EBF4;" dir="ltr">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+        <div style="width:24px; height:24px; border-radius:6px; background:#E8EBF4; color:#7886A8; font-family:'Sora',sans-serif; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center;">1</div>
+        <span class="en" style="font-size:11px; font-weight:700; color:#7886A8; letter-spacing:0.1em;">DEFINITIONS</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <div style="padding:8px 10px; border-bottom:1px solid #F0F2F8;"><span class="en" style="font-size:10px; font-weight:700; color:#56607A;">Platform — </span><span class="en" style="font-size:10px; color:#7886A8;">SelectedRoom website and app and all associated services.</span></div>
+        <div style="padding:8px 10px; border-bottom:1px solid #F0F2F8;"><span class="en" style="font-size:10px; font-weight:700; color:#56607A;">Partner — </span><span class="en" style="font-size:10px; color:#7886A8;">The Second Party as owner or authorised representative of the hotel property.</span></div>
+        <div style="padding:8px 10px; border-bottom:1px solid #F0F2F8;"><span class="en" style="font-size:10px; font-weight:700; color:#56607A;">Hotel Unit — </span><span class="en" style="font-size:10px; color:#7886A8;">Rooms, suites or units designated for listing on the Platform.</span></div>
+        <div style="padding:8px 10px; border-bottom:1px solid #F0F2F8;"><span class="en" style="font-size:10px; font-weight:700; color:#56607A;">Confirmed Booking — </span><span class="en" style="font-size:10px; color:#7886A8;">A booking completed with a confirmation number and processed payment.</span></div>
+        <div style="padding:8px 10px; border-bottom:1px solid #F0F2F8;"><span class="en" style="font-size:10px; font-weight:700; color:#56607A;">Commission — </span><span class="en" style="font-size:10px; color:#7886A8;">Agreed percentage due to the First Party per Confirmed Booking.</span></div>
+        <div style="padding:8px 10px; border-bottom:1px solid #F0F2F8;"><span class="en" style="font-size:10px; font-weight:700; color:#56607A;">Net Rate — </span><span class="en" style="font-size:10px; color:#7886A8;">Amount due to the Partner after deducting the Platform's commission.</span></div>
+        <div style="padding:8px 10px; border-bottom:1px solid #F0F2F8;"><span class="en" style="font-size:10px; font-weight:700; color:#56607A;">Confidential Information — </span><span class="en" style="font-size:10px; color:#7886A8;">Commercial, financial or technical data exchanged between the Parties.</span></div>
+        <div style="padding:8px 10px;"><span class="en" style="font-size:10px; font-weight:700; color:#56607A;">Guest — </span><span class="en" style="font-size:10px; color:#7886A8;">End user who booked via the Platform and will stay at the Partner's unit.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ARTICLES 2–15 HELPER: reusable two-tone block ── -->
+
+  <!-- ARTICLE 2 -->
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">2</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">موضوع الاتفاقية ونطاقها</h2>
+    </div>
+    <div class="ar" style="font-size:12px; line-height:2.15; color:#36415C; display:flex; flex-direction:column; gap:8px; margin-bottom:12px;" dir="rtl">
+      <p><span style="font-weight:600; color:#12224F;">2.1</span> تمنح هذه الاتفاقية الطرفَ الثاني صفةَ «الشريك الفندقي المعتمد» لعرض وحداته المحددة في الملحق (أ) عبر منصة SelectedRoom.</p>
+      <p><span style="font-weight:600; color:#12224F;">2.2</span> يشمل نطاق الشراكة: إدراج الوحدات، وإدارة الأسعار والتوافر، واستقبال الحجوزات، وتحصيل المدفوعات، وتحويل المستحقات.</p>
+      <p><span style="font-weight:600; color:#12224F;">2.3</span> لا تُنشئ هذه الاتفاقية أي علاقة توظيف أو وكالة أو شراكة تجارية، ويظل كل طرف مسؤولاً عن التزاماته القانونية والضريبية المستقلة.</p>
+      <p><span style="font-weight:600; color:#12224F;">2.4</span> تبقى السيادة الكاملة على المنصة وآليات الحجز وتجربة المستخدم من حق الطرف الأول حصراً.</p>
+    </div>
+    <div class="en" style="font-size:11px; line-height:1.9; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">SUBJECT MATTER AND SCOPE</span>
+      <b>2.1</b> This Agreement grants the Second Party the status of "Certified Hotel Partner" to list units specified in Appendix A on the SelectedRoom platform. &nbsp;<b>2.2</b> Scope includes: listing units, managing rates and availability, receiving bookings, collecting payments, and transferring dues. &nbsp;<b>2.3</b> This Agreement creates no employment, agency, or commercial partnership; each Party remains independently liable for its legal and tax obligations. &nbsp;<b>2.4</b> Full sovereignty over the Platform and user experience remains exclusively with the First Party.
+    </div>
+  </div>
+
+  <!-- ARTICLE 3 -->
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">3</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">مدة الاتفاقية</h2>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:12px;">
+      <div style="background:#F0F3FA; border-radius:10px; padding:14px 16px; text-align:center;"><div class="ar" style="font-size:9.5px; color:#9AA6C4; font-weight:600; margin-bottom:6px;">المدة الابتدائية</div><div style="font-size:18px; font-weight:700; color:#12224F; font-family:'Sora',sans-serif; margin-bottom:2px;">12<span style="font-size:11px; color:#7886A8;"> شهراً</span></div><div class="en" style="font-size:9px; color:#9AA6C4;">From date of signing</div></div>
+      <div style="background:#F0F3FA; border-radius:10px; padding:14px 16px; text-align:center;"><div class="ar" style="font-size:9.5px; color:#9AA6C4; font-weight:600; margin-bottom:6px;">التجديد التلقائي</div><div class="ar" style="font-size:18px; font-weight:700; color:#12224F; margin-bottom:2px;">سنة بسنة</div><div class="en" style="font-size:9px; color:#9AA6C4;">Unless notice given</div></div>
+      <div style="background:#F0F3FA; border-radius:10px; padding:14px 16px; text-align:center;"><div class="ar" style="font-size:9.5px; color:#9AA6C4; font-weight:600; margin-bottom:6px;">مهلة الإخطار</div><div style="font-size:18px; font-weight:700; color:#12224F; font-family:'Sora',sans-serif; margin-bottom:2px;">30<span style="font-size:11px; color:#7886A8;"> يوماً</span></div><div class="en" style="font-size:9px; color:#9AA6C4;">Prior to expiry</div></div>
+    </div>
+    <div class="en" style="font-size:11px; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:10px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:4px;">TERM</span>
+      Initial term of <b>12 months</b> from signing, auto-renewing year by year unless either Party provides written notice of termination at least <b>30 days</b> prior to expiry.
+    </div>
+  </div>
+
+  <!-- ARTICLE 4 -->
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">4</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">التزامات الطرف الثاني (الشريك)</h2>
+    </div>
+    <div class="ar" style="font-size:12px; line-height:2.15; color:#36415C; display:flex; flex-direction:column; gap:8px; margin-bottom:12px;" dir="rtl">
+      <p><span style="font-weight:600; color:#12224F;">4.1 دقة البيانات:</span> يلتزم الشريك بتزويد المنصة ببيانات دقيقة وشاملة (الوصف، الصور، المرافق، الأسعار) ويتحمل المسؤولية الكاملة عن أي خطأ فيها.</p>
+      <p><span style="font-weight:600; color:#12224F;">4.2 الإتاحة والتوافر:</span> يلتزم الشريك بتحديث التوافر في الوقت الفعلي وعدم الحجز المزدوج. في حال وقوعه، يتحمل الشريك كامل تكلفة الإسكان البديل.</p>
+      <p><span style="font-weight:600; color:#12224F;">4.3 جودة الخدمة:</span> يلتزم الشريك بتقديم خدمة تتوافق مع درجة المنشأة المعلنة، والاستجابة لشكاوى الضيوف خلال (24) ساعة.</p>
+      <p><span style="font-weight:600; color:#12224F;">4.4 الترخيص والامتثال:</span> يُقرّ الشريك بحيازته لجميع التراخيص الحكومية اللازمة ويلتزم بالقوانين المحلية.</p>
+      <p><span style="font-weight:600; color:#12224F;">4.5 التكافؤ السعري:</span> يلتزم الشريك بعدم عرض أسعار عبر المنصة أعلى مما هو متاح في قنواته المباشرة (Rate Parity).</p>
+      <p><span style="font-weight:600; color:#12224F;">4.6 التأمين:</span> يلتزم الشريك بالحفاظ على تغطية تأمينية سارية شاملة مسؤولية الطرف الثالث طوال مدة الاتفاقية.</p>
+    </div>
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">PARTNER OBLIGATIONS</span>
+      <b>4.1 Data Accuracy:</b> Provide accurate and complete unit information; bear full responsibility for errors. &nbsp;<b>4.2 Availability:</b> Update availability in real time; no double-booking; bear cost of alternative accommodation if it occurs. &nbsp;<b>4.3 Service Quality:</b> Deliver service consistent with declared hotel category; respond to Guest complaints within 24 hours. &nbsp;<b>4.4 Licensing:</b> Hold all required government licences and comply with local laws. &nbsp;<b>4.5 Rate Parity:</b> Prices on the Platform shall be no higher than direct channels. &nbsp;<b>4.6 Insurance:</b> Maintain valid third-party liability insurance throughout the Agreement term.
+    </div>
+  </div>
+
+  <!-- ARTICLE 5 -->
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">5</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">التزامات الطرف الأول (المنصة)</h2>
+    </div>
+    <div class="ar" style="font-size:12px; line-height:2.15; color:#36415C; display:flex; flex-direction:column; gap:8px; margin-bottom:12px;" dir="rtl">
+      <p><span style="font-weight:600; color:#12224F;">5.1 الإدراج والترويج:</span> يلتزم الطرف الأول بإدراج وحدات الشريك وعرضها بصورة احترافية أمام الضيوف المستهدفين.</p>
+      <p><span style="font-weight:600; color:#12224F;">5.2 معالجة الحجوزات:</span> يتولى الطرف الأول إدارة عملية الحجز بالكامل، بما فيها التأكيد وإخطار الشريك والضيف.</p>
+      <p><span style="font-weight:600; color:#12224F;">5.3 تحصيل المدفوعات والضرائب:</span> يتولى الطرف الأول بوصفه <em>وكيلاً</em> تحصيلَ المبلغ الكامل من الضيف (غرف + فطور + ضرائب)، ثم يُحيل إلى الشريك صافي حصّته وفق المادة السادسة مضافاً إليه كامل الضرائب الحكومية. يتحمّل الشريك مسؤولية تسديد هذه الضرائب للجهات المختصة. يلتزم الطرف الأول بسداد VAT على عمولته فقط (5% من العمولة).</p>
+      <p><span style="font-weight:600; color:#12224F;">5.4 الدعم الفني:</span> يُوفّر الطرف الأول للشريك لوحة تحكم لمتابعة الحجوزات والإيرادات مع دعم فني خلال أوقات العمل.</p>
+      <p><span style="font-weight:600; color:#12224F;">5.5 سرية بيانات الشريك:</span> يلتزم الطرف الأول بعدم الإفصاح عن بيانات الشريك التجارية أو المالية لأطراف ثالثة دون موافقة خطية مسبقة.</p>
+    </div>
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">PLATFORM OBLIGATIONS</span>
+      <b>5.1 Listing:</b> List and professionally present Partner units to targeted Guests. &nbsp;<b>5.2 Booking Management:</b> Manage the full booking process including confirmation and notifications. &nbsp;<b>5.3 Payments &amp; Taxes (Agent Model):</b> Collect full amount from Guest (rooms + breakfast + taxes); remit to Partner their net share per Article 6 plus all collected government taxes (Municipality, Tourism Dirham, VAT 5%). The Partner is responsible for remitting those taxes to authorities. The First Party pays VAT only on its own commission (5% of commission). &nbsp;<b>5.4 Dashboard:</b> Provide Partner with management tools and business-hours technical support. &nbsp;<b>5.5 Confidentiality:</b> Not disclose Partner's commercial or financial data without prior written consent.
+    </div>
+  </div>
+
+  <!-- ARTICLE 6 -->
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">6</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">الشروط المالية والعمولات</h2>
+    </div>
+    <!-- Commission box -->
+    <div style="border:1.5px solid #E78319; border-radius:10px; overflow:hidden; margin-bottom:12px; background:#FFFBF5;">
+      <div style="background:#E78319; padding:10px 18px; display:flex; justify-content:space-between; align-items:center;">
+        <span class="ar" style="font-size:10.5px; letter-spacing:0.1em; color:#fff; font-weight:600;">نسبة العمولة المتفق عليها</span>
+        <span class="en" style="font-size:9px; color:rgba(255,255,255,0.8);">Agreed Commission Rate</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0;">
+        <div style="padding:14px 16px; text-align:center; border-left:1px solid #FDE8C8;"><div class="ar" style="font-size:9px; color:#9AA6C4; font-weight:600; margin-bottom:6px;">عمولة المنصة / Platform</div><div style="font-size:24px; font-weight:700; color:#E78319; font-family:'Sora',sans-serif;"><span contenteditable="true" data-ph="__" style="min-width:36px; display:inline-block;"></span><span style="font-size:14px;">%</span></div></div>
+        <div style="padding:14px 16px; text-align:center; border-left:1px solid #FDE8C8;"><div class="ar" style="font-size:9px; color:#9AA6C4; font-weight:600; margin-bottom:6px;">صافي الشريك / Partner Net</div><div style="font-size:24px; font-weight:700; color:#059669; font-family:'Sora',sans-serif;"><span contenteditable="true" data-ph="__" style="min-width:36px; display:inline-block;"></span><span style="font-size:14px;">%</span></div></div>
+        <div style="padding:14px 16px; text-align:center;"><div class="ar" style="font-size:9px; color:#9AA6C4; font-weight:600; margin-bottom:6px;">الحجوزات الملغاة / Cancelled</div><div class="en" style="font-size:14px; font-weight:700; color:#DC2626; margin-top:4px;">No Commission</div></div>
+      </div>
+    </div>
+    <div class="ar" style="font-size:12px; line-height:2.1; color:#36415C; display:flex; flex-direction:column; gap:8px; margin-bottom:12px;" dir="rtl">
+      <p><span style="font-weight:600; color:#12224F;">6.1 آلية الاحتساب:</span> تُحسب العمولة على إجمالي الحجز (غرف + رسوم خدمة + فطور) غير شاملاً الضرائب الحكومية.</p>
+      <p><span style="font-weight:600; color:#12224F;">6.2 مراجعة النسبة:</span> يحق لأي طرف طلب مراجعة النسبة بإخطار خطي قبل (30) يوماً، ولا يسري أي تعديل إلا بموافقة الطرفين خطياً. قد تختلف النسبة من شريك لآخر.</p>
+      <p><span style="font-weight:600; color:#12224F;">6.3 التسوية الشهرية:</span> تُحوَّل مستحقات الحجوزات التي اكتملت إقامتها خلال الشهر المنصرم في غضون (7) أيام عمل من مطلع الشهر التالي. الحجوزات التي لم تنتهِ تُرحَّل إلى شهر المغادرة الفعلية.</p>
+      <p><span style="font-weight:600; color:#12224F;">6.4 عملة الدفع:</span> الدرهم الإماراتي (AED) ما لم يُتفق خطياً على خلاف ذلك.</p>
+      <p><span style="font-weight:600; color:#12224F;">6.5 تقارير الإيرادات:</span> كشف شهري تفصيلي بالحجوزات والمبالغ والعمولات.</p>
+      <p><span style="font-weight:600; color:#12224F;">6.6 الإيقاف التلقائي:</span> إذا تجاوز معدل الإلغاء (15%) خلال 30 يوماً متتالية، يحق للطرف الأول تعليق الحساب ريثما تُسوَّى الأسباب.</p>
+    </div>
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">FINANCIAL TERMS &amp; COMMISSION</span>
+      <b>6.1</b> Commission calculated on total booking value (rooms + service charge + breakfast), excluding government taxes. &nbsp;<b>6.2</b> Either Party may request a rate review with 30 days' written notice; amendments require mutual written agreement. Rate may vary per partner. &nbsp;<b>6.3 Monthly Settlement:</b> Dues for bookings fully completed in the preceding calendar month transferred within 7 business days of the new month. Bookings spanning two months are carried to the month of actual check-out. &nbsp;<b>6.4</b> Currency: AED unless otherwise agreed in writing. &nbsp;<b>6.5</b> Monthly detailed revenue report provided to Partner. &nbsp;<b>6.6</b> Account may be suspended if cancellation rate exceeds 15% over 30 consecutive days.
+    </div>
+  </div>
+
+  <!-- ARTICLE 7 -->
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">7</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">الإلغاء وعدم الحضور وسياسة الاسترداد</h2>
+    </div>
+    <div style="background:#FFF5F5; border-right:4px solid #DC2626; border-radius:0 8px 8px 0; padding:10px 14px; margin-bottom:10px;" dir="rtl">
+      <p class="ar" style="font-size:11px; color:#7C2D2D; line-height:1.9;"><strong>سياسة المنصة:</strong> جميع الحجوزات فورية وغير قابلة للإلغاء أو الاسترداد بعد تأكيد الدفع.</p>
+    </div>
+    <div class="ar" style="font-size:12px; line-height:2.1; color:#36415C; display:flex; flex-direction:column; gap:8px; margin-bottom:12px;" dir="rtl">
+      <p><span style="font-weight:600; color:#12224F;">7.1 عدم قابلية الإلغاء:</span> جميع الحجوزات نهائية بعد إتمام الدفع، ولا يحق استرداد أي مبلغ، باستثناء حالات القوة القاهرة (المادة 12).</p>
+      <p><span style="font-weight:600; color:#12224F;">7.2 عدم الحضور (No-Show):</span> يحتفظ الشريك بكامل قيمة الحجز. يتولى الطرف الأول إخطار الشريك فور علمه بعدم الحضور.</p>
+      <p><span style="font-weight:600; color:#12224F;">7.3 تعذّر الاستقبال من الشريك:</span> يلتزم الشريك بإخطار المنصة فوراً، وتحمّل تكاليف الإسكان البديل بمستوى مماثل أو أعلى، وتعويض الضيف عن أي أضرار مباشرة.</p>
+    </div>
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">CANCELLATION, NO-SHOW &amp; REFUND POLICY</span>
+      <em style="color:#DC2626; font-size:10px;">Platform Policy: All bookings are immediate and non-refundable once payment is confirmed.</em><br><br>
+      <b>7.1</b> All bookings are final and non-cancellable after payment; no refunds except under Article 12 (Force Majeure). &nbsp;<b>7.2 No-Show:</b> Partner retains full booking value; First Party notifies Partner upon becoming aware. &nbsp;<b>7.3 Partner Inability to Accommodate:</b> Partner must notify Platform immediately, bear full cost of equivalent-or-superior alternative accommodation, and compensate Guest for direct damages.
+    </div>
+  </div>
+
+  <!-- ARTICLES 8–11 combined for brevity of similar structure -->
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">8</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">الملكية الفكرية وحقوق الاستخدام</h2>
+    </div>
+    <div class="ar" style="font-size:12px; line-height:2.1; color:#36415C; display:flex; flex-direction:column; gap:7px; margin-bottom:12px;" dir="rtl">
+      <p><span style="font-weight:600; color:#12224F;">8.1</span> تظل العلامات التجارية والشعارات والمحتوى المرئي ملكاً حصرياً للطرف الأول. لا يجوز للشريك استخدامها دون إذن خطي مسبق.</p>
+      <p><span style="font-weight:600; color:#12224F;">8.2</span> يمنح الشريك الطرفَ الأول ترخيصاً غير حصري لاستخدام صور الفندق ووصفه في التسويق الرقمي خلال مدة الاتفاقية.</p>
+      <p><span style="font-weight:600; color:#12224F;">8.3</span> عند انتهاء الاتفاقية، يتوقف كل طرف فوراً عن استخدام أي حقوق منحها الطرف الآخر.</p>
+    </div>
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">INTELLECTUAL PROPERTY</span>
+      <b>8.1</b> All Platform trademarks and logos remain the exclusive property of the First Party; Partner may not use them without prior written consent. &nbsp;<b>8.2</b> Partner grants First Party a non-exclusive licence to use hotel images and descriptions for digital marketing during the Agreement term. &nbsp;<b>8.3</b> Upon termination, each Party shall immediately cease using rights granted by the other.
+    </div>
+  </div>
+
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">9</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">السرية وحماية المعلومات</h2>
+    </div>
+    <div class="ar" style="font-size:12px; line-height:2.1; color:#36415C; display:flex; flex-direction:column; gap:7px; margin-bottom:12px;" dir="rtl">
+      <p><span style="font-weight:600; color:#12224F;">9.1</span> يلتزم كلا الطرفين بالحفاظ على سرية جميع المعلومات المتبادلة وعدم إفشائها لأي طرف ثالث دون موافقة خطية مسبقة.</p>
+      <p><span style="font-weight:600; color:#12224F;">9.2</span> يُستثنى من ذلك: المعلومات المتاحة للعموم، أو ما تقتضي الإفصاح عنه جهة قضائية أو رقابية.</p>
+      <p><span style="font-weight:600; color:#12224F;">9.3</span> يستمر هذا الالتزام لمدة ثلاث (3) سنوات بعد انتهاء الاتفاقية.</p>
+    </div>
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">CONFIDENTIALITY</span>
+      <b>9.1</b> Both Parties shall maintain confidentiality of all exchanged information and not disclose it to third parties without prior written consent. &nbsp;<b>9.2</b> Exceptions: publicly available information or disclosures required by judicial/regulatory authorities. &nbsp;<b>9.3</b> This obligation survives for <b>3 years</b> after expiry or termination.
+    </div>
+  </div>
+
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">10</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">حماية البيانات الشخصية</h2>
+    </div>
+    <div class="ar" style="font-size:12px; line-height:2.1; color:#36415C; display:flex; flex-direction:column; gap:7px; margin-bottom:12px;" dir="rtl">
+      <p><span style="font-weight:600; color:#12224F;">10.1</span> يلتزم الطرفان بمعالجة البيانات الشخصية للضيوف وفق قوانين حماية البيانات المعمول بها في دولة الإمارات.</p>
+      <p><span style="font-weight:600; color:#12224F;">10.2</span> لا يحق للشريك استخدام بيانات الضيوف لأغراض تسويقية خاصة دون موافقتهم الصريحة.</p>
+      <p><span style="font-weight:600; color:#12224F;">10.3</span> يلتزم كل طرف بإخطار الطرف الآخر خلال (48) ساعة من اكتشاف أي اختراق أمني.</p>
+    </div>
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">DATA PROTECTION</span>
+      <b>10.1</b> Both Parties shall process Guest personal data in accordance with applicable UAE data protection laws. &nbsp;<b>10.2</b> Partner shall not use Guest data for its own marketing without explicit Guest consent. &nbsp;<b>10.3</b> Each Party shall notify the other within <b>48 hours</b> of discovering any security breach affecting shared Guest data.
+    </div>
+  </div>
+
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">11</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">المسؤولية والتعويض</h2>
+    </div>
+    <div class="ar" style="font-size:12px; line-height:2.1; color:#36415C; display:flex; flex-direction:column; gap:7px; margin-bottom:12px;" dir="rtl">
+      <p><span style="font-weight:600; color:#12224F;">11.1</span> لا يتحمل الطرف الأول أي مسؤولية تجاه الضيف عن جودة الخدمة الفندقية أو أي ضرر يلحق به في منشأة الشريك.</p>
+      <p><span style="font-weight:600; color:#12224F;">11.2</span> يلتزم الشريك بتعويض المنصة عن أي مطالبات أو دعاوى تنشأ بسبب إخلاله بالتزاماته.</p>
+      <p><span style="font-weight:600; color:#12224F;">11.3</span> لا تتجاوز المسؤولية القصوى لأي طرف مجموع العمولات المدفوعة خلال الثلاثة (3) أشهر السابقة للحادثة.</p>
+      <p><span style="font-weight:600; color:#12224F;">11.4</span> لا يُسأل أي من الطرفين عن الأضرار غير المباشرة أو خسارة الأرباح المحتملة.</p>
+    </div>
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">LIABILITY &amp; INDEMNIFICATION</span>
+      <b>11.1</b> First Party bears no liability to Guests for hotel service quality or damages during their stay. &nbsp;<b>11.2</b> Partner shall indemnify the Platform against claims arising from its breach of this Agreement. &nbsp;<b>11.3</b> Maximum liability of either Party shall not exceed commissions paid in the <b>3 months</b> preceding the incident. &nbsp;<b>11.4</b> Neither Party shall be liable for indirect damages or loss of anticipated profits.
+    </div>
+  </div>
+
+  <!-- ARTICLE 12 -->
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">12</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">القوة القاهرة</h2>
+    </div>
+    <p class="ar" style="font-size:12px; line-height:2.1; color:#36415C; margin-bottom:12px;" dir="rtl">لا يُعدّ أي من الطرفين مخلاً بالتزاماته إذا تعذّر عليه الوفاء بها بسبب ظروف خارجة عن إرادته (كوارث طبيعية، أوبئة، قرارات حكومية، حروب). يُخطر الطرفُ المتضرر الطرفَ الآخر خطياً في غضون (5) أيام عمل. تُعلَّق الالتزامات طوال مدة القوة القاهرة؛ وإن امتدّت أكثر من (60) يوماً، يحق لأي طرف إنهاء الاتفاقية دون غرامة.</p>
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">FORCE MAJEURE</span>
+      Neither Party shall be in breach if prevented by circumstances beyond its reasonable control (natural disasters, pandemics, government orders, wars). The affected Party shall notify the other in writing within <b>5 business days</b>. Affected obligations are suspended for the duration; if the event continues beyond <b>60 days</b>, either Party may terminate without penalty.
+    </div>
+  </div>
+
+  <!-- ARTICLE 13 -->
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">13</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">الإنهاء</h2>
+    </div>
+    <div class="ar" style="font-size:12px; line-height:2.1; color:#36415C; display:flex; flex-direction:column; gap:7px; margin-bottom:12px;" dir="rtl">
+      <p><span style="font-weight:600; color:#12224F;">13.1 الإنهاء بالإخطار المسبق:</span> إخطار خطي قبل (30) يوماً مع الوفاء بجميع الحجوزات القائمة.</p>
+      <p><span style="font-weight:600; color:#12224F;">13.2 الإنهاء الفوري:</span> يحق للطرف الأول الإنهاء فوراً في حالات: المخالفة الجوهرية، أو البيانات المزورة، أو الإفلاس، أو الإضرار بسمعة المنصة.</p>
+      <p><span style="font-weight:600; color:#12224F;">13.3 آثار الإنهاء:</span> تُسوَّى المستحقات المالية خلال (14) يوم عمل، وتُلغى الحجوزات المستقبلية مع إعادة المبالغ للضيوف.</p>
+    </div>
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">TERMINATION</span>
+      <b>13.1 With Notice:</b> Either Party may terminate with <b>30 days'</b> written notice, honouring existing bookings. &nbsp;<b>13.2 Immediate:</b> First Party may terminate immediately for material breach, fraudulent data, insolvency, or reputational harm. &nbsp;<b>13.3 Effects:</b> All outstanding dues settled within <b>14 business days</b>; future bookings cancelled with Guest refunds.
+    </div>
+  </div>
+
+  <!-- ARTICLE 14 -->
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">14</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">تسوية النزاعات والقانون الواجب التطبيق</h2>
+    </div>
+    <div class="ar" style="font-size:12px; line-height:2.1; color:#36415C; display:flex; flex-direction:column; gap:7px; margin-bottom:12px;" dir="rtl">
+      <p><span style="font-weight:600; color:#12224F;">14.1 التسوية الودية:</span> يسعى الطرفان إلى التسوية الودية خلال (30) يوماً من تاريخ الإخطار بالنزاع.</p>
+      <p><span style="font-weight:600; color:#12224F;">14.2 التحكيم:</span> عند تعذّر التسوية الودية، يُحال النزاع إلى التحكيم وفق لوائح مركز دبي للتحكيم الدولي (DIAC) بواسطة محكّم واحد، ولغة التحكيم العربية.</p>
+      <p><span style="font-weight:600; color:#12224F;">14.3 القانون الواجب التطبيق:</span> تخضع هذه الاتفاقية وتُفسَّر وفق قوانين دولة الإمارات العربية المتحدة.</p>
+    </div>
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">DISPUTE RESOLUTION &amp; GOVERNING LAW</span>
+      <b>14.1 Amicable:</b> Parties shall first seek amicable resolution within <b>30 days</b> of written notification of the dispute. &nbsp;<b>14.2 Arbitration:</b> If unresolved, dispute referred to <b>DIAC</b> arbitration by a single mutually agreed arbitrator; language of arbitration: Arabic. &nbsp;<b>14.3 Governing Law:</b> This Agreement is governed by the laws of the <b>United Arab Emirates</b>.
+    </div>
+  </div>
+
+  <!-- ARTICLE 15 -->
+  <div style="padding:0 56px 24px;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">15</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">أحكام عامة</h2>
+    </div>
+    <div class="ar" style="font-size:12px; line-height:2.1; color:#36415C; display:flex; flex-direction:column; gap:7px; margin-bottom:12px;" dir="rtl">
+      <p><span style="font-weight:600; color:#12224F;">15.1 الاتفاقية الكاملة:</span> تمثّل هذه الاتفاقية وملاحقها الاتفاق الكامل والنهائي وتحل محل جميع الاتفاقيات السابقة.</p>
+      <p><span style="font-weight:600; color:#12224F;">15.2 التعديلات:</span> لا يُعتد بأي تعديل ما لم يكن موثّقاً خطياً وموقَّعاً من الطرفين.</p>
+      <p><span style="font-weight:600; color:#12224F;">15.3 عدم التنازل:</span> لا يحق لأي طرف التنازل عن حقوقه أو التزاماته لطرف ثالث دون موافقة خطية مسبقة.</p>
+      <p><span style="font-weight:600; color:#12224F;">15.4 قابلية الفصل:</span> إذا تبيّن أن أي بند غير قابل للتنفيذ، يظل سائر البنود سارياً.</p>
+      <p><span style="font-weight:600; color:#12224F;">15.5 الإخطارات:</span> جميع الإخطارات الرسمية خطية عبر البريد الإلكتروني المسجل أو البريد المسجل مع إشعار الاستلام.</p>
+      <p><span style="font-weight:600; color:#12224F;">15.6 النسخ:</span> حُرّرت هذه الاتفاقية من نسختين أصليتين متكافئتين، يحتفظ كل طرف بنسخة.</p>
+    </div>
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:12px 16px;" dir="ltr">
+      <span style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:700; display:block; margin-bottom:6px;">GENERAL PROVISIONS</span>
+      <b>15.1 Entire Agreement:</b> This Agreement and appendices are the complete final agreement, superseding all prior negotiations. &nbsp;<b>15.2 Amendments:</b> No amendment valid unless documented in writing and signed by both Parties. &nbsp;<b>15.3 Non-Assignment:</b> Neither Party may assign rights or obligations without prior written consent. &nbsp;<b>15.4 Severability:</b> If any provision is unenforceable, all remaining provisions remain in full force. &nbsp;<b>15.5 Notices:</b> All formal notices in writing via registered email or registered post with acknowledgement. &nbsp;<b>15.6 Counterparts:</b> Executed in two original counterparts of equal standing, one retained by each Party.
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SIGNATURES
+  ══════════════════════════════════════════════════════════ -->
+  <div style="padding:0 56px 40px;">
+
+    <!-- Section title -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;" dir="rtl">
+      <div style="width:32px; height:32px; border-radius:8px; background:#12224F; color:#fff; font-family:'Sora',sans-serif; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">✦</div>
+      <h2 class="ar" style="font-size:14px; font-weight:700; color:#12224F;">إثبات الموافقة الإلكترونية</h2>
+    </div>
+
+    <!-- Notice AR -->
+    <div style="background:#FFF8F0; border-right:4px solid #E78319; border-radius:0 10px 10px 0; padding:12px 16px; margin-bottom:10px;" dir="rtl">
+      <p class="ar" style="font-size:11px; line-height:1.9; color:#7C5B2A;">تُبرم هذه الاتفاقية إلكترونياً: يُرسِل الطرف الأول نسخة منها للطرف الثاني، ويُشكّل ردّ الطرف الثاني بعبارة قبول صريحة توقيعاً إلكترونياً ملزماً لكلا الطرفين.</p>
+    </div>
+    <!-- Notice EN -->
+    <div class="en" style="font-size:11px; line-height:1.85; color:#56607A; background:#F9FAFB; border-left:3px solid #B8C2DC; border-radius:0 8px 8px 0; padding:10px 16px; margin-bottom:20px;" dir="ltr">
+      This Agreement is concluded electronically: the First Party sends it to the Second Party's official email. The Second Party's explicit acceptance reply constitutes a legally binding electronic signature for both Parties.
+    </div>
+
+    <!-- Two cards -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+
+      <!-- Party 1 card -->
+      <div style="background:#F9FAFB; border:1.5px solid #12224F; border-radius:14px; padding:20px 22px; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; right:0; width:5px; height:100%; background:#12224F; border-radius:0 14px 14px 0;"></div>
+        <div class="ar" style="font-size:10px; letter-spacing:0.18em; color:#E78319; font-weight:700; margin-bottom:4px;">◈ الطرف الأول (المُرسِل)</div>
+        <div class="en" style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:600; margin-bottom:12px;">FIRST PARTY — SENDER</div>
+        <div style="font-family:'Sora',sans-serif; font-size:13px; font-weight:700; color:#12224F; direction:ltr; margin-bottom:12px;">SelectedRoom — Premium Hotels</div>
+        <table style="width:100%; font-size:11px; color:#56607A; line-height:2.3; border-collapse:collapse; direction:ltr;">
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Email / البريد</td><td style="font-family:'Sora',sans-serif; font-size:10px; font-weight:600; color:#12224F; width:100%;">info@selectedroom.com</td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Website / الموقع</td><td style="font-family:'Sora',sans-serif; font-size:10px; font-weight:600; color:#12224F;">selectedroom.com</td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Rep. by / يمثّله</td><td contenteditable="true" data-ph="enter name…" style="border-bottom:1px dotted #C4CCE0; width:100%;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Title / الصفة</td><td contenteditable="true" data-ph="enter title…" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Date Sent / التاريخ</td><td contenteditable="true" data-ph="DD / MM / YYYY" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Message-ID</td><td contenteditable="true" data-ph="<ref@mail.selectedroom.com>" style="border-bottom:1px dotted #C4CCE0; font-size:9px;"></td></tr>
+        </table>
+      </div>
+
+      <!-- Party 2 card -->
+      <div style="background:#F9FAFB; border:1.5px solid #E2E7F1; border-radius:14px; padding:20px 22px; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; right:0; width:5px; height:100%; background:#E78319; border-radius:0 14px 14px 0;"></div>
+        <div class="ar" style="font-size:10px; letter-spacing:0.18em; color:#7886A8; font-weight:700; margin-bottom:4px;">◈ الطرف الثاني (المُوافِق)</div>
+        <div class="en" style="font-size:9px; letter-spacing:0.14em; color:#9AA6C4; font-weight:600; margin-bottom:12px;">SECOND PARTY — ACCEPTOR</div>
+        <div contenteditable="true" data-ph="Hotel / Company Name" style="font-size:13px; font-weight:700; color:#12224F; margin-bottom:12px; border-bottom:1px dotted #C4CCE0; display:block; min-width:160px;"></div>
+        <table style="width:100%; font-size:11px; color:#56607A; line-height:2.3; border-collapse:collapse; direction:ltr;">
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Email / البريد</td><td contenteditable="true" data-ph="partner@hotel.com" style="border-bottom:1px dotted #C4CCE0; width:100%; font-family:'Sora',sans-serif; font-size:10px;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Rep. by / يمثّله</td><td contenteditable="true" data-ph="enter name…" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Title / الصفة</td><td contenteditable="true" data-ph="enter title…" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Reply Date / تاريخ الرد</td><td contenteditable="true" data-ph="DD / MM / YYYY" style="border-bottom:1px dotted #C4CCE0;"></td></tr>
+          <tr><td style="color:#9AA6C4; white-space:nowrap; padding-right:10px; font-family:'Sora',sans-serif; font-size:10px;">Acceptance / نص القبول</td><td contenteditable="true" data-ph="أوافق على جميع الشروط…" style="border-bottom:1px dotted #C4CCE0; font-style:italic; font-size:10px;"></td></tr>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- UAE Law footer note -->
+    <div style="background:#F0F3FA; border-radius:10px; padding:12px 18px; text-align:center;">
+      <p class="ar" style="font-size:10px; color:#7886A8; line-height:1.9; margin-bottom:4px;" dir="rtl">يُقرّ الطرفان بأن تبادل البريد الإلكتروني الموثّق أعلاه يُشكّل سجلاً رسمياً لإبرام هذه الاتفاقية وقبول جميع شروطها وفق المادة (18) من قانون المعاملات الإلكترونية الإماراتي رقم 1 لسنة 2006.</p>
+      <p class="en" style="font-size:9.5px; color:#9AA6C4; line-height:1.8;" dir="ltr">Both Parties acknowledge that the email exchange documented above constitutes an official record of this Agreement under Article 18 of UAE Electronic Transactions Law No. 1 of 2006.</p>
+    </div>
+
+  </div>
+
+  <!-- GOVERNING LANGUAGE NOTE -->
+  <div style="margin:0 56px 16px; padding:10px 16px; border-top:1px solid #F0F2F8; display:flex; align-items:center; justify-content:center; gap:8px;">
+    <span style="font-size:9px; color:#B8C2DC; font-family:'Sora',sans-serif;">⚖</span>
+    <p class="ar" style="font-size:9.5px; color:#B8C2DC; line-height:1.7; text-align:center;" dir="rtl">
+      في حال التعارض بين النسختين العربية والإنجليزية، <strong style="color:#9AA6C4;">تُعدّ النسخة العربية هي المرجع القانوني المعتمد.</strong>
+      &nbsp;·&nbsp;
+      <span class="en" style="font-size:9px;">In case of conflict, the Arabic version shall prevail.</span>
+    </p>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════════════════════ -->
+  <div style="border-top:1px solid #E2E7F1; padding:16px 56px; display:flex; align-items:center; justify-content:space-between;">
+    <div style="display:flex; align-items:baseline; font-family:'Sora',sans-serif; font-size:14px; letter-spacing:0.08em; direction:ltr;">
+      <span style="font-weight:300; color:#12224F;">SELECTED</span><span style="font-weight:700; color:#E78319;">ROOM</span>
+    </div>
+    <span style="font-size:9.5px; color:#9AA6C4; font-family:'Sora',sans-serif; letter-spacing:0.06em; direction:ltr;">info@selectedroom.com · selectedroom.com</span>
+    <span class="ar" style="font-size:9.5px; color:#9AA6C4;">سري — للاستخدام الداخلي · Confidential</span>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

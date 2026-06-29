@@ -229,6 +229,104 @@ export async function generatePropertyPasswordReset(userId: string): Promise<Res
   return { link };
 }
 
+// ── Contract Management ───────────────────────────────────────────────────────
+
+export type ContractStatus = 'pending' | 'active' | 'expired' | 'terminated';
+
+export type ContractInfo = {
+  id: string;
+  hotel_id: number;
+  contract_number: string;
+  status: ContractStatus;
+  file_path: string | null;
+  date_sent: string | null;
+  date_accepted: string | null;
+  accepted_by_name: string | null;
+  accepted_by_title: string | null;
+  acceptance_text: string | null;
+  message_id: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+export async function saveContractRecord(data: {
+  hotel_id: number;
+  contract_number: string;
+  file_path: string;
+  date_sent?: string;
+  notes?: string;
+}): Promise<{ data?: ContractInfo; error?: string }> {
+  try { await requireAdmin(); } catch (e) { return { error: (e as Error).message }; }
+
+  const admin = createAdminClient();
+  const { data: contract, error } = await admin
+    .from('partner_contracts')
+    .insert({
+      hotel_id:        data.hotel_id,
+      contract_number: data.contract_number,
+      file_path:       data.file_path,
+      date_sent:       data.date_sent ?? new Date().toISOString().split('T')[0],
+      status:          'pending',
+      notes:           data.notes ?? null,
+    })
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
+  revalidatePath('/admin/properties');
+  return { data: contract as ContractInfo };
+}
+
+export async function updateContractStatus(
+  contractId: string,
+  status: ContractStatus,
+  extra?: {
+    date_accepted?: string;
+    accepted_by_name?: string;
+    accepted_by_title?: string;
+    acceptance_text?: string;
+    message_id?: string;
+  },
+): Promise<Result> {
+  try { await requireAdmin(); } catch (e) { return { error: (e as Error).message }; }
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from('partner_contracts')
+    .update({ status, ...(extra ?? {}) })
+    .eq('id', contractId);
+
+  if (error) return { error: error.message };
+  revalidatePath('/admin/properties');
+  return { success: true };
+}
+
+export async function deleteContract(contractId: string, filePath: string | null): Promise<Result> {
+  try { await requireAdmin(); } catch (e) { return { error: (e as Error).message }; }
+
+  const admin = createAdminClient();
+  if (filePath) {
+    await admin.storage.from('contracts').remove([filePath]);
+  }
+  const { error } = await admin.from('partner_contracts').delete().eq('id', contractId);
+  if (error) return { error: error.message };
+
+  revalidatePath('/admin/properties');
+  return { success: true };
+}
+
+export async function getContractSignedUrl(filePath: string): Promise<{ url?: string; error?: string }> {
+  try { await requireAdmin(); } catch (e) { return { error: (e as Error).message }; }
+
+  const admin = createAdminClient();
+  const { data, error } = await admin.storage
+    .from('contracts')
+    .createSignedUrl(filePath, 3600);
+
+  if (error) return { error: error.message };
+  return { url: data.signedUrl };
+}
+
 // ── Update hotel basic info ───────────────────────────────────────────────────
 
 export interface HotelUpdateFields {

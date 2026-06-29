@@ -25,11 +25,10 @@ import { CURRENCY_MAP } from '@/lib/currencyData';
 import type { CurrencyCode } from '@/lib/currencyData';
 
 const STATUS_FILTERS: Array<{ label: string; value: DealStatus | 'all' }> = [
-  { label: 'All',             value: 'all'              },
-  { label: 'Pending',         value: 'pending_approval' },
-  { label: 'Active',          value: 'active'           },
-  { label: 'Paused',          value: 'paused'           },
-  { label: 'Ended',           value: 'ended'            },
+  { label: 'All',    value: 'all'    },
+  { label: 'Active', value: 'active' },
+  { label: 'Paused', value: 'paused' },
+  { label: 'Ended',  value: 'ended'  },
 ];
 
 type Action = 'activate' | 'pause' | 'end';
@@ -589,11 +588,10 @@ export default function PartnerDealsPage() {
   const filtered = filter === 'all' ? deals : deals.filter((d) => d.status === filter);
 
   const counts = {
-    all:              deals.length,
-    pending_approval: deals.filter((d) => d.status === 'pending_approval').length,
-    active:           deals.filter((d) => d.status === 'active').length,
-    paused:           deals.filter((d) => d.status === 'paused').length,
-    ended:            deals.filter((d) => d.status === 'ended').length,
+    all:    deals.length,
+    active: deals.filter((d) => d.status === 'active').length,
+    paused: deals.filter((d) => d.status === 'paused').length,
+    ended:  deals.filter((d) => d.status === 'ended').length,
   };
 
   function handleInventorySaved(roomId: number, newTotal: number, newAvailable: number) {
@@ -658,9 +656,8 @@ export default function PartnerDealsPage() {
   }
 
   function getRowActions(deal: PartnerDeal): Action[] {
-    if (deal.status === 'active')           return ['pause', 'end'];
-    if (deal.status === 'paused')           return ['activate', 'end'];
-    if (deal.status === 'pending_approval') return ['end'];
+    if (deal.status === 'active') return ['pause', 'end'];
+    if (deal.status === 'paused') return ['activate', 'end'];
     return [];
   }
 
