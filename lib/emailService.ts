@@ -32,10 +32,9 @@ export interface BookingEmailData {
   hotelCheckoutTime?: string;
 }
 
-const ENABLED     = process.env.NOTIFICATIONS_ENABLED === 'true';
-const FROM_NOREPLY = process.env.RESEND_FROM_EMAIL         ?? 'noreply@selectedroom.com';
-const FROM_INFO    = process.env.RESEND_FROM_INFO          ?? 'info@selectedroom.com';
-const FROM_HELLO   = process.env.RESEND_FROM_HELLO         ?? 'hello@selectedroom.com';
+const ENABLED      = process.env.NOTIFICATIONS_ENABLED === 'true';
+const FROM_NOREPLY = process.env.RESEND_FROM_EMAIL ?? 'noreply@selectedroom.com';
+const FROM_INFO    = process.env.RESEND_FROM_INFO  ?? 'info@selectedroom.com';
 
 function formatEmailTime(t: string): string {
   const [h, m] = t.split(':').map(Number);
@@ -189,7 +188,7 @@ export async function sendPartnerWelcome(data: PartnerWelcomeData): Promise<void
     data.partnerEmail,
     'Your SelectedRoom Partner Account is Ready',
     partnerWelcomeHtml(data),
-    FROM_HELLO,
+    undefined,
     FROM_INFO,
   );
 }
@@ -307,7 +306,7 @@ export async function sendDealApprovalEmail(data: DealApprovalData): Promise<voi
     data.partnerEmail,
     `Action Required: Confirm your deal at ${data.hotelName}`,
     dealApprovalHtml(data),
-    FROM_HELLO,
+    undefined,
     FROM_INFO,
   );
 }
@@ -440,7 +439,7 @@ export async function sendLowInventoryAlert(data: LowInventoryAlertData): Promis
     data.partnerEmail,
     `⚠️ Low Inventory — ${data.hotelName}: ${data.itemName} (${data.remaining} left)`,
     lowInventoryHtml(data),
-    FROM_HELLO,
+    undefined,
     FROM_INFO,
   );
 }
@@ -461,7 +460,7 @@ export async function sendBookingConfirmation(data: BookingEmailData): Promise<v
           data.partnerEmail,
           `New Booking at ${data.hotelName}`,
           partnerNotificationHtml(data),
-          FROM_HELLO,
+          undefined,
           FROM_INFO,
         )
       : Promise.resolve(),
