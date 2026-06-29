@@ -5,6 +5,7 @@ import { useAdminDateFormat } from '../components/useAdminFormat';
 import RevenueChart from '../components/RevenueChart';
 import KPICard from '../components/KPICard';
 import StatusBadge from '../components/StatusBadge';
+import { deriveStatus } from '../../partner/lib/bookingStatus';
 
 export type DashboardStats = {
   total_hotels: number;
@@ -23,6 +24,8 @@ export type RecentBookingRow = {
   id: string | number;
   guest_name: string | null;
   status: string;
+  check_in: string;
+  check_out: string;
   total_price: number;
   created_at: string;
   hotels: { name: string } | { name: string }[] | null;
@@ -93,7 +96,7 @@ function RecentBookingsPanel({
                   <td className="px-5 py-3.5 font-medium text-gray-900">{b.guest_name || '—'}</td>
                   <td className="px-5 py-3.5 text-gray-500 max-w-[160px] truncate">{hotel?.name || '—'}</td>
                   <td className="px-5 py-3.5 text-gray-500 text-xs">{fmtDate(b.created_at)}</td>
-                  <td className="px-5 py-3.5"><StatusBadge status={b.status} variant="booking" /></td>
+                  <td className="px-5 py-3.5"><StatusBadge status={deriveStatus(b)} variant="booking" /></td>
                   <td className="px-5 py-3.5 text-right font-semibold text-gray-900">
                     {b.status !== 'cancelled' && b.total_price > 0 ? <AEDAmount amount={b.total_price} /> : '—'}
                   </td>

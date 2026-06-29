@@ -20,7 +20,7 @@ export default async function AdminDashboardPage() {
     supabase.rpc('get_revenue_trend'),
     supabase
       .from('bookings')
-      .select('id, guest_name, status, total_price, created_at, hotels(name)')
+      .select('id, guest_name, status, check_in, check_out, total_price, created_at, hotels(name)')
       .order('created_at', { ascending: false })
       .limit(10),
     supabase
