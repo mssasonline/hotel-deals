@@ -32,8 +32,10 @@ export interface BookingEmailData {
   hotelCheckoutTime?: string;
 }
 
-const ENABLED = process.env.NOTIFICATIONS_ENABLED === 'true';
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'noreply@hotel-deals.com';
+const ENABLED     = process.env.NOTIFICATIONS_ENABLED === 'true';
+const FROM_NOREPLY = process.env.RESEND_FROM_EMAIL         ?? 'noreply@selectedroom.com';
+const FROM_INFO    = process.env.RESEND_FROM_INFO          ?? 'info@selectedroom.com';
+const FROM_HELLO   = process.env.RESEND_FROM_HELLO         ?? 'hello@selectedroom.com';
 
 function formatEmailTime(t: string): string {
   const [h, m] = t.split(':').map(Number);
@@ -120,7 +122,7 @@ function partnerNotificationHtml(d: BookingEmailData): string {
   `;
 }
 
-async function sendEmail(to: string, subject: string, html: string, replyTo?: string): Promise<void> {
+async function sendEmail(to: string, subject: string, html: string, replyTo?: string, from?: string): Promise<void> {
   if (!ENABLED) {
     console.log(`[EmailService] NOTIFICATIONS_ENABLED=false — skipping email to ${to}: ${subject}`);
     return;
@@ -138,7 +140,7 @@ async function sendEmail(to: string, subject: string, html: string, replyTo?: st
   const resend = new Resend(apiKey);
 
   const { error } = await resend.emails.send({
-    from: FROM_EMAIL,
+    from: from ?? FROM_NOREPLY,
     to,
     subject,
     html,
@@ -187,7 +189,8 @@ export async function sendPartnerWelcome(data: PartnerWelcomeData): Promise<void
     data.partnerEmail,
     'Your SelectedRoom Partner Account is Ready',
     partnerWelcomeHtml(data),
-    'partners@selectedroom.com',
+    FROM_HELLO,
+    FROM_INFO,
   );
 }
 
@@ -304,7 +307,8 @@ export async function sendDealApprovalEmail(data: DealApprovalData): Promise<voi
     data.partnerEmail,
     `Action Required: Confirm your deal at ${data.hotelName}`,
     dealApprovalHtml(data),
-    'partners@selectedroom.com',
+    FROM_HELLO,
+    FROM_INFO,
   );
 }
 
@@ -436,23 +440,29 @@ export async function sendLowInventoryAlert(data: LowInventoryAlertData): Promis
     data.partnerEmail,
     `⚠️ Low Inventory — ${data.hotelName}: ${data.itemName} (${data.remaining} left)`,
     lowInventoryHtml(data),
-    'partners@selectedroom.com',
+    FROM_HELLO,
+    FROM_INFO,
   );
 }
 
 export async function sendBookingConfirmation(data: BookingEmailData): Promise<void> {
   await Promise.allSettled([
+    // Guest confirmation — automated, from noreply
     sendEmail(
       data.guestEmail,
       `Booking Confirmed — ${data.hotelName} (SR-${data.bookingRef})`,
-      guestConfirmationHtml(data)
+      guestConfirmationHtml(data),
+      undefined,
+      FROM_NOREPLY,
     ),
+    // Partner notification — official, from info
     data.partnerEmail
       ? sendEmail(
           data.partnerEmail,
           `New Booking at ${data.hotelName}`,
           partnerNotificationHtml(data),
-          'partners@selectedroom.com'
+          FROM_HELLO,
+          FROM_INFO,
         )
       : Promise.resolve(),
   ]);
