@@ -312,7 +312,7 @@ export default function DashboardClient({
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Quick Access</p>
             <div className="space-y-2">
               {[
-                { href: '/admin/hotels',   label: 'Manage Hotels',   icon: '🏨' },
+                { href: '/admin/properties', label: 'Manage Hotels',   icon: '🏨' },
                 { href: '/admin/partners', label: 'Manage Partners', icon: '🤝' },
                 { href: '/admin/users',    label: 'Manage Users',    icon: '👥' },
                 { href: '/admin/bookings', label: 'All Bookings',    icon: '📋' },
