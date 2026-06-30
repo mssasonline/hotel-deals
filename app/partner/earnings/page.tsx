@@ -197,12 +197,12 @@ export default async function EarningsPage() {
                 <tr className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">
                   <th className="px-4 py-3 text-left">Month</th>
                   <th className="px-4 py-3">Bookings</th>
+                  <th className="px-4 py-3">Gross</th>
                   <th className="px-4 py-3">Room Subtotal</th>
                   <th className="px-4 py-3 text-emerald-600">+ SC (10%)</th>
                   <th className="px-4 py-3 text-red-400">Muni (7%)</th>
                   <th className="px-4 py-3 text-red-400">Tourism</th>
                   <th className="px-4 py-3 text-red-400">VAT (5%)</th>
-                  <th className="px-4 py-3">Gross</th>
                   <th className="px-4 py-3 text-amber-600">Commission</th>
                   <th className="px-4 py-3 text-emerald-700">Net Payout</th>
                   <th className="px-4 py-3 text-left">Status</th>
@@ -213,12 +213,12 @@ export default async function EarningsPage() {
                   <tr key={m.month} className="hover:bg-gray-50/50 transition-colors text-right">
                     <td className="px-4 py-3 font-medium text-gray-900 text-left">{monthLabel(m.month)}</td>
                     <td className="px-4 py-3 text-gray-600">{m.bookingCount}</td>
+                    <td className="px-4 py-3 text-gray-900 font-semibold tabular-nums"><AEDAmount amount={m.grossCollected} /></td>
                     <td className="px-4 py-3 text-gray-700 font-medium tabular-nums"><AEDAmount amount={m.roomSubtotal} /></td>
                     <td className="px-4 py-3 text-emerald-600 font-medium tabular-nums">+<AEDAmount amount={m.serviceCharge} /></td>
                     <td className="px-4 py-3 text-red-400 tabular-nums"><AEDAmount amount={m.municipalityFee} /></td>
                     <td className="px-4 py-3 text-red-400 tabular-nums"><AEDAmount amount={m.tourismDirham} /></td>
                     <td className="px-4 py-3 text-red-400 tabular-nums"><AEDAmount amount={m.vat} /></td>
-                    <td className="px-4 py-3 text-gray-900 font-semibold tabular-nums"><AEDAmount amount={m.grossCollected} /></td>
                     <td className="px-4 py-3 text-amber-600 tabular-nums">−<AEDAmount amount={m.platformCommission} /></td>
                     <td className="px-4 py-3 text-emerald-700 font-bold tabular-nums"><AEDAmount amount={m.netPayout} /></td>
                     <td className="px-4 py-3 text-left">
@@ -263,12 +263,12 @@ export default async function EarningsPage() {
                 <tr className="bg-gray-50 border-t-2 border-gray-200 text-right font-bold">
                   <td className="px-4 py-3 text-left text-gray-900">All Time</td>
                   <td className="px-4 py-3 text-gray-900">{totals.bookingCount}</td>
+                  <td className="px-4 py-3 text-gray-900 tabular-nums"><AEDAmount amount={totals.grossCollected} /></td>
                   <td className="px-4 py-3 text-gray-900 tabular-nums"><AEDAmount amount={totals.roomSubtotal} /></td>
                   <td className="px-4 py-3 text-emerald-600 tabular-nums">+<AEDAmount amount={totals.serviceCharge} /></td>
                   <td className="px-4 py-3 text-red-400 tabular-nums"><AEDAmount amount={totals.municipalityFee} /></td>
                   <td className="px-4 py-3 text-red-400 tabular-nums"><AEDAmount amount={totals.tourismDirham} /></td>
                   <td className="px-4 py-3 text-red-400 tabular-nums"><AEDAmount amount={totals.vat} /></td>
-                  <td className="px-4 py-3 text-gray-900 tabular-nums"><AEDAmount amount={totals.grossCollected} /></td>
                   <td className="px-4 py-3 text-amber-600 tabular-nums">−<AEDAmount amount={totals.platformCommission} /></td>
                   <td className="px-4 py-3 text-emerald-700 tabular-nums text-base"><AEDAmount amount={totals.netPayout} /></td>
                   <td />
