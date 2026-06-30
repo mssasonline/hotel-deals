@@ -34,6 +34,8 @@ export type Booking = {
   partner_amount?: number | null;
   /** Platform's commission share in AED (set when payment is settled). */
   admin_amount?: number | null;
+  /** Govt taxes (municipality + tourism dirham + VAT) included in total_price. Partner remits to authorities. */
+  tax_amount?: number | null;
   /** ISO currency code the guest paid in (e.g. 'eur', 'usd'). Defaults to 'aed'. */
   charged_currency: string;
   /** AED → charged_currency rate locked at booking time. charged_amount = total_price × this. */

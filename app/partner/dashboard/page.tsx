@@ -152,11 +152,12 @@ export default function DashboardPage() {
     .slice(0, 8);
   const paidBookings   = bookings.filter(b => b.payment_status === 'paid');
   // grossRevenue = total guest paid (room + taxes)
-  const grossRevenue   = paidBookings.reduce((sum, b) => sum + (b.total_price ?? 0), 0);
-  // Use stored amounts from booking_revenue — reflect the rate in effect at booking time
-  const partnerRevenue = paidBookings.reduce((sum, b) => sum + (b.partner_amount ?? 0), 0);
-  const adminRevenue   = paidBookings.reduce((sum, b) => sum + (b.admin_amount   ?? 0), 0);
-  const taxCollected   = grossRevenue - partnerRevenue - adminRevenue;
+  const grossRevenue = paidBookings.reduce((sum, b) => sum + (b.total_price ?? 0), 0);
+  const adminRevenue = paidBookings.reduce((sum, b) => sum + (b.admin_amount ?? 0), 0);
+  // Govt taxes (muni + tourism + VAT) are included in total_price but remitted by partner to authorities
+  const taxCollected = paidBookings.reduce((sum, b) => sum + (b.tax_amount ?? 0), 0);
+  // Partner's true net = gross − platform commission − govt taxes (service charge stays with partner)
+  const netIncome    = Math.max(0, grossRevenue - adminRevenue - taxCollected);
   const avgRating = reviews.length > 0
     ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length)
     : null;
@@ -327,24 +328,24 @@ export default function DashboardPage() {
             {/* Revenue split breakdown */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
               <div className="bg-white/10 rounded-xl px-3 py-3 sm:px-4">
-                <p className="text-white/50 text-xs mb-1">{t['partner.dash.totalRevBox']}</p>
+                <p className="text-white/50 text-xs mb-1">Total Revenue</p>
                 <p className="text-white font-bold text-base sm:text-lg"><AEDAmount amount={grossRevenue} /></p>
                 <p className="text-white/40 text-xs mt-0.5">Guest paid</p>
               </div>
               <div className="bg-white/5 rounded-xl px-3 py-3 sm:px-4">
-                <p className="text-white/40 text-xs mb-1">Taxes (15%)</p>
-                <p className="text-white/60 font-bold text-base sm:text-lg"><AEDAmount amount={taxCollected} /></p>
-                <p className="text-white/30 text-xs mt-0.5">Gov. collected</p>
-              </div>
-              <div className="bg-emerald-500/20 border border-emerald-400/30 rounded-xl px-3 py-3 sm:px-4">
-                <p className="text-emerald-200 text-xs mb-1">{t['partner.dash.partnerShare'].replace(/\d+%/, `${100 - commissionRate}%`)}</p>
-                <p className="text-white font-bold text-base sm:text-lg"><AEDAmount amount={partnerRevenue} /></p>
-                <p className="text-emerald-300/70 text-xs mt-0.5">{t['partner.dash.netIncome']}</p>
+                <p className="text-white/40 text-xs mb-1">Platform Commission</p>
+                <p className="text-white/60 font-bold text-base sm:text-lg"><AEDAmount amount={adminRevenue} /></p>
+                <p className="text-white/30 text-xs mt-0.5">{commissionRate}% service fee</p>
               </div>
               <div className="bg-white/5 rounded-xl px-3 py-3 sm:px-4">
-                <p className="text-white/40 text-xs mb-1">{t['partner.dash.platformFee'].replace(/\d+%/, `${commissionRate}%`)}</p>
-                <p className="text-white/60 font-bold text-base sm:text-lg"><AEDAmount amount={adminRevenue} /></p>
-                <p className="text-white/30 text-xs mt-0.5">{t['partner.dash.serviceFee']}</p>
+                <p className="text-white/40 text-xs mb-1">Tax Obligation</p>
+                <p className="text-white/60 font-bold text-base sm:text-lg"><AEDAmount amount={taxCollected} /></p>
+                <p className="text-white/30 text-xs mt-0.5">You remit to govt</p>
+              </div>
+              <div className="bg-emerald-500/20 border border-emerald-400/30 rounded-xl px-3 py-3 sm:px-4">
+                <p className="text-emerald-200 text-xs mb-1">Your Net Income</p>
+                <p className="text-white font-bold text-base sm:text-lg"><AEDAmount amount={netIncome} /></p>
+                <p className="text-emerald-300/70 text-xs mt-0.5">After taxes & commission</p>
               </div>
             </div>
           </div>

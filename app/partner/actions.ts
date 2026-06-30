@@ -3,6 +3,7 @@
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { createAdminClient } from '@/lib/supabase-admin';
 import { calcCommission } from '@/lib/calcCommission';
+import { calcTaxBreakdown, UAE_FEE_DEFAULTS } from '@/lib/pricingEngine';
 
 export type PartnerHotel = {
   id: string;
@@ -76,6 +77,7 @@ export type HotelBooking = {
   rooms: { id: string; name: string } | null;
   partner_amount: number | null;
   admin_amount: number | null;
+  tax_amount: number | null;
 };
 
 export type HotelRoom = {
@@ -161,6 +163,8 @@ export async function getHotelData(hotelId: string): Promise<HotelData> {
   return {
     bookings: ((bookingsRes.data ?? []) as RawBooking[]).map(row => {
       const { adminAmount, partnerAmount } = calcCommission(row as HotelBooking);
+      const nights = Math.max(1, Math.round((new Date(row.check_out).getTime() - new Date(row.check_in).getTime()) / 86_400_000));
+      const fees = calcTaxBreakdown({ roomSubtotal: row.subtotal ?? 0, nights, rooms: row.room_count ?? 1, ...UAE_FEE_DEFAULTS });
       return {
         ...row,
         id: String(row.id),
@@ -168,6 +172,7 @@ export async function getHotelData(hotelId: string): Promise<HotelData> {
         rooms: Array.isArray(row.rooms) ? (row.rooms[0] ?? null) : (row.rooms ?? null),
         admin_amount:   adminAmount,
         partner_amount: partnerAmount,
+        tax_amount:     fees.municipalityFee + fees.tourismDirham + fees.vat,
       };
     }),
     rooms: (roomsRes.data ?? []) as HotelRoom[],

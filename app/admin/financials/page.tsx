@@ -248,7 +248,7 @@ export default async function AdminFinancialsPage() {
         {([
           { label: 'Total Bookings',        value: String(totals.bookingCount),                                      isAmount: false },
           { label: 'Gross Collected',       value: totals.grossCollected,                                            isAmount: true  },
-          { label: 'Govt Taxes',            value: totals.municipalityFee + totals.tourismDirham + totals.vat,       isAmount: true, red: true },
+          { label: 'Taxes (Partner Remits)', value: totals.municipalityFee + totals.tourismDirham + totals.vat,       isAmount: true, red: true },
           { label: 'Platform Revenue',      value: totals.platformCommission,                                        isAmount: true, amber: true },
           { label: 'Total Partner Payouts', value: totals.netPayout,                                                 isAmount: true, green: true },
         ] as const).map(({ label, value, isAmount, red, amber, green }: {
@@ -268,7 +268,7 @@ export default async function AdminFinancialsPage() {
         <div className="px-6 py-4 border-b border-gray-50">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Monthly Breakdown — All Partners</p>
           <p className="text-xs text-gray-400 mt-0.5">
-            Service Charge forwarded to partners · Muni / Tourism / VAT collected on behalf of authorities
+            Service Charge included in partner payout · Muni / Tourism / VAT forwarded to partner — partner remits to govt
           </p>
         </div>
 
@@ -339,9 +339,9 @@ export default async function AdminFinancialsPage() {
               </table>
             </div>
             <div className="px-6 py-4 border-t border-gray-50 flex flex-wrap gap-5 text-xs text-gray-500">
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" /> SC → forwarded to partner (hotel income)</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-400 shrink-0" /> Muni / Tourism / VAT → platform remits to govt</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" /> Platform Revenue → 10% commission retained</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" /> SC → included in partner payout (hotel income)</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-400 shrink-0" /> Muni / Tourism / VAT → forwarded to partner · partner remits to govt (Art. 5.3)</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" /> Platform Revenue → 10% commission on rooms + SC + breakfast</span>
             </div>
           </>
         )}

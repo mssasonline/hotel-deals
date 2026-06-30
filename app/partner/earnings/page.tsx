@@ -164,7 +164,7 @@ export default async function EarningsPage() {
         {([
           { label: 'Total Bookings',      value: String(totals.bookingCount),                                       isAmount: false },
           { label: 'Gross Collected',     value: totals.grossCollected,                                             isAmount: true  },
-          { label: 'Govt Taxes',          value: totals.municipalityFee + totals.tourismDirham + totals.vat,        isAmount: true, red: true },
+          { label: 'Tax Obligation',       value: totals.municipalityFee + totals.tourismDirham + totals.vat,        isAmount: true, red: true },
           { label: 'Platform Commission', value: totals.platformCommission,                                         isAmount: true, amber: true },
           { label: 'Your Net Payout',     value: totals.netPayout,                                                  isAmount: true, green: true },
         ] as const).map(({ label, value, isAmount, red, amber, green }: {
@@ -188,7 +188,7 @@ export default async function EarningsPage() {
           <div className="px-6 py-4 border-b border-gray-50">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Monthly Breakdown</p>
             <p className="text-xs text-gray-400 mt-0.5">
-              Service Charge stays with you · Muni / Tourism / VAT collected on behalf of authorities · Commission deducted by platform
+              Service Charge stays with you · Muni / Tourism / VAT included in your payout — you remit to govt · Commission deducted by platform
             </p>
           </div>
           <div className="overflow-x-auto">
@@ -279,9 +279,9 @@ export default async function EarningsPage() {
 
           {/* Legend */}
           <div className="px-6 py-4 border-t border-gray-50 flex flex-wrap gap-5 text-xs text-gray-500">
-            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" /> Service Charge → stays with you (hotel income)</span>
-            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-400 shrink-0" /> Muni / Tourism / VAT → remitted to government authorities</span>
-            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" /> Commission → 10% platform fee</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" /> Service Charge → stays with you (hotel income, included in commission base)</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-400 shrink-0" /> Muni / Tourism / VAT → included in your payout · YOU remit to govt (Art. 5.3)</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" /> Commission → 10% of rooms + SC + breakfast (excl. govt taxes)</span>
           </div>
         </div>
       )}
