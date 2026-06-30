@@ -240,7 +240,7 @@ export default function DashboardClient({
           <div>
             <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-1">Total Platform Revenue</p>
             <p className="text-4xl font-bold text-white">{fmt(stats.total_revenue)}</p>
-            <p className="text-white/40 text-xs mt-1">All-time · gross collected</p>
+            <p className="text-white/40 text-xs mt-1">All-time · pre-tax revenue</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="bg-white/8 rounded-xl px-5 py-4 text-center">
