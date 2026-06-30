@@ -16,8 +16,10 @@ export type DashboardStats = {
   revenue_today: number;
   active_deals: number;
   growth_pct: number;
-  bookings_this_month: number;
-  bookings_prev_month: number;
+  lastmin_this_month: number;
+  lastmin_prev_month: number;
+  deals_this_month: number;
+  deals_prev_month: number;
 };
 
 export type RevenueTrendPoint = { month: string; revenue: number };
@@ -249,15 +251,27 @@ export default function DashboardClient({
               <p className={`font-bold text-xl ${stats.growth_pct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 {stats.growth_pct >= 0 ? '+' : ''}{stats.growth_pct}%
               </p>
-              <p className="text-white/40 text-xs mt-0.5">vs Last Month</p>
+              <p className="text-white/40 text-xs mt-0.5">Revenue MoM</p>
             </div>
             <div className="bg-white/8 rounded-xl px-5 py-4 text-center">
-              <p className="text-white font-bold text-xl">{stats.active_deals}</p>
-              <p className="text-white/40 text-xs mt-0.5">Live Deals</p>
+              <p className="text-white font-bold text-xl">{stats.lastmin_this_month}</p>
+              <p className="text-white/40 text-xs mt-0.5">Last Min Rooms</p>
+              {stats.lastmin_prev_month > 0 && (
+                <p className={`text-[11px] font-semibold mt-1 ${stats.lastmin_this_month >= stats.lastmin_prev_month ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {stats.lastmin_this_month >= stats.lastmin_prev_month ? '↑' : '↓'}
+                  {Math.abs(Math.round((stats.lastmin_this_month - stats.lastmin_prev_month) / stats.lastmin_prev_month * 100))}% vs last mo.
+                </p>
+              )}
             </div>
             <div className="bg-white/8 rounded-xl px-5 py-4 text-center">
-              <p className="text-white font-bold text-xl">{stats.total_bookings.toLocaleString()}</p>
-              <p className="text-white/40 text-xs mt-0.5">All Bookings</p>
+              <p className="text-white font-bold text-xl">{stats.deals_this_month}</p>
+              <p className="text-white/40 text-xs mt-0.5">Hotels Deals</p>
+              {stats.deals_prev_month > 0 && (
+                <p className={`text-[11px] font-semibold mt-1 ${stats.deals_this_month >= stats.deals_prev_month ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {stats.deals_this_month >= stats.deals_prev_month ? '↑' : '↓'}
+                  {Math.abs(Math.round((stats.deals_this_month - stats.deals_prev_month) / stats.deals_prev_month * 100))}% vs last mo.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -282,13 +296,13 @@ export default function DashboardClient({
         />
         <KPICard
           title="Bookings This Month"
-          value={stats.bookings_this_month}
-          subtitle={`${stats.bookings_prev_month} last month`}
+          value={stats.lastmin_this_month + stats.deals_this_month}
+          subtitle={`${stats.lastmin_prev_month + stats.deals_prev_month} last month`}
           accent="purple"
-          trend={stats.bookings_prev_month > 0 ? {
-            value: `${Math.abs(Math.round((stats.bookings_this_month - stats.bookings_prev_month) / stats.bookings_prev_month * 100))}% vs last month`,
-            positive: stats.bookings_this_month >= stats.bookings_prev_month,
-          } : stats.bookings_this_month > 0 ? { value: 'New this month', positive: true } : undefined}
+          trend={(stats.lastmin_prev_month + stats.deals_prev_month) > 0 ? {
+            value: `${Math.abs(Math.round(((stats.lastmin_this_month + stats.deals_this_month) - (stats.lastmin_prev_month + stats.deals_prev_month)) / (stats.lastmin_prev_month + stats.deals_prev_month) * 100))}% vs last month`,
+            positive: (stats.lastmin_this_month + stats.deals_this_month) >= (stats.lastmin_prev_month + stats.deals_prev_month),
+          } : (stats.lastmin_this_month + stats.deals_this_month) > 0 ? { value: 'New this month', positive: true } : undefined}
           icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>}
         />
       </div>
