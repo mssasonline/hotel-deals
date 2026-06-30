@@ -7,7 +7,7 @@ import { useAdminDateFormat } from '../components/useAdminFormat';
 import TaxFeeBreakdown from '@/app/components/TaxFeeBreakdown';
 
 export type BookingStatus = 'upcoming' | 'confirmed' | 'pending' | 'completed' | 'cancelled';
-type PaymentFilter = 'all' | 'paid' | 'pending' | 'failed';
+type PaymentFilter = 'all' | 'paid' | 'unpaid';
 
 export interface AdminBooking {
   id: string;
@@ -41,10 +41,9 @@ const BOOKING_STATUS_FILTERS: Array<{ label: string; value: BookingStatus | 'all
 ];
 
 const PAYMENT_STATUS_FILTERS: Array<{ label: string; value: PaymentFilter }> = [
-  { label: 'Any Payment', value: 'all'     },
-  { label: 'Paid',        value: 'paid'    },
-  { label: 'Pending',     value: 'pending' },
-  { label: 'Failed',      value: 'failed'  },
+  { label: 'Any Payment', value: 'all'    },
+  { label: 'Paid',        value: 'paid'   },
+  { label: 'Unpaid',      value: 'unpaid' },
 ];
 
 function shortId(id: string): string {
@@ -175,7 +174,7 @@ export default function BookingsClient({ initialBookings }: { initialBookings: A
   const totalGross     = paidBookings.reduce((s, b) => s + b.amount,        0);
   const totalPartner   = paidBookings.reduce((s, b) => s + b.partnerAmount, 0);
   const totalPlatform  = paidBookings.reduce((s, b) => s + b.adminAmount,   0);
-  const pendingCount   = initialBookings.filter(b => b.paymentStatus === 'pending').length;
+  const pendingCount   = initialBookings.filter(b => b.paymentStatus === 'unpaid').length;
 
   const bookingCounts = {
     all:       initialBookings.length,
