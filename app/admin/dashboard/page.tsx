@@ -52,6 +52,7 @@ export default async function AdminDashboardPage() {
   const stats: DashboardStats = statsRow ?? {
     total_hotels: 0, total_partners: 0, total_users: 0, total_bookings: 0,
     total_revenue: 0, revenue_today: 0, active_deals: 0, growth_pct: 0,
+    bookings_this_month: 0, bookings_prev_month: 0,
   };
 
   const revenueTrend: RevenueTrendPoint[] = ((trendRes.data ?? []) as RevenueTrendPoint[]).map((r) => ({
