@@ -30,6 +30,7 @@ type MonthSummary = {
   month: string;
   bookingCount: number;
   roomSubtotal: number;
+  breakfastTotal: number;
   serviceCharge: number;
   municipalityFee: number;
   tourismDirham: number;
@@ -105,6 +106,7 @@ export default async function EarningsPage() {
         month,
         bookingCount: 0,
         roomSubtotal: 0,
+        breakfastTotal: 0,
         serviceCharge: 0,
         municipalityFee: 0,
         tourismDirham: 0,
@@ -117,10 +119,14 @@ export default async function EarningsPage() {
     }
     const entry = byMonth.get(month)!;
     const nights = calcNights(b.check_in, b.check_out);
-    const fees = calcTaxBreakdown({ roomSubtotal: b.subtotal, nights, rooms: b.room_count, ...UAE_FEE_DEFAULTS });
+    const breakfastTotal = (b.breakfast_included && (b.breakfast_price_per_person ?? 0) > 0)
+      ? Math.round((b.breakfast_price_per_person ?? 0) * (b.guests_count ?? 1) * nights * 100) / 100
+      : 0;
+    const fees = calcTaxBreakdown({ roomSubtotal: b.subtotal, breakfastSubtotal: breakfastTotal, nights, rooms: b.room_count, ...UAE_FEE_DEFAULTS });
 
     entry.bookingCount      += 1;
     entry.roomSubtotal      += b.subtotal;
+    entry.breakfastTotal    += breakfastTotal;
     entry.serviceCharge     += fees.serviceCharge;
     entry.municipalityFee   += fees.municipalityFee;
     entry.tourismDirham     += fees.tourismDirham;
@@ -135,6 +141,7 @@ export default async function EarningsPage() {
     (acc, m) => ({
       bookingCount:      acc.bookingCount      + m.bookingCount,
       roomSubtotal:      acc.roomSubtotal      + m.roomSubtotal,
+      breakfastTotal:    acc.breakfastTotal    + m.breakfastTotal,
       serviceCharge:     acc.serviceCharge     + m.serviceCharge,
       municipalityFee:   acc.municipalityFee   + m.municipalityFee,
       tourismDirham:     acc.tourismDirham     + m.tourismDirham,
@@ -143,7 +150,7 @@ export default async function EarningsPage() {
       platformCommission: acc.platformCommission + m.platformCommission,
       netPayout:         acc.netPayout         + m.netPayout,
     }),
-    { bookingCount: 0, roomSubtotal: 0, serviceCharge: 0, municipalityFee: 0, tourismDirham: 0, vat: 0, grossCollected: 0, platformCommission: 0, netPayout: 0 },
+    { bookingCount: 0, roomSubtotal: 0, breakfastTotal: 0, serviceCharge: 0, municipalityFee: 0, tourismDirham: 0, vat: 0, grossCollected: 0, platformCommission: 0, netPayout: 0 },
   );
 
   return (
@@ -199,6 +206,7 @@ export default async function EarningsPage() {
                   <th className="px-4 py-3">Bookings</th>
                   <th className="px-4 py-3">Gross</th>
                   <th className="px-4 py-3">Room Subtotal</th>
+                  <th className="px-4 py-3">Breakfast</th>
                   <th className="px-4 py-3 text-emerald-600">+ SC (10%)</th>
                   <th className="px-4 py-3 text-red-400">Muni (7%)</th>
                   <th className="px-4 py-3 text-red-400">Tourism</th>
@@ -215,6 +223,7 @@ export default async function EarningsPage() {
                     <td className="px-4 py-3 text-gray-600">{m.bookingCount}</td>
                     <td className="px-4 py-3 text-gray-900 font-semibold tabular-nums"><AEDAmount amount={m.grossCollected} /></td>
                     <td className="px-4 py-3 text-gray-700 font-medium tabular-nums"><AEDAmount amount={m.roomSubtotal} /></td>
+                    <td className="px-4 py-3 text-gray-700 font-medium tabular-nums"><AEDAmount amount={m.breakfastTotal} /></td>
                     <td className="px-4 py-3 text-emerald-600 font-medium tabular-nums">+<AEDAmount amount={m.serviceCharge} /></td>
                     <td className="px-4 py-3 text-red-400 tabular-nums"><AEDAmount amount={m.municipalityFee} /></td>
                     <td className="px-4 py-3 text-red-400 tabular-nums"><AEDAmount amount={m.tourismDirham} /></td>
@@ -265,6 +274,7 @@ export default async function EarningsPage() {
                   <td className="px-4 py-3 text-gray-900">{totals.bookingCount}</td>
                   <td className="px-4 py-3 text-gray-900 tabular-nums"><AEDAmount amount={totals.grossCollected} /></td>
                   <td className="px-4 py-3 text-gray-900 tabular-nums"><AEDAmount amount={totals.roomSubtotal} /></td>
+                  <td className="px-4 py-3 text-gray-900 tabular-nums"><AEDAmount amount={totals.breakfastTotal} /></td>
                   <td className="px-4 py-3 text-emerald-600 tabular-nums">+<AEDAmount amount={totals.serviceCharge} /></td>
                   <td className="px-4 py-3 text-red-400 tabular-nums"><AEDAmount amount={totals.municipalityFee} /></td>
                   <td className="px-4 py-3 text-red-400 tabular-nums"><AEDAmount amount={totals.tourismDirham} /></td>
